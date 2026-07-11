@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register") || isTeacherLogin;
 
   if (!user && !isAuthPage) {
-    return NextResponse.redirect(new URL(pathname.startsWith("/teacher") ? "/teacher/login" : "/login", request.url));
+    const loginUrl = new URL(pathname.startsWith("/teacher") ? "/teacher/login" : "/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (user && isAuthPage) {

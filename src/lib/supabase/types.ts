@@ -1,5 +1,7 @@
 export type SubjectType = "basic" | "advanced" | "elective";
 export type AssignmentCategory = "practice" | "midterm" | "final" | "competency";
+export type AttendanceStatus = "present" | "late" | "absent" | "leave";
+export type AttendanceMethod = "teacher" | "qr";
 
 export type Database = {
   public: {
@@ -96,6 +98,31 @@ export type Database = {
         };
         Insert: Omit<Database["public"]["Tables"]["resources"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["resources"]["Insert"]>;
+      };
+      attendance: {
+        Row: {
+          id: string;
+          student_code: string;
+          section_id: string;
+          date: string;
+          status: AttendanceStatus;
+          method: AttendanceMethod;
+          recorded_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["attendance"]["Row"], "id" | "recorded_at" | "method"> & { method?: AttendanceMethod };
+        Update: Partial<Database["public"]["Tables"]["attendance"]["Insert"]>;
+      };
+      qr_sessions: {
+        Row: {
+          token: string;
+          section_id: string;
+          date: string;
+          expires_at: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["qr_sessions"]["Row"], "token" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["qr_sessions"]["Insert"]>;
       };
       submissions: {
         Row: {

@@ -122,6 +122,12 @@ export default async function AssignmentsPage({
           >
             คลังไฟล์
           </Link>
+          <Link
+            href={`/attendance?subject_id=${subject_id}`}
+            className="text-blue-600 hover:underline text-sm"
+          >
+            การเข้าเรียน
+          </Link>
         </div>
       </nav>
 

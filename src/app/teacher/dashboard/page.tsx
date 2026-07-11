@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import QrButton from "./QrButton";
 
 export default async function TeacherDashboardPage() {
   const supabase = await createClient();
@@ -72,6 +73,9 @@ export default async function TeacherDashboardPage() {
                     >
                       จัดการไฟล์
                     </Link>
+                  </div>
+                  <div className="mt-2">
+                    <QrButton sectionId={section.id} teacherId={teacher.id} />
                   </div>
                 </div>
               ))}
