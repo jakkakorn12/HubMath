@@ -1,21 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 
+const DURATION_SECONDS = 45;
+
 export default function QrButton({ sectionId, teacherId }: { sectionId: string; teacherId: string }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [expiresAt, setExpiresAt] = useState<Date | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!qrDataUrl) return;
+    if (secondsLeft <= 0) {
+      setQrDataUrl(null);
+      return;
+    }
+    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [qrDataUrl, secondsLeft]);
 
   async function generateQr() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
 
-    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    const expires = new Date(Date.now() + DURATION_SECONDS * 1000);
     const today = new Date().toISOString().slice(0, 10);
 
     const { data, error: insertError } = await supabase
@@ -33,7 +45,7 @@ export default function QrButton({ sectionId, teacherId }: { sectionId: string; 
     const url = `${window.location.origin}/checkin/${data.token}`;
     const dataUrl = await QRCode.toDataURL(url, { width: 280, margin: 1 });
     setQrDataUrl(dataUrl);
-    setExpiresAt(expires);
+    setSecondsLeft(DURATION_SECONDS);
     setLoading(false);
   }
 
@@ -51,11 +63,11 @@ export default function QrButton({ sectionId, teacherId }: { sectionId: string; 
         <div className="mt-3 p-4 bg-gray-50 rounded-xl text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qrDataUrl} alt="QR เช็คชื่อ" className="mx-auto rounded-lg" />
-          <p className="text-xs text-gray-400 mt-2">
-            หมดอายุ {expiresAt?.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
+          <p className="text-sm text-gray-500 mt-2 font-medium">
+            เหลือเวลา {secondsLeft} วินาที
           </p>
           <button
-            onClick={() => { setQrDataUrl(null); setExpiresAt(null); }}
+            onClick={() => setQrDataUrl(null)}
             className="text-xs text-gray-500 hover:underline mt-1"
           >
             ปิด
