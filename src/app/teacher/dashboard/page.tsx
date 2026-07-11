@@ -73,6 +73,12 @@ export default async function TeacherDashboardPage() {
                     >
                       จัดการไฟล์
                     </Link>
+                    <Link
+                      href={`/teacher/tasks?subject_id=${subject.id}`}
+                      className="text-sm text-purple-600 hover:underline"
+                    >
+                      มอบหมายงาน
+                    </Link>
                   </div>
                   <div className="mt-2">
                     <QrButton sectionId={section.id} teacherId={teacher.id} />

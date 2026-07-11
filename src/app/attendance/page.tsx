@@ -71,6 +71,9 @@ export default async function AttendancePage({
           <Link href={`/resources?subject_id=${subject_id}`} className="text-blue-600 hover:underline text-sm">
             คลังไฟล์
           </Link>
+          <Link href={`/tasks?subject_id=${subject_id}`} className="text-blue-600 hover:underline text-sm">
+            งานที่มอบหมาย
+          </Link>
         </div>
       </nav>
 
