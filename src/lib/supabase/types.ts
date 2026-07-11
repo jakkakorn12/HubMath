@@ -74,6 +74,19 @@ export type Database = {
         Insert: Omit<{ id: string; student_code: string; assignment_id: string; score?: number | null; updated_at?: string }, "id" | "updated_at">;
         Update: Partial<{ student_code: string; assignment_id: string; score: number | null }>;
       };
+      resources: {
+        Row: {
+          id: string;
+          subject_id: string;
+          title: string;
+          file_url: string;
+          category: string | null;
+          term: number | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["resources"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["resources"]["Insert"]>;
+      };
       submissions: {
         Row: {
           id: string;
