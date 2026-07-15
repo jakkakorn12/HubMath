@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import QrButton from "./QrButton";
 
 export default async function TeacherDashboardPage() {
   const supabase = await createClient();
@@ -55,49 +54,20 @@ export default async function TeacherDashboardPage() {
               <span className="text-xs text-gray-400">
                 {subject.code} · {typeLabel[subject.type] ?? subject.type}
               </span>
-              <div className="flex gap-3 ml-auto">
-                <Link
-                  href={`/teacher/resources?subject_id=${subject.id}`}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  📁 จัดการไฟล์
-                </Link>
-                <Link
-                  href={`/teacher/tasks?subject_id=${subject.id}`}
-                  className="text-sm text-purple-600 hover:underline"
-                >
-                  📝 มอบหมายงาน
-                </Link>
-              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(sectionsBySubject[subject.id] ?? []).map((section) => (
-                <div
+                <Link
                   key={section.id}
-                  className="bg-white rounded-xl shadow-sm p-5 border border-gray-100"
+                  href={`/teacher/students?section_id=${section.id}`}
+                  className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow block"
                 >
                   <h3 className="font-semibold text-gray-800">ห้อง {section.name}</h3>
                   <p className="text-sm text-gray-400 mt-1">
                     {countBySection[section.id] ?? 0} คนสมัครแล้ว
                   </p>
-                  <div className="flex flex-wrap gap-3 mt-3">
-                    <Link
-                      href={`/teacher/gradebook?section_id=${section.id}`}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      📊 คะแนนทั้งห้อง
-                    </Link>
-                    <Link
-                      href={`/teacher/students?section_id=${section.id}`}
-                      className="text-sm text-green-600 hover:underline"
-                    >
-                      👥 รายชื่อนักเรียน
-                    </Link>
-                  </div>
-                  <div className="mt-2">
-                    <QrButton sectionId={section.id} teacherId={teacher.id} />
-                  </div>
-                </div>
+                  <p className="text-sm text-blue-600 mt-3">เข้าจัดการห้อง →</p>
+                </Link>
               ))}
               {(!sectionsBySubject[subject.id] || sectionsBySubject[subject.id]!.length === 0) && (
                 <div className="text-sm text-gray-400">ยังไม่มีห้องเรียนในวิชานี้</div>

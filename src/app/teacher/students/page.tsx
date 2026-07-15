@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import TeacherNav from "@/components/TeacherNav";
 
 export default async function TeacherStudentsPage({
   searchParams,
@@ -18,7 +18,7 @@ export default async function TeacherStudentsPage({
 
   const { data: section } = await supabase
     .from("sections")
-    .select("id, name, subjects(name)")
+    .select("id, name, subject_id, subjects(name)")
     .eq("id", section_id)
     .single();
   if (!section) redirect("/teacher/dashboard");
@@ -53,13 +53,13 @@ export default async function TeacherStudentsPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/teacher/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-800">{subject?.name} · ห้อง {section.name}</span>
-        </div>
-      </nav>
+      <TeacherNav
+        sectionId={section_id}
+        subjectId={section.subject_id}
+        subjectName={subject?.name}
+        roomName={section.name}
+        active="students"
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <h1 className="text-lg font-bold text-gray-800 mb-1">รายชื่อนักเรียน ({rows.length} คน)</h1>
