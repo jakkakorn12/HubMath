@@ -79,7 +79,12 @@ function LoginForm() {
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-gray-500 mt-3">
+          <Link href="/forgot-password" className="text-blue-600 hover:underline">
+            ลืมรหัสผ่าน?
+          </Link>
+        </p>
+        <p className="text-center text-sm text-gray-500 mt-2">
           ยังไม่มีบัญชี?{" "}
           <Link href="/register" className="text-blue-600 hover:underline">
             สมัครสมาชิก
