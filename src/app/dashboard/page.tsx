@@ -158,17 +158,21 @@ export default async function DashboardPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {cards.map((card) => (
                   <Link
                     key={card.title}
                     href={card.href}
-                    className={`rounded-2xl border p-5 hover:shadow-md transition-shadow ${card.color}`}
+                    className={`rounded-xl border px-4 py-3 flex items-center justify-between gap-2 hover:shadow-md transition-shadow ${card.color}`}
                   >
-                    <div className="text-2xl mb-2">{card.icon}</div>
-                    <h4 className="font-semibold text-gray-800 text-sm">{card.title}</h4>
-                    <p className={`text-lg font-bold mt-2 ${card.statColor}`}>{card.stat}</p>
-                    <p className="text-xs text-gray-400 mt-1">{card.note}</p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xl">{card.icon}</span>
+                      <span className="font-semibold text-gray-800 text-sm truncate">{card.title}</span>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-base font-bold leading-tight ${card.statColor}`}>{card.stat}</p>
+                      <p className="text-[11px] text-gray-400">{card.note}</p>
+                    </div>
                   </Link>
                 ))}
               </div>
