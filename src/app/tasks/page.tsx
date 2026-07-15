@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import SubjectNav from "@/components/SubjectNav";
 import SubmitForm from "./SubmitForm";
 
 export default async function TasksPage({
@@ -33,13 +33,7 @@ export default async function TasksPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-          <Link href="/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-800">{subject?.name}</span>
-        </div>
-      </nav>
+      <SubjectNav subjectId={subject_id} subjectName={subject?.name} active="tasks" />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
         <h1 className="text-lg font-bold text-gray-800">งานที่มอบหมาย</h1>

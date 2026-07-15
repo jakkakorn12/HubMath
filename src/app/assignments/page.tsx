@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import SubjectNav from "@/components/SubjectNav";
 import type { AssignmentCategory } from "@/lib/supabase/types";
 
 const categoryLabel: Record<AssignmentCategory, string> = {
@@ -59,10 +59,6 @@ export default async function AssignmentsPage({
 
   const roomName = (enrollment?.sections as { name: string } | null)?.name ?? "—";
 
-  const subjectTypeLabel: Record<string, string> = {
-    basic: "พื้นฐาน", advanced: "เพิ่มเติม", elective: "เลือก",
-  };
-
   // คำนวณคะแนนสรุปตาม category + term
   function calcScore(filterFn: (a: typeof assignments[0]) => boolean) {
     const list = (assignments ?? []).filter(filterFn);
@@ -105,18 +101,7 @@ export default async function AssignmentsPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-800">
-            {subject?.name}
-            <span className="text-gray-400 font-normal text-sm ml-1">
-              ({subjectTypeLabel[subject?.type ?? ""]})
-            </span>
-          </span>
-        </div>
-      </nav>
+      <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="scores" />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
 
