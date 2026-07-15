@@ -86,7 +86,7 @@ export default async function DashboardPage() {
               return (
                 <Link
                   key={e.section_id}
-                  href={`/assignments?subject_id=${subject.id}`}
+                  href={`/subject?subject_id=${subject.id}`}
                   className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow border border-gray-100"
                 >
                   <div className="flex items-start justify-between mb-3">

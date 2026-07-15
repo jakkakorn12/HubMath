@@ -107,7 +107,7 @@ export default async function AssignmentsPage({
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</Link>
+          <Link href={`/subject?subject_id=${subject_id}`} className="text-blue-600 hover:underline text-sm">← กลับหน้าวิชา</Link>
           <span className="text-gray-300">|</span>
           <span className="font-semibold text-gray-800">
             {subject?.name}
@@ -115,25 +115,6 @@ export default async function AssignmentsPage({
               ({subjectTypeLabel[subject?.type ?? ""]})
             </span>
           </span>
-          <span className="text-gray-300">|</span>
-          <Link
-            href={`/resources?subject_id=${subject_id}`}
-            className="text-blue-600 hover:underline text-sm"
-          >
-            คลังไฟล์
-          </Link>
-          <Link
-            href={`/attendance?subject_id=${subject_id}`}
-            className="text-blue-600 hover:underline text-sm"
-          >
-            การเข้าเรียน
-          </Link>
-          <Link
-            href={`/tasks?subject_id=${subject_id}`}
-            className="text-blue-600 hover:underline text-sm"
-          >
-            งานที่มอบหมาย
-          </Link>
         </div>
       </nav>
 
