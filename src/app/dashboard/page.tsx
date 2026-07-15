@@ -47,6 +47,10 @@ export default async function DashboardPage() {
     elective: "bg-green-100 text-green-700",
   };
 
+  // เทอม 1: พ.ค.-ต.ค. / เทอม 2: พ.ย.-เม.ย.
+  const currentMonth = new Date().getMonth() + 1;
+  const currentTerm = currentMonth >= 5 && currentMonth <= 10 ? 1 : 2;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
@@ -62,11 +66,11 @@ export default async function DashboardPage() {
       </nav>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6">วิชาที่ลงทะเบียน</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-6">วิชาที่เรียน</h2>
 
         {!enrollments || enrollments.length === 0 ? (
           <div className="bg-white rounded-xl p-8 text-center text-gray-500 shadow-sm">
-            ยังไม่มีวิชาที่ลงทะเบียน กรุณาติดต่อครูผู้สอน
+            ยังไม่มีวิชาที่เรียน กรุณาติดต่อครูผู้สอน
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -91,7 +95,7 @@ export default async function DashboardPage() {
                     >
                       {typeLabel[subject.type] ?? subject.type}
                     </span>
-                    <span className="text-xs text-gray-400">{section.academic_year}</span>
+                    <span className="text-xs text-gray-400">{currentTerm}/{section.academic_year}</span>
                   </div>
                   <h3 className="font-semibold text-gray-800">{subject.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{subject.code}</p>
