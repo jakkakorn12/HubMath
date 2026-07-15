@@ -50,11 +50,25 @@ export default async function TeacherDashboardPage() {
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         {(subjects ?? []).map((subject) => (
           <div key={subject.id}>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
               <h2 className="text-lg font-semibold text-gray-800">{subject.name}</h2>
               <span className="text-xs text-gray-400">
                 {subject.code} · {typeLabel[subject.type] ?? subject.type}
               </span>
+              <div className="flex gap-3 ml-auto">
+                <Link
+                  href={`/teacher/resources?subject_id=${subject.id}`}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  📁 จัดการไฟล์
+                </Link>
+                <Link
+                  href={`/teacher/tasks?subject_id=${subject.id}`}
+                  className="text-sm text-purple-600 hover:underline"
+                >
+                  📝 มอบหมายงาน
+                </Link>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(sectionsBySubject[subject.id] ?? []).map((section) => (
@@ -66,18 +80,18 @@ export default async function TeacherDashboardPage() {
                   <p className="text-sm text-gray-400 mt-1">
                     {countBySection[section.id] ?? 0} คนสมัครแล้ว
                   </p>
-                  <div className="flex gap-3 mt-3">
+                  <div className="flex flex-wrap gap-3 mt-3">
                     <Link
-                      href={`/teacher/resources?subject_id=${subject.id}`}
+                      href={`/teacher/gradebook?section_id=${section.id}`}
                       className="text-sm text-blue-600 hover:underline"
                     >
-                      จัดการไฟล์
+                      📊 คะแนนทั้งห้อง
                     </Link>
                     <Link
-                      href={`/teacher/tasks?subject_id=${subject.id}`}
-                      className="text-sm text-purple-600 hover:underline"
+                      href={`/teacher/students?section_id=${section.id}`}
+                      className="text-sm text-green-600 hover:underline"
                     >
-                      มอบหมายงาน
+                      👥 รายชื่อนักเรียน
                     </Link>
                   </div>
                   <div className="mt-2">
