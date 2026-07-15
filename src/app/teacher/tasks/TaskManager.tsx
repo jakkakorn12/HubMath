@@ -10,12 +10,18 @@ type Task = Database["public"]["Tables"]["tasks"]["Row"];
 
 export default function TaskManager({
   subjectId,
+  sectionId,
+  targetLabel,
   tasks,
   submissionCounts,
+  roomNameById,
 }: {
-  subjectId: string;
+  subjectId: string | null;
+  sectionId: string | null;
+  targetLabel: string;
   tasks: Task[];
   submissionCounts: Record<string, number>;
+  roomNameById: Record<string, string>;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -26,6 +32,10 @@ export default function TaskManager({
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!subjectId) {
+      setError("กรุณาเลือกวิชาก่อน");
+      return;
+    }
     if (!title.trim()) return;
     setCreating(true);
     setError(null);
@@ -33,6 +43,7 @@ export default function TaskManager({
 
     const { error: insertError } = await supabase.from("tasks").insert({
       subject_id: subjectId,
+      section_id: sectionId,
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
@@ -60,8 +71,13 @@ export default function TaskManager({
 
   return (
     <div className="space-y-6">
+      {!subjectId ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-sm text-gray-400">
+          เลือกวิชาด้านบนเพื่อมอบหมายงาน
+        </div>
+      ) : (
       <form onSubmit={handleCreate} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500">มอบหมายงานใหม่</h2>
+        <h2 className="text-sm font-semibold text-gray-500">มอบหมายงานใหม่ — {targetLabel}</h2>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">ชื่องาน</label>
           <input
@@ -99,6 +115,7 @@ export default function TaskManager({
           {creating ? "กำลังสร้าง..." : "มอบหมายงาน"}
         </button>
       </form>
+      )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
         <h2 className="text-sm font-semibold text-gray-500 mb-3">งานทั้งหมด</h2>
@@ -111,7 +128,7 @@ export default function TaskManager({
                 <div>
                   <p className="text-sm text-gray-700">{t.title}</p>
                   <p className="text-xs text-gray-400">
-                    ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
+                    {t.section_id ? `ห้อง ${roomNameById[t.section_id] ?? "?"}` : "ทุกห้อง"} · ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
                     {t.due_date && ` · กำหนดส่ง ${new Date(t.due_date).toLocaleDateString("th-TH")}`}
                   </p>
                 </div>

@@ -78,8 +78,8 @@ export default async function DashboardPage() {
     supabase.from("attendance").select("status, section_id").eq("student_code", student?.student_code ?? "").in("section_id", sectionIds),
     supabase.from("task_submissions").select("task_id").eq("student_id", user.id),
     supabase.from("assignments").select("id, subject_id").in("subject_id", subjectIds),
-    supabase.from("tasks").select("id, subject_id").in("subject_id", subjectIds),
-    supabase.from("resources").select("id, subject_id").in("subject_id", subjectIds),
+    supabase.from("tasks").select("id, subject_id, section_id").in("subject_id", subjectIds),
+    supabase.from("resources").select("id, subject_id, section_id").in("subject_id", subjectIds),
   ]);
 
   const cacheMap = new Map(scoreCache?.map((s) => [s.assignment_id, s.score]) ?? []);
@@ -97,10 +97,10 @@ export default async function DashboardPage() {
     const presentCount = att.filter((a) => a.status === "present" || a.status === "late").length;
     const absentCount = att.filter((a) => a.status === "absent").length;
 
-    const subjTasks = (tasks ?? []).filter((t) => t.subject_id === subjectId);
+    const subjTasks = (tasks ?? []).filter((t) => t.subject_id === subjectId && (t.section_id == null || t.section_id === sectionId));
     const pendingTasks = subjTasks.filter((t) => !submittedTaskIds.has(t.id)).length;
 
-    const resourceCount = (resources ?? []).filter((r) => r.subject_id === subjectId).length;
+    const resourceCount = (resources ?? []).filter((r) => r.subject_id === subjectId && (r.section_id == null || r.section_id === sectionId)).length;
 
     return { totalScore, presentCount, absentCount, totalDays: att.length, subjTasks: subjTasks.length, pendingTasks, resourceCount };
   }

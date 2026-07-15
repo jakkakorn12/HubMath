@@ -15,11 +15,22 @@ export default async function TasksPage({
   if (!user) redirect("/login");
   if (!subject_id) redirect("/dashboard");
 
-  const [{ data: subject }, { data: tasks }, { data: submissions }] = await Promise.all([
+  const { data: enrollment } = await supabase
+    .from("student_sections")
+    .select("sections(id)")
+    .eq("student_id", user.id)
+    .eq("sections.subject_id", subject_id)
+    .limit(1)
+    .single();
+  const mySectionId = (enrollment?.sections as { id: string } | null)?.id ?? null;
+
+  const [{ data: subject }, { data: allTasks }, { data: submissions }] = await Promise.all([
     supabase.from("subjects").select("*").eq("id", subject_id).single(),
     supabase.from("tasks").select("*").eq("subject_id", subject_id).order("due_date"),
     supabase.from("task_submissions").select("*").eq("student_id", user.id),
   ]);
+
+  const tasks = (allTasks ?? []).filter((t) => t.section_id == null || t.section_id === mySectionId);
 
   const subMap = new Map(submissions?.map((s) => [s.task_id, s]) ?? []);
 

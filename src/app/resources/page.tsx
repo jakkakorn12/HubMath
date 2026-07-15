@@ -14,14 +14,25 @@ export default async function ResourcesPage({
   if (!user) redirect("/login");
   if (!subject_id) redirect("/dashboard");
 
+  const { data: enrollment } = await supabase
+    .from("student_sections")
+    .select("sections(id)")
+    .eq("student_id", user.id)
+    .eq("sections.subject_id", subject_id)
+    .limit(1)
+    .single();
+  const mySectionId = (enrollment?.sections as { id: string } | null)?.id ?? null;
+
   const [{ data: subject }, { data: resources }] = await Promise.all([
     supabase.from("subjects").select("*").eq("id", subject_id).single(),
     supabase.from("resources").select("*").eq("subject_id", subject_id)
-      .order("term").order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false }),
   ]);
 
+  const visibleResources = (resources ?? []).filter((r) => r.section_id == null || r.section_id === mySectionId);
+
   const grouped: Record<string, typeof resources> = {};
-  for (const r of resources ?? []) {
+  for (const r of visibleResources) {
     const key = r.category ?? "อื่นๆ";
     if (!grouped[key]) grouped[key] = [];
     grouped[key]!.push(r);
@@ -34,7 +45,7 @@ export default async function ResourcesPage({
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
         <h1 className="text-lg font-bold text-gray-800">คลังไฟล์เอกสาร</h1>
 
-        {!resources || resources.length === 0 ? (
+        {visibleResources.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
             ยังไม่มีไฟล์ในวิชานี้
           </div>

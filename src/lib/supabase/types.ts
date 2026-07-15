@@ -90,6 +90,7 @@ export type Database = {
         Row: {
           id: string;
           subject_id: string;
+          section_id: string | null;
           title: string;
           file_url: string;
           category: string | null;
@@ -128,6 +129,7 @@ export type Database = {
         Row: {
           id: string;
           subject_id: string;
+          section_id: string | null;
           title: string;
           description: string | null;
           due_date: string | null;

@@ -47,6 +47,12 @@ export default async function TeacherDashboardPage() {
       </nav>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <div className="flex flex-wrap gap-3">
+          <Link href="/teacher/resources" className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:shadow-md transition-shadow">
+            📁 จัดการไฟล์ · 📝 มอบหมายงาน · 📱 เช็คชื่อ
+          </Link>
+        </div>
+
         {(subjects ?? []).map((subject) => (
           <div key={subject.id}>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">

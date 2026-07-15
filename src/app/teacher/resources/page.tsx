@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import TeacherNav from "@/components/TeacherNav";
+import TeacherContentNav from "@/components/TeacherContentNav";
+import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import ResourceManager from "./ResourceManager";
 
 export default async function TeacherResourcesPage({
@@ -13,37 +14,47 @@ export default async function TeacherResourcesPage({
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/teacher/login");
-
-  const { data: teacher } = await supabase.from("teachers").select("*").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id").eq("id", user.id).single();
   if (!teacher) redirect("/teacher/login");
 
-  if (!subject_id) redirect("/teacher/dashboard");
-
-  const [{ data: subject }, { data: resources }, { data: section }] = await Promise.all([
-    supabase.from("subjects").select("*").eq("id", subject_id).single(),
-    supabase.from("resources").select("*").eq("subject_id", subject_id)
-      .order("term").order("created_at", { ascending: false }),
-    section_id ? supabase.from("sections").select("name").eq("id", section_id).single() : Promise.resolve({ data: null }),
+  const [{ data: subjects }, { data: sections }] = await Promise.all([
+    supabase.from("subjects").select("id, name").order("code"),
+    supabase.from("sections").select("id, name, subject_id").order("name"),
   ]);
 
-  const roomName = (section as { name: string } | null)?.name;
+  const roomNameById: Record<string, string> = {};
+  for (const s of sections ?? []) roomNameById[s.id] = s.name;
+
+  // ดึงไฟล์ตามที่เลือก
+  let query = supabase.from("resources").select("*").order("created_at", { ascending: false });
+  if (subject_id) {
+    query = query.eq("subject_id", subject_id);
+    if (section_id) query = query.or(`section_id.is.null,section_id.eq.${section_id}`);
+  }
+  const { data: resources } = await query;
+
+  const subjectName = (subjects ?? []).find((s) => s.id === subject_id)?.name;
+  const roomName = section_id ? roomNameById[section_id] : undefined;
+  const targetLabel = !subject_id ? "" : section_id ? `ห้อง ${roomName}` : `ทุกห้องในวิชา ${subjectName}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {section_id ? (
-        <TeacherNav sectionId={section_id} subjectId={subject_id} subjectName={subject?.name} roomName={roomName} active="files" />
-      ) : (
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-3xl mx-auto px-4 py-3">
-            <a href="/teacher/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</a>
-          </div>
-        </nav>
-      )}
+      <TeacherContentNav subjectId={subject_id} sectionId={section_id} active="files" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <h1 className="text-lg font-bold text-gray-800 mb-1">จัดการไฟล์เอกสาร</h1>
-        <p className="text-sm text-gray-400 mb-5">ไฟล์เหล่านี้ใช้ร่วมกันทุกห้องในวิชา {subject?.name}</p>
-        <ResourceManager subjectId={subject_id} resources={resources ?? []} />
+      <main className="max-w-5xl mx-auto px-4 py-6">
+        <SubjectRoomPicker
+          subjects={subjects ?? []}
+          sections={sections ?? []}
+          subjectId={subject_id}
+          sectionId={section_id}
+        />
+        <ResourceManager
+          subjectId={subject_id ?? null}
+          sectionId={section_id ?? null}
+          targetLabel={targetLabel}
+          resources={resources ?? []}
+          roomNameById={roomNameById}
+        />
       </main>
     </div>
   );

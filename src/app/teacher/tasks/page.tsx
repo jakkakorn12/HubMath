@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import TeacherNav from "@/components/TeacherNav";
+import TeacherContentNav from "@/components/TeacherContentNav";
+import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import TaskManager from "./TaskManager";
 
 export default async function TeacherTasksPage({
@@ -13,42 +14,51 @@ export default async function TeacherTasksPage({
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/teacher/login");
-
-  const { data: teacher } = await supabase.from("teachers").select("*").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id").eq("id", user.id).single();
   if (!teacher) redirect("/teacher/login");
 
-  if (!subject_id) redirect("/teacher/dashboard");
-
-  const [{ data: subject }, { data: tasks }, { data: submissions }, { data: section }] = await Promise.all([
-    supabase.from("subjects").select("*").eq("id", subject_id).single(),
-    supabase.from("tasks").select("*").eq("subject_id", subject_id).order("created_at", { ascending: false }),
-    supabase.from("task_submissions").select("task_id"),
-    section_id ? supabase.from("sections").select("name").eq("id", section_id).single() : Promise.resolve({ data: null }),
+  const [{ data: subjects }, { data: sections }] = await Promise.all([
+    supabase.from("subjects").select("id, name").order("code"),
+    supabase.from("sections").select("id, name, subject_id").order("name"),
   ]);
 
-  const submissionCounts: Record<string, number> = {};
-  for (const s of submissions ?? []) {
-    submissionCounts[s.task_id] = (submissionCounts[s.task_id] ?? 0) + 1;
-  }
+  const roomNameById: Record<string, string> = {};
+  for (const s of sections ?? []) roomNameById[s.id] = s.name;
 
-  const roomName = (section as { name: string } | null)?.name;
+  let query = supabase.from("tasks").select("*").order("created_at", { ascending: false });
+  if (subject_id) {
+    query = query.eq("subject_id", subject_id);
+    if (section_id) query = query.or(`section_id.is.null,section_id.eq.${section_id}`);
+  }
+  const { data: tasks } = await query;
+
+  const { data: submissions } = await supabase.from("task_submissions").select("task_id");
+  const submissionCounts: Record<string, number> = {};
+  for (const s of submissions ?? []) submissionCounts[s.task_id] = (submissionCounts[s.task_id] ?? 0) + 1;
+
+  const subjectName = (subjects ?? []).find((s) => s.id === subject_id)?.name;
+  const roomName = section_id ? roomNameById[section_id] : undefined;
+  const targetLabel = !subject_id ? "" : section_id ? `ห้อง ${roomName}` : `ทุกห้องในวิชา ${subjectName}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {section_id ? (
-        <TeacherNav sectionId={section_id} subjectId={subject_id} subjectName={subject?.name} roomName={roomName} active="tasks" />
-      ) : (
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-3xl mx-auto px-4 py-3">
-            <a href="/teacher/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</a>
-          </div>
-        </nav>
-      )}
+      <TeacherContentNav subjectId={subject_id} sectionId={section_id} active="tasks" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <h1 className="text-lg font-bold text-gray-800 mb-1">มอบหมายงาน</h1>
-        <p className="text-sm text-gray-400 mb-5">งานเหล่านี้มอบหมายให้ทุกห้องในวิชา {subject?.name}</p>
-        <TaskManager subjectId={subject_id} tasks={tasks ?? []} submissionCounts={submissionCounts} />
+      <main className="max-w-5xl mx-auto px-4 py-6">
+        <SubjectRoomPicker
+          subjects={subjects ?? []}
+          sections={sections ?? []}
+          subjectId={subject_id}
+          sectionId={section_id}
+        />
+        <TaskManager
+          subjectId={subject_id ?? null}
+          sectionId={section_id ?? null}
+          targetLabel={targetLabel}
+          tasks={tasks ?? []}
+          submissionCounts={submissionCounts}
+          roomNameById={roomNameById}
+        />
       </main>
     </div>
   );

@@ -20,21 +20,30 @@ function slugifyFileName(name: string) {
 
 export default function ResourceManager({
   subjectId,
+  sectionId,
+  targetLabel,
   resources,
+  roomNameById,
 }: {
-  subjectId: string;
+  subjectId: string | null;
+  sectionId: string | null;
+  targetLabel: string;
   resources: Resource[];
+  roomNameById: Record<string, string>;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
-  const [term, setTerm] = useState<1 | 2>(1);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
+    if (!subjectId) {
+      setError("กรุณาเลือกวิชาก่อน");
+      return;
+    }
     if (!file || !title.trim()) return;
     setUploading(true);
     setError(null);
@@ -52,10 +61,11 @@ export default function ResourceManager({
 
     const { error: insertError } = await supabase.from("resources").insert({
       subject_id: subjectId,
+      section_id: sectionId,
       title: title.trim(),
       file_url: urlData.publicUrl,
       category: category.trim() || null,
-      term,
+      term: null,
     });
 
     if (insertError) {
@@ -80,19 +90,19 @@ export default function ResourceManager({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleUpload} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500">อัปโหลดไฟล์ใหม่</h2>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อไฟล์ (ที่นักเรียนเห็น)</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+      {subjectId ? (
+        <form onSubmit={handleUpload} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-gray-500">อัปโหลดไฟล์ใหม่ — {targetLabel}</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อไฟล์ (ที่นักเรียนเห็น)</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่ (ไม่บังคับ)</label>
             <input
@@ -104,35 +114,28 @@ export default function ResourceManager({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">เทอม</label>
-            <select
-              value={term}
-              onChange={(e) => setTerm(Number(e.target.value) as 1 | 2)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={1}>เทอม 1</option>
-              <option value={2}>เทอม 2</option>
-            </select>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์</label>
+            <input
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              required
+              className="w-full text-sm"
+            />
           </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={uploading}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+          >
+            {uploading ? "กำลังอัปโหลด..." : "อัปโหลด"}
+          </button>
+        </form>
+      ) : (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-sm text-gray-400">
+          เลือกวิชาด้านบนเพื่ออัปโหลดไฟล์
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์</label>
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            required
-            className="w-full text-sm"
-          />
-        </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={uploading}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-        >
-          {uploading ? "กำลังอัปโหลด..." : "อัปโหลด"}
-        </button>
-      </form>
+      )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
         <h2 className="text-sm font-semibold text-gray-500 mb-3">ไฟล์ทั้งหมด</h2>
@@ -148,7 +151,7 @@ export default function ResourceManager({
                 <div>
                   <p className="text-sm text-gray-700">{r.title}</p>
                   <p className="text-xs text-gray-400">
-                    {r.category ?? "ไม่ระบุหมวดหมู่"} · เทอม {r.term}
+                    {r.category ?? "ไม่ระบุหมวดหมู่"} · {r.section_id ? `ห้อง ${roomNameById[r.section_id] ?? "?"}` : "ทุกห้อง"}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
