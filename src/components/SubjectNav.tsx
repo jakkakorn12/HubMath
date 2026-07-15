@@ -37,6 +37,9 @@ export default function SubjectNav({
             </span>
           )}
         </span>
+        <form action="/auth/signout" method="POST" className="ml-auto shrink-0">
+          <button className="text-sm text-red-500 hover:underline">ออกจากระบบ</button>
+        </form>
       </div>
       <div className="max-w-3xl mx-auto px-4 flex gap-1 overflow-x-auto">
         {tabs.map((tab) => (
