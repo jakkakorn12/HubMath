@@ -15,8 +15,22 @@ export default function RegisterPage() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    if (!studentCode.trim()) {
+      setError("กรุณากรอกเลขประจำตัว");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("รูปแบบอีเมลไม่ถูกต้อง");
+      return;
+    }
+    if (password.length < 6) {
+      setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+
+    setLoading(true);
     const supabase = createClient();
 
     const { error: signUpError } = await supabase.auth.signUp({
@@ -45,16 +59,14 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm">
         <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">สมัครสมาชิก</h1>
-        <p className="text-sm text-gray-400 text-center mb-6">ใช้รหัสประจำตัวนักเรียนของคุณ</p>
-        <form onSubmit={handleRegister} className="space-y-4">
+        <p className="text-sm text-gray-400 text-center mb-6">ใช้เลขประจำตัวนักเรียนของคุณ</p>
+        <form onSubmit={handleRegister} noValidate className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">รหัสประจำตัวนักเรียน</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัว</label>
             <input
               type="text"
               value={studentCode}
               onChange={(e) => setStudentCode(e.target.value)}
-              required
-              placeholder="เช่น 50852"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -64,7 +76,6 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -74,8 +85,6 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
