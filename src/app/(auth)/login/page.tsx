@@ -50,13 +50,12 @@ function LoginForm() {
         <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">เข้าสู่ระบบ</h1>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">รหัสประจำตัวนักเรียน</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัว</label>
             <input
               type="text"
               value={studentCode}
               onChange={(e) => setStudentCode(e.target.value)}
               required
-              placeholder="เช่น 50852"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
