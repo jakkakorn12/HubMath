@@ -35,7 +35,7 @@ export default async function TasksPage({
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-          <Link href={`/subject?subject_id=${subject_id}`} className="text-blue-600 hover:underline text-sm">← กลับหน้าวิชา</Link>
+          <Link href="/dashboard" className="text-blue-600 hover:underline text-sm">← กลับหน้าหลัก</Link>
           <span className="text-gray-300">|</span>
           <span className="font-semibold text-gray-800">{subject?.name}</span>
         </div>
