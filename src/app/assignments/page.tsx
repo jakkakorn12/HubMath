@@ -60,14 +60,19 @@ export default async function AssignmentsPage({
   const roomName = (enrollment?.sections as { name: string } | null)?.name ?? "—";
 
   // คำนวณคะแนนสรุปตาม category + term
+  // has = true ถ้ามีการกรอกอย่างน้อย 1 ช่อง (แม้กรอก 0)
   function calcScore(filterFn: (a: typeof assignments[0]) => boolean) {
     const list = (assignments ?? []).filter(filterFn);
     const max = list.reduce((s, a) => s + a.max_score, 0);
-    const scored = list.reduce((s, a) => {
-      const sc = subMap.get(a.id);
-      return sc != null ? s + sc : s;
-    }, 0);
-    return { max, scored };
+    let scored = 0;
+    let has = false;
+    for (const a of list) {
+      if (subMap.has(a.id)) {
+        has = true;
+        scored += subMap.get(a.id) ?? 0;
+      }
+    }
+    return { max, scored, has };
   }
 
   const practice1 = calcScore((a) => a.term === 1 && a.category === "practice");
@@ -158,11 +163,11 @@ export default async function AssignmentsPage({
                 <tr>
                   {summaryItems.map((item) => (
                     <td key={item.label} className="border border-gray-200 px-3 py-3 font-bold text-gray-800 text-base">
-                      {item.scored > 0 ? item.scored : "—"}
+                      {item.has ? item.scored : "—"}
                     </td>
                   ))}
                   <td className="border border-gray-200 px-3 py-3 font-bold text-blue-700 text-base bg-blue-50">
-                    {summaryItems.reduce((s, i) => s + i.scored, 0) > 0
+                    {summaryItems.some((i) => i.has)
                       ? summaryItems.reduce((s, i) => s + i.scored, 0)
                       : "—"}
                   </td>
