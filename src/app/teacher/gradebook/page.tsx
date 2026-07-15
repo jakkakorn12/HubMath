@@ -50,26 +50,35 @@ export default async function GradebookPage({
   const maxComp = bucketMax((a) => a.category === "competency");
   const maxFinal = bucketMax((a) => a.category === "final");
 
-  function scoreFor(code: string, fn: (a: (typeof assign)[0]) => boolean) {
-    return assign.filter(fn).reduce((sum, a) => {
-      const sc = scoreMap.get(`${code}__${a.id}`);
-      return sc != null ? sum + sc : sum;
-    }, 0);
+  // คืนค่า { sum, has } — has=true ถ้ามีการกรอกอย่างน้อย 1 ช่องในกลุ่มนี้ (แม้กรอก 0)
+  function bucketFor(code: string, fn: (a: (typeof assign)[0]) => boolean) {
+    let sum = 0;
+    let has = false;
+    for (const a of assign.filter(fn)) {
+      const key = `${code}__${a.id}`;
+      if (scoreMap.has(key)) {
+        has = true;
+        sum += scoreMap.get(key) ?? 0;
+      }
+    }
+    return { sum, has };
   }
 
   const rows = codes
     .map((code) => {
-      const keep1 = scoreFor(code, (a) => a.term === 1 && a.category === "practice");
-      const mid = scoreFor(code, (a) => a.term === 1 && a.category === "midterm");
-      const keep2 = scoreFor(code, (a) => a.term === 2 && a.category === "practice");
-      const comp = scoreFor(code, (a) => a.category === "competency");
-      const fin = scoreFor(code, (a) => a.category === "final");
+      const keep1 = bucketFor(code, (a) => a.term === 1 && a.category === "practice");
+      const mid = bucketFor(code, (a) => a.term === 1 && a.category === "midterm");
+      const keep2 = bucketFor(code, (a) => a.term === 2 && a.category === "practice");
+      const comp = bucketFor(code, (a) => a.category === "competency");
+      const fin = bucketFor(code, (a) => a.category === "final");
+      const anyScore = keep1.has || mid.has || keep2.has || comp.has || fin.has;
       return {
         code,
         number: numberByCode.get(code) ?? 0,
         name: nameByCode.get(code) ?? "—",
         keep1, mid, keep2, comp, fin,
-        total: keep1 + mid + keep2 + comp + fin,
+        anyScore,
+        total: keep1.sum + mid.sum + keep2.sum + comp.sum + fin.sum,
       };
     })
     .sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
@@ -114,11 +123,11 @@ export default async function GradebookPage({
                   <td className="border border-gray-200 px-3 py-2 text-left text-gray-800">{r.name}</td>
                   {cols.map((c) => (
                     <td key={c.key} className="border border-gray-200 px-2 py-2 text-gray-700">
-                      {r[c.key] > 0 ? r[c.key] : "—"}
+                      {r[c.key].has ? r[c.key].sum : "—"}
                     </td>
                   ))}
                   <td className="border border-gray-200 px-2 py-2 font-bold text-blue-700 bg-blue-50">
-                    {r.total > 0 ? r.total : "—"}
+                    {r.anyScore ? r.total : "—"}
                   </td>
                 </tr>
               ))}
