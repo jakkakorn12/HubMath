@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
 import SubmitForm from "./SubmitForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function TasksPage({
   searchParams,
 }: {
@@ -21,8 +23,11 @@ export default async function TasksPage({
     .eq("student_id", user.id)
     .eq("sections.subject_id", subject_id)
     .limit(1)
-    .single();
+    .maybeSingle();
   const mySectionId = (enrollment?.sections as { id: string } | null)?.id ?? null;
+
+  // ไม่ได้ลงทะเบียนวิชานี้ → ห้ามดู (กันแก้ subject_id ใน URL)
+  if (!mySectionId) redirect("/dashboard");
 
   const [{ data: subject }, { data: allTasks }, { data: submissions }] = await Promise.all([
     supabase.from("subjects").select("*").eq("id", subject_id).single(),

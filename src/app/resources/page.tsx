@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
 
+export const dynamic = "force-dynamic";
+
 export default async function ResourcesPage({
   searchParams,
 }: {
@@ -20,8 +22,11 @@ export default async function ResourcesPage({
     .eq("student_id", user.id)
     .eq("sections.subject_id", subject_id)
     .limit(1)
-    .single();
+    .maybeSingle();
   const mySectionId = (enrollment?.sections as { id: string } | null)?.id ?? null;
+
+  // ไม่ได้ลงทะเบียนวิชานี้ → ห้ามดู (กันแก้ subject_id ใน URL)
+  if (!mySectionId) redirect("/dashboard");
 
   const [{ data: subject }, { data: resources }] = await Promise.all([
     supabase.from("subjects").select("*").eq("id", subject_id).single(),
@@ -30,6 +35,17 @@ export default async function ResourcesPage({
   ]);
 
   const visibleResources = (resources ?? []).filter((r) => r.section_id == null || r.section_id === mySectionId);
+
+  // bucket เป็น private — sign URL อายุ 1 ชม.
+  const signedUrls: Record<string, string> = {};
+  const paths = visibleResources.map((r) => r.file_url).filter((p) => p && !p.startsWith("http"));
+  if (paths.length) {
+    const { data: signed } = await supabase.storage.from("resources").createSignedUrls(paths, 3600);
+    for (const s of signed ?? []) {
+      const match = visibleResources.find((r) => r.file_url === s.path);
+      if (match && s.signedUrl) signedUrls[match.id] = s.signedUrl;
+    }
+  }
 
   const grouped: Record<string, typeof resources> = {};
   for (const r of visibleResources) {
@@ -57,7 +73,7 @@ export default async function ResourcesPage({
                 {items!.map((r) => (
                   <a
                     key={r.id}
-                    href={r.file_url}
+                    href={signedUrls[r.id] ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-lg px-4 py-3 transition-colors"

@@ -4,6 +4,8 @@ import TeacherContentNav from "@/components/TeacherContentNav";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import TaskManager from "./TaskManager";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeacherTasksPage({
   searchParams,
 }: {

@@ -4,6 +4,8 @@ import TeacherContentNav from "@/components/TeacherContentNav";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import ResourceManager from "./ResourceManager";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeacherResourcesPage({
   searchParams,
 }: {
@@ -33,6 +35,17 @@ export default async function TeacherResourcesPage({
   }
   const { data: resources } = await query;
 
+  // bucket เป็น private — sign URL อายุ 1 ชม.
+  const signedUrls: Record<string, string> = {};
+  const paths = (resources ?? []).map((r) => r.file_url).filter((p) => p && !p.startsWith("http"));
+  if (paths.length) {
+    const { data: signed } = await supabase.storage.from("resources").createSignedUrls(paths, 3600);
+    for (const s of signed ?? []) {
+      const match = (resources ?? []).find((r) => r.file_url === s.path);
+      if (match && s.signedUrl) signedUrls[match.id] = s.signedUrl;
+    }
+  }
+
   const subjectName = (subjects ?? []).find((s) => s.id === subject_id)?.name;
   const roomName = section_id ? roomNameById[section_id] : undefined;
   const targetLabel = !subject_id ? "" : section_id ? `ห้อง ${roomName}` : `ทุกห้องในวิชา ${subjectName}`;
@@ -54,6 +67,7 @@ export default async function TeacherResourcesPage({
           targetLabel={targetLabel}
           resources={resources ?? []}
           roomNameById={roomNameById}
+          signedUrls={signedUrls}
         />
       </main>
     </div>

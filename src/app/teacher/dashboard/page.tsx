@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeacherDashboardPage() {
   const supabase = await createClient();
 
@@ -48,8 +50,23 @@ export default async function TeacherDashboardPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-wrap gap-3">
-          <Link href="/teacher/resources" className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:shadow-md transition-shadow">
-            📁 จัดการไฟล์ · 📝 มอบหมายงาน · 📱 เช็คชื่อ
+          <Link
+            href="/teacher/resources"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
+          >
+            จัดการไฟล์
+          </Link>
+          <Link
+            href="/teacher/tasks"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
+          >
+            มอบหมายงาน
+          </Link>
+          <Link
+            href="/teacher/attendance"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
+          >
+            เช็คชื่อ
           </Link>
         </div>
 

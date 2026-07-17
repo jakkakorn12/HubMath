@@ -17,6 +17,8 @@ const statusColor: Record<AttendanceStatus, string> = {
   leave: "bg-blue-100 text-blue-700",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AttendancePage({
   searchParams,
 }: {
@@ -39,18 +41,19 @@ export default async function AttendancePage({
     .eq("student_id", user.id)
     .eq("sections.subject_id", subject_id)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   const section = enrollment?.sections as { id: string; name: string } | null;
 
-  const { data: records } = section
-    ? await supabase
-        .from("attendance")
-        .select("*")
-        .eq("student_code", student?.student_code ?? "")
-        .eq("section_id", section.id)
-        .order("date", { ascending: false })
-    : { data: [] };
+  // ไม่ได้ลงทะเบียนวิชานี้ → ห้ามดู (กันแก้ subject_id ใน URL)
+  if (!section) redirect("/dashboard");
+
+  const { data: records } = await supabase
+    .from("attendance")
+    .select("*")
+    .eq("student_code", student?.student_code ?? "")
+    .eq("section_id", section.id)
+    .order("date", { ascending: false });
 
   const counts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0 };
   for (const r of records ?? []) {

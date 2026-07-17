@@ -4,6 +4,8 @@ import TeacherContentNav from "@/components/TeacherContentNav";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeacherAttendancePage({
   searchParams,
 }: {

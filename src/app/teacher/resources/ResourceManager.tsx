@@ -24,12 +24,14 @@ export default function ResourceManager({
   targetLabel,
   resources,
   roomNameById,
+  signedUrls,
 }: {
   subjectId: string | null;
   sectionId: string | null;
   targetLabel: string;
   resources: Resource[];
   roomNameById: Record<string, string>;
+  signedUrls: Record<string, string>;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -57,13 +59,12 @@ export default function ResourceManager({
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("resources").getPublicUrl(path);
-
+    // เก็บเป็น storage path (bucket เป็น private — ต้อง sign ตอนอ่าน)
     const { error: insertError } = await supabase.from("resources").insert({
       subject_id: subjectId,
       section_id: sectionId,
       title: title.trim(),
-      file_url: urlData.publicUrl,
+      file_url: path,
       category: category.trim() || null,
       term: null,
     });
@@ -81,10 +82,14 @@ export default function ResourceManager({
     router.refresh();
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: string, path: string) {
     if (!confirm("ลบไฟล์นี้ใช่ไหม?")) return;
     const supabase = createClient();
     await supabase.from("resources").delete().eq("id", id);
+    // ลบไฟล์จริงใน storage ด้วย กันไฟล์ค้าง
+    if (path && !path.startsWith("http")) {
+      await supabase.storage.from("resources").remove([path]);
+    }
     router.refresh();
   }
 
@@ -155,16 +160,18 @@ export default function ResourceManager({
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <a
-                    href={r.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    เปิดดู
-                  </a>
+                  {signedUrls[r.id] && (
+                    <a
+                      href={signedUrls[r.id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      เปิดดู
+                    </a>
+                  )}
                   <button
-                    onClick={() => handleDelete(r.id)}
+                    onClick={() => handleDelete(r.id, r.file_url)}
                     className="text-xs text-red-500 hover:underline"
                   >
                     ลบ
