@@ -18,7 +18,7 @@ export default function SubjectNav({
   active: TabKey;
 }) {
   const tabs: { key: TabKey; label: string; href: string }[] = [
-    { key: "scores", label: "คะแนน", href: `/assignments?subject_id=${subjectId}` },
+    { key: "scores", label: "คะแนน", href: `/grades?subject_id=${subjectId}` },
     { key: "attendance", label: "เวลาเรียน", href: `/attendance?subject_id=${subjectId}` },
     { key: "tasks", label: "ส่งงาน", href: `/tasks?subject_id=${subjectId}` },
     { key: "resources", label: "เอกสาร", href: `/resources?subject_id=${subjectId}` },

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AlertTriangle, Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
@@ -83,14 +84,21 @@ export default async function TaskSubmissionsPage({
                     <p className="text-xs text-gray-400">{student?.student_code}</p>
                   </div>
                   {isDuplicate && (
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
-                      ⚠ อาจซ้ำกับคนอื่น
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
+                      <AlertTriangle className="w-3 h-3" />
+                      อาจซ้ำกับคนอื่น
                     </span>
                   )}
                 </div>
                 {s.file_name ? (
-                  <a href={fileLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
-                    📎 {s.file_name}
+                  <a
+                    href={fileLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                  >
+                    <Paperclip className="w-3.5 h-3.5" />
+                    {s.file_name}
                   </a>
                 ) : (
                   <p className="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 rounded-lg px-3 py-2">

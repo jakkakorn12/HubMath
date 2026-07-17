@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
+import ConfirmButton from "@/components/ConfirmButton";
+import FileInput from "@/components/FileInput";
 
 type Resource = Database["public"]["Tables"]["resources"]["Row"];
 
@@ -83,7 +85,6 @@ export default function ResourceManager({
   }
 
   async function handleDelete(id: string, path: string) {
-    if (!confirm("ลบไฟล์นี้ใช่ไหม?")) return;
     const supabase = createClient();
     await supabase.from("resources").delete().eq("id", id);
     // ลบไฟล์จริงใน storage ด้วย กันไฟล์ค้าง
@@ -120,12 +121,7 @@ export default function ResourceManager({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์</label>
-            <input
-              type="file"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              required
-              className="w-full text-sm"
-            />
+            <FileInput file={file} onChange={setFile} />
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
@@ -165,17 +161,18 @@ export default function ResourceManager({
                       href={signedUrls[r.id]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
                     >
                       เปิดดู
                     </a>
                   )}
-                  <button
-                    onClick={() => handleDelete(r.id, r.file_url)}
-                    className="text-xs text-red-500 hover:underline"
+                  <ConfirmButton
+                    message="ลบไฟล์นี้ใช่ไหม?"
+                    detail={`"${r.title}" จะถูกลบถาวร นักเรียนจะไม่เห็นไฟล์นี้อีก`}
+                    onConfirm={() => handleDelete(r.id, r.file_url)}
                   >
                     ลบ
-                  </button>
+                  </ConfirmButton>
                 </div>
               </div>
             ))}

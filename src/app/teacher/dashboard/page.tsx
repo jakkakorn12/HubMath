@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +90,10 @@ export default async function TeacherDashboardPage() {
                   <p className="text-sm text-gray-400 mt-1">
                     {countBySection[section.id] ?? 0} คนสมัครแล้ว
                   </p>
-                  <p className="text-sm text-blue-600 mt-3">เข้าจัดการห้อง →</p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-1.5">
+                    เข้าจัดการห้อง
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
                 </Link>
               ))}
               {(!sectionsBySubject[subject.id] || sectionsBySubject[subject.id]!.length === 0) && (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const resultMessage: Record<string, { text: string; ok: boolean }> = {
@@ -44,8 +45,12 @@ export default function CheckinPage() {
           <p className="text-gray-500">กำลังเช็คชื่อ...</p>
         ) : (
           <>
-            <div className={`text-4xl mb-3 ${info.ok ? "text-green-500" : "text-red-500"}`}>
-              {info.ok ? "✓" : "✕"}
+            <div className="flex justify-center mb-3">
+              {info.ok ? (
+                <CheckCircle2 className="w-12 h-12 text-green-500" />
+              ) : (
+                <XCircle className="w-12 h-12 text-red-500" />
+              )}
             </div>
             <p className={`text-lg font-semibold ${info.ok ? "text-green-700" : "text-red-700"}`}>
               {info.text}

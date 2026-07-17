@@ -67,18 +67,21 @@ export default async function AssignmentsPage({
 
   // คำนวณคะแนนสรุปตาม category + term
   // has = true ถ้ามีการกรอกอย่างน้อย 1 ช่อง (แม้กรอก 0)
+  // gradedMax = คะแนนเต็มเฉพาะส่วนที่ตัดคะแนนไปแล้ว
   function calcScore(filterFn: (a: typeof assignments[0]) => boolean) {
     const list = (assignments ?? []).filter(filterFn);
     const max = list.reduce((s, a) => s + a.max_score, 0);
     let scored = 0;
+    let gradedMax = 0;
     let has = false;
     for (const a of list) {
       if (subMap.has(a.id)) {
         has = true;
         scored += subMap.get(a.id) ?? 0;
+        gradedMax += a.max_score;
       }
     }
-    return { max, scored, has };
+    return { max, scored, gradedMax, has };
   }
 
   const practice1 = calcScore((a) => a.term === 1 && a.category === "practice");
@@ -143,6 +146,30 @@ export default async function AssignmentsPage({
         {/* ตารางสรุปคะแนน */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <h2 className="text-sm font-semibold text-gray-500 mb-3">สรุปคะแนน</h2>
+
+          {(() => {
+            const totalScored = summaryItems.reduce((s, i) => s + i.scored, 0);
+            const totalGradedMax = summaryItems.reduce((s, i) => s + i.gradedMax, 0);
+            if (totalGradedMax === 0) return null;
+            const pct = Math.round((totalScored / totalGradedMax) * 100);
+            return (
+              <div className="mb-4">
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <p className="text-2xl font-bold text-gray-800">
+                    {totalScored}
+                    <span className="text-base font-medium text-gray-400">/{totalGradedMax}</span>
+                  </p>
+                  <p className="text-xs text-gray-400">จากคะแนนที่ตัดไปแล้ว ({pct}%)</p>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${pct >= 50 ? "bg-green-500" : "bg-red-500"}`}
+                    style={{ width: `${Math.min(pct, 100)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-center border-collapse">
               <thead>

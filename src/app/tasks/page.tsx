@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
 import SubmitForm from "./SubmitForm";
@@ -84,8 +85,14 @@ export default async function TasksPage({
                 {submission && (
                   <div className="bg-gray-50 rounded-lg px-3 py-2 mb-3 text-sm">
                     {submission.file_name ? (
-                      <a href={fileLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        📎 {submission.file_name}
+                      <a
+                        href={fileLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-blue-600 hover:underline"
+                      >
+                        <Paperclip className="w-3.5 h-3.5" />
+                        {submission.file_name}
                       </a>
                     ) : (
                       <p className="text-gray-600 whitespace-pre-wrap">{submission.content}</p>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import FileInput from "@/components/FileInput";
 
 function slugifyFileName(name: string) {
   const dot = name.lastIndexOf(".");
@@ -133,11 +134,7 @@ export default function SubmitForm({
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       ) : (
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="w-full text-sm"
-        />
+        <FileInput file={file} onChange={setFile} />
       )}
 
       {error && <p className="text-red-500 text-xs">{error}</p>}

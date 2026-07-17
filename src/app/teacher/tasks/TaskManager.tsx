@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
+import ConfirmButton from "@/components/ConfirmButton";
 
 type Task = Database["public"]["Tables"]["tasks"]["Row"];
 
@@ -63,7 +64,6 @@ export default function TaskManager({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("ลบงานนี้ใช่ไหม? (งานที่นักเรียนส่งไว้จะหายไปด้วย)")) return;
     const supabase = createClient();
     await supabase.from("tasks").delete().eq("id", id);
     router.refresh();
@@ -135,13 +135,17 @@ export default function TaskManager({
                 <div className="flex items-center gap-3">
                   <Link
                     href={`/teacher/tasks/${t.id}${sectionId ? `?section_id=${sectionId}` : ""}`}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
                   >
                     ดูงานที่ส่ง
                   </Link>
-                  <button onClick={() => handleDelete(t.id)} className="text-xs text-red-500 hover:underline">
+                  <ConfirmButton
+                    message="ลบงานนี้ใช่ไหม?"
+                    detail={`"${t.title}" และงานที่นักเรียนส่งไว้ทั้งหมดจะถูกลบถาวร`}
+                    onConfirm={() => handleDelete(t.id)}
+                  >
                     ลบ
-                  </button>
+                  </ConfirmButton>
                 </div>
               </div>
             ))}

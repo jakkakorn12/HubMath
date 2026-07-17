@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { BarChart3, CalendarDays, ClipboardList, FolderOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -117,34 +118,34 @@ export default async function DashboardPage() {
         {validEnrollments.map((section) => {
           const subject = section.subjects!;
           const s = statsFor(subject.id, section.id);
+          // สีใช้สื่อสถานะเท่านั้น: แดง=มีปัญหา (ขาดเรียน/งานค้าง), เขียว=เรียบร้อย, เทา=ทั่วไป
           const cards = [
             {
-              href: `/assignments?subject_id=${subject.id}`,
-              title: "คะแนน", icon: "📊",
+              href: `/grades?subject_id=${subject.id}`,
+              title: "คะแนน", icon: BarChart3,
               stat: `${s.totalScore}/100`, note: "คะแนนรวมปัจจุบัน",
-              color: "bg-blue-50 border-blue-200", statColor: "text-blue-700",
+              statColor: "text-gray-800",
             },
             {
               href: `/attendance?subject_id=${subject.id}`,
-              title: "เวลาเรียน", icon: "🗓️",
+              title: "เวลาเรียน", icon: CalendarDays,
               stat: s.totalDays > 0 ? `มา ${s.presentCount} · ขาด ${s.absentCount}` : "—",
               note: s.totalDays > 0 ? `บันทึกแล้ว ${s.totalDays} ครั้ง` : "ยังไม่มีข้อมูล",
-              color: "bg-green-50 border-green-200", statColor: "text-green-700",
+              statColor: s.absentCount > 0 ? "text-red-600" : s.totalDays > 0 ? "text-green-700" : "text-gray-400",
             },
             {
               href: `/tasks?subject_id=${subject.id}`,
-              title: "ส่งงาน", icon: "📝",
+              title: "ส่งงาน", icon: ClipboardList,
               stat: s.subjTasks === 0 ? "—" : s.pendingTasks > 0 ? `ค้าง ${s.pendingTasks} ชิ้น` : "ส่งครบแล้ว",
               note: `งานทั้งหมด ${s.subjTasks} ชิ้น`,
-              color: "bg-purple-50 border-purple-200",
-              statColor: s.pendingTasks > 0 ? "text-purple-700" : "text-green-700",
+              statColor: s.subjTasks === 0 ? "text-gray-400" : s.pendingTasks > 0 ? "text-red-600" : "text-green-700",
             },
             {
               href: `/resources?subject_id=${subject.id}`,
-              title: "เอกสารประกอบการเรียน", icon: "📁",
+              title: "เอกสารประกอบการเรียน", icon: FolderOpen,
               stat: s.resourceCount > 0 ? `${s.resourceCount} ไฟล์` : "—",
               note: s.resourceCount > 0 ? "ดาวน์โหลดได้" : "ยังไม่มีไฟล์",
-              color: "bg-orange-50 border-orange-200", statColor: "text-orange-700",
+              statColor: s.resourceCount > 0 ? "text-gray-800" : "text-gray-400",
             },
           ];
 
@@ -161,22 +162,25 @@ export default async function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {cards.map((card) => (
-                  <Link
-                    key={card.title}
-                    href={card.href}
-                    className={`rounded-xl border px-4 py-3 flex items-center justify-between gap-2 hover:shadow-md transition-shadow ${card.color}`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-xl">{card.icon}</span>
-                      <span className="font-semibold text-gray-800 text-sm truncate">{card.title}</span>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className={`text-base font-bold leading-tight ${card.statColor}`}>{card.stat}</p>
-                      <p className="text-[11px] text-gray-400">{card.note}</p>
-                    </div>
-                  </Link>
-                ))}
+                {cards.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <Link
+                      key={card.title}
+                      href={card.href}
+                      className="rounded-xl border border-gray-200 bg-white px-4 py-3 flex items-center justify-between gap-2 hover:border-gray-300 hover:shadow-md transition"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Icon className="w-5 h-5 text-gray-400 shrink-0" />
+                        <span className="font-semibold text-gray-800 text-sm truncate">{card.title}</span>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-base font-bold leading-tight ${card.statColor}`}>{card.stat}</p>
+                        <p className="text-[11px] text-gray-400">{card.note}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           );
