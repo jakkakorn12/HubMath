@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherNav from "@/components/TeacherNav";
+import GradebookTable from "./GradebookTable";
+import { SHEET_URL, SHEET_TAB_BY_SUBJECT } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -103,46 +105,29 @@ export default async function GradebookPage({
         active="scores"
       />
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
-        <h1 className="text-lg font-bold text-gray-800 mb-4">คะแนนทั้งห้อง ({rows.length} คน)</h1>
+      <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+        <h1 className="text-lg font-bold text-gray-800">คะแนนทั้งห้อง ({rows.length} คน)</h1>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-          <table className="w-full text-sm text-center border-collapse min-w-[640px]">
-            <thead>
-              <tr className="bg-gray-50 text-gray-600">
-                <th className="border border-gray-200 px-2 py-2 w-12">เลขที่</th>
-                <th className="border border-gray-200 px-3 py-2 text-left">ชื่อ</th>
-                {cols.map((c) => (
-                  <th key={c.key} className="border border-gray-200 px-2 py-2 font-medium whitespace-nowrap">{c.label}</th>
-                ))}
-                <th className="border border-gray-200 px-2 py-2 font-semibold bg-gray-100">รวม/100</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.code} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-2 py-2 text-gray-500">{r.number || "—"}</td>
-                  <td className="border border-gray-200 px-3 py-2 text-left text-gray-800">{r.name}</td>
-                  {cols.map((c) => (
-                    <td key={c.key} className="border border-gray-200 px-2 py-2 text-gray-700">
-                      {r[c.key].has ? r[c.key].sum : "—"}
-                    </td>
-                  ))}
-                  <td className="border border-gray-200 px-2 py-2 font-bold text-blue-700 bg-blue-50">
-                    {r.anyScore ? r.total : "—"}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={cols.length + 3} className="border border-gray-200 px-3 py-6 text-gray-400">
-                    ยังไม่มีนักเรียนในห้องนี้
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* กล่องหมายเหตุ: แก้คะแนนต้องไปที่ Google Sheets */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-amber-800 flex-1 min-w-[200px]">
+            หน้านี้เป็นมุมมองอย่างเดียว — การกรอก/แก้คะแนนทำที่ Google Sheets
+            {SHEET_TAB_BY_SUBJECT[section.subject_id] && (
+              <> แท็บ <span className="font-semibold">{SHEET_TAB_BY_SUBJECT[section.subject_id]}</span></>
+            )}{" "}
+            แล้วระบบจะอัปเดตให้อัตโนมัติ
+          </p>
+          <a
+            href={SHEET_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 bg-white border border-amber-300 text-amber-800 text-sm font-medium px-4 py-2 rounded-lg hover:bg-amber-100 transition-colors"
+          >
+            เปิด Google Sheets
+          </a>
         </div>
+
+        <GradebookTable rows={rows} colLabels={cols.map((c) => c.label)} />
       </main>
     </div>
   );

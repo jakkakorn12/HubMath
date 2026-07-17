@@ -6,10 +6,13 @@ export const dynamic = "force-dynamic";
 
 export default async function TaskSubmissionsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ taskId: string }>;
+  searchParams: Promise<{ section_id?: string }>;
 }) {
   const { taskId } = await params;
+  const { section_id } = await searchParams;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -46,7 +49,10 @@ export default async function TaskSubmissionsPage({
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href={`/teacher/tasks?subject_id=${subject?.id}`} className="text-blue-600 hover:underline text-sm">
+          <Link
+            href={`/teacher/tasks?subject_id=${subject?.id}${section_id ? `&section_id=${section_id}` : ""}`}
+            className="text-blue-600 hover:underline text-sm"
+          >
             ← กลับ
           </Link>
           <span className="text-gray-300">|</span>

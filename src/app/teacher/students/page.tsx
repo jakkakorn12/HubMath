@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherNav from "@/components/TeacherNav";
+import StudentsTable from "./StudentsTable";
 
 export const dynamic = "force-dynamic";
 
@@ -67,39 +68,7 @@ export default async function TeacherStudentsPage({
         <h1 className="text-lg font-bold text-gray-800 mb-1">รายชื่อนักเรียน ({rows.length} คน)</h1>
         <p className="text-sm text-gray-400 mb-4">สมัครแล้ว {registeredCount} · ยังไม่สมัคร {rows.length - registeredCount}</p>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 text-gray-600 text-left">
-                <th className="px-3 py-2 w-14 text-center">เลขที่</th>
-                <th className="px-3 py-2">ชื่อ</th>
-                <th className="px-3 py-2">เลขประจำตัว</th>
-                <th className="px-3 py-2 text-center">สถานะ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.code} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-3 py-2 text-center text-gray-500">{r.number || "—"}</td>
-                  <td className="px-3 py-2 text-gray-800">{r.name}</td>
-                  <td className="px-3 py-2 text-gray-500">{r.code}</td>
-                  <td className="px-3 py-2 text-center">
-                    {r.registered ? (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">สมัครแล้ว</span>
-                    ) : (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-500">ยังไม่สมัคร</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-gray-400">ยังไม่มีนักเรียนในห้องนี้</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <StudentsTable rows={rows} />
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherContentNav from "@/components/TeacherContentNav";
+import TeacherNav from "@/components/TeacherNav";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import TaskManager from "./TaskManager";
 
@@ -42,17 +43,32 @@ export default async function TeacherTasksPage({
   const roomName = section_id ? roomNameById[section_id] : undefined;
   const targetLabel = !subject_id ? "" : section_id ? `ห้อง ${roomName}` : `ทุกห้องในวิชา ${subjectName}`;
 
+  // มี section_id = เข้าจาก shell ของห้อง → ใช้แท็บห้อง ไม่ต้องเลือกวิชา/ห้องใหม่
+  const inRoomShell = !!(section_id && subject_id);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <TeacherContentNav subjectId={subject_id} sectionId={section_id} active="tasks" />
+      {inRoomShell ? (
+        <TeacherNav
+          sectionId={section_id!}
+          subjectId={subject_id!}
+          subjectName={subjectName}
+          roomName={roomName}
+          active="tasks"
+        />
+      ) : (
+        <TeacherContentNav subjectId={subject_id} sectionId={section_id} active="tasks" />
+      )}
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <SubjectRoomPicker
-          subjects={subjects ?? []}
-          sections={sections ?? []}
-          subjectId={subject_id}
-          sectionId={section_id}
-        />
+        {!inRoomShell && (
+          <SubjectRoomPicker
+            subjects={subjects ?? []}
+            sections={sections ?? []}
+            subjectId={subject_id}
+            sectionId={section_id}
+          />
+        )}
         <TaskManager
           subjectId={subject_id ?? null}
           sectionId={section_id ?? null}

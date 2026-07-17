@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherContentNav from "@/components/TeacherContentNav";
+import TeacherNav from "@/components/TeacherNav";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
 
@@ -37,19 +38,36 @@ export default async function TeacherAttendancePage({
     total = (todayAtt ?? []).length;
   }
 
+  // มี section_id = เข้าจาก shell ของห้อง → ใช้แท็บห้อง ไม่ต้องเลือกวิชา/ห้องใหม่
+  const inRoomShell = !!(section_id && subject_id);
+  const subjectName = (subjects ?? []).find((s) => s.id === subject_id)?.name;
+  const roomName = (sections ?? []).find((s) => s.id === section_id)?.name;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <TeacherContentNav subjectId={subject_id} sectionId={section_id} active="attendance" />
+      {inRoomShell ? (
+        <TeacherNav
+          sectionId={section_id!}
+          subjectId={subject_id!}
+          subjectName={subjectName}
+          roomName={roomName}
+          active="attendance"
+        />
+      ) : (
+        <TeacherContentNav subjectId={subject_id} sectionId={section_id} active="attendance" />
+      )}
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <SubjectRoomPicker
-          subjects={subjects ?? []}
-          sections={sections ?? []}
-          subjectId={subject_id}
-          sectionId={section_id}
-          showAllSubjects={false}
-          requireRoom
-        />
+        {!inRoomShell && (
+          <SubjectRoomPicker
+            subjects={subjects ?? []}
+            sections={sections ?? []}
+            subjectId={subject_id}
+            sectionId={section_id}
+            showAllSubjects={false}
+            requireRoom
+          />
+        )}
 
         {!section_id ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">

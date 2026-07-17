@@ -133,7 +133,10 @@ export default function TaskManager({
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Link href={`/teacher/tasks/${t.id}`} className="text-xs text-blue-600 hover:underline">
+                  <Link
+                    href={`/teacher/tasks/${t.id}${sectionId ? `?section_id=${sectionId}` : ""}`}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
                     ดูงานที่ส่ง
                   </Link>
                   <button onClick={() => handleDelete(t.id)} className="text-xs text-red-500 hover:underline">
