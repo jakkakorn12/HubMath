@@ -11,19 +11,6 @@ const categoryLabel: Record<AssignmentCategory, string> = {
   competency: "สมรรถนะ",
 };
 
-const categoryColor: Record<AssignmentCategory, string> = {
-  practice:   "bg-blue-50 border-blue-200",
-  midterm:    "bg-yellow-50 border-yellow-200",
-  final:      "bg-red-50 border-red-200",
-  competency: "bg-green-50 border-green-200",
-};
-
-const categoryTextColor: Record<AssignmentCategory, string> = {
-  practice:   "text-blue-700",
-  midterm:    "text-yellow-700",
-  final:      "text-red-700",
-  competency: "text-green-700",
-};
 
 export const dynamic = "force-dynamic";
 
@@ -106,19 +93,12 @@ export default async function AssignmentsPage({
   }
 
   const summaryItems = [
-    { label: "คะแนนเก็บ 1", ...practice1, color: "blue" },
-    { label: "กลางภาค",     ...midterm,   color: "yellow" },
-    { label: "คะแนนเก็บ 2", ...practice2, color: "blue" },
-    { label: "สมรรถนะ",     ...competency, color: "green" },
-    { label: "ปลายภาค",     ...final_,    color: "red" },
+    { label: "คะแนนเก็บ 1", ...practice1 },
+    { label: "กลางภาค",     ...midterm },
+    { label: "คะแนนเก็บ 2", ...practice2 },
+    { label: "สมรรถนะ",     ...competency },
+    { label: "ปลายภาค",     ...final_ },
   ];
-
-  const colorMap: Record<string, string> = {
-    blue:   "bg-blue-50 border-blue-200 text-blue-800",
-    yellow: "bg-yellow-50 border-yellow-200 text-yellow-800",
-    green:  "bg-green-50 border-green-200 text-green-800",
-    red:    "bg-red-50 border-red-200 text-red-800",
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -236,12 +216,12 @@ export default async function AssignmentsPage({
                     return sc != null ? s + sc : s;
                   }, 0);
                   return (
-                    <div key={cat} className={`rounded-xl border p-4 ${categoryColor[cat]}`}>
+                    <div key={cat} className="rounded-xl border border-gray-200 bg-white p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <span className={`font-semibold text-sm ${categoryTextColor[cat]}`}>
+                        <span className="font-semibold text-sm text-gray-700">
                           {categoryTitle(subject_id, term, cat, categoryLabel[cat])}
                         </span>
-                        <span className="text-sm font-bold text-gray-600">
+                        <span className="text-sm font-bold text-gray-800">
                           {catScore}/{catMax}
                         </span>
                       </div>
@@ -251,7 +231,7 @@ export default async function AssignmentsPage({
                           return (
                             <div
                               key={a.id}
-                              className="flex items-center justify-between bg-white rounded-lg px-3 py-2 shadow-sm"
+                              className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
                             >
                               <span className="text-sm text-gray-700">{a.display_name ?? a.title}</span>
                               <span className="text-sm shrink-0 whitespace-nowrap">
