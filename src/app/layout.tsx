@@ -11,6 +11,18 @@ const plexThai = IBM_Plex_Sans_Thai({
 export const metadata: Metadata = {
   title: "HubMath",
   description: "ระบบจัดการงานและห้องเรียนคณิตศาสตร์",
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "HubMath",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport = {
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
