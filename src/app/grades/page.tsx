@@ -254,12 +254,12 @@ export default async function AssignmentsPage({
                               className="flex items-center justify-between bg-white rounded-lg px-3 py-2 shadow-sm"
                             >
                               <span className="text-sm text-gray-700">{a.display_name ?? a.title}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400">/{a.max_score}</span>
-                                <span className={`text-sm font-bold w-8 text-right ${score != null ? "text-gray-800" : "text-gray-300"}`}>
+                              <span className="text-sm shrink-0 whitespace-nowrap">
+                                <span className={`font-bold ${score != null ? "text-gray-800" : "text-gray-300"}`}>
                                   {score != null ? score : "—"}
                                 </span>
-                              </div>
+                                <span className="text-gray-400">/{a.max_score}</span>
+                              </span>
                             </div>
                           );
                         })}
