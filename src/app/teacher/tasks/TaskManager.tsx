@@ -9,6 +9,14 @@ import ConfirmButton from "@/components/ConfirmButton";
 
 type Task = Database["public"]["Tables"]["tasks"]["Row"];
 
+// ISO string → ค่าสำหรับ input datetime-local
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function TaskManager({
   subjectId,
   sectionId,
@@ -30,6 +38,42 @@ export default function TaskManager({
   const [dueDate, setDueDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // แก้ไขงานที่มีอยู่ (ไม่ต้องลบ-สร้างใหม่ งานที่ส่งแล้วไม่หาย)
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  function startEdit(t: Task) {
+    setEditingId(t.id);
+    setEditTitle(t.title);
+    setEditDescription(t.description ?? "");
+    setEditDueDate(toLocalInput(t.due_date));
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingId || !editTitle.trim()) return;
+    setSavingEdit(true);
+    const supabase = createClient();
+    const { error: updateError } = await supabase
+      .from("tasks")
+      .update({
+        title: editTitle.trim(),
+        description: editDescription.trim() || null,
+        due_date: editDueDate ? new Date(editDueDate).toISOString() : null,
+      })
+      .eq("id", editingId);
+    setSavingEdit(false);
+    if (updateError) {
+      setError("แก้ไขไม่สำเร็จ: " + updateError.message);
+      return;
+    }
+    setEditingId(null);
+    router.refresh();
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -123,32 +167,79 @@ export default function TaskManager({
           <p className="text-sm text-gray-400">ยังไม่มีงานที่มอบหมาย</p>
         ) : (
           <div className="space-y-2">
-            {tasks.map((t) => (
-              <div key={t.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                <div>
-                  <p className="text-sm text-gray-700">{t.title}</p>
-                  <p className="text-xs text-gray-400">
-                    {t.section_id ? `ห้อง ${roomNameById[t.section_id] ?? "?"}` : "ทุกห้อง"} · ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
-                    {t.due_date && ` · กำหนดส่ง ${new Date(t.due_date).toLocaleDateString("th-TH")}`}
-                  </p>
+            {tasks.map((t) =>
+              editingId === t.id ? (
+                <form key={t.id} onSubmit={handleSaveEdit} className="bg-gray-50 border border-blue-200 rounded-lg px-4 py-3 space-y-2">
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    rows={2}
+                    placeholder="รายละเอียด (ไม่บังคับ)"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="datetime-local"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={savingEdit}
+                      className="bg-blue-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {savingEdit ? "..." : "บันทึก"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="text-sm text-gray-500 px-3 py-1.5 hover:underline"
+                    >
+                      ยกเลิก
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div key={t.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                  <div>
+                    <p className="text-sm text-gray-700">{t.title}</p>
+                    <p className="text-xs text-gray-400">
+                      {t.section_id ? `ห้อง ${roomNameById[t.section_id] ?? "?"}` : "ทุกห้อง"} · ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
+                      {t.due_date && ` · กำหนดส่ง ${new Date(t.due_date).toLocaleDateString("th-TH")}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/teacher/tasks/${t.id}${sectionId ? `?section_id=${sectionId}` : ""}`}
+                      className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
+                    >
+                      ดูงานที่ส่ง
+                    </Link>
+                    <button
+                      onClick={() => startEdit(t)}
+                      className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
+                    >
+                      แก้ไข
+                    </button>
+                    <ConfirmButton
+                      message="ลบงานนี้ใช่ไหม?"
+                      detail={`"${t.title}" และงานที่นักเรียนส่งไว้ทั้งหมดจะถูกลบถาวร`}
+                      onConfirm={() => handleDelete(t.id)}
+                    >
+                      ลบ
+                    </ConfirmButton>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Link
-                    href={`/teacher/tasks/${t.id}${sectionId ? `?section_id=${sectionId}` : ""}`}
-                    className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
-                  >
-                    ดูงานที่ส่ง
-                  </Link>
-                  <ConfirmButton
-                    message="ลบงานนี้ใช่ไหม?"
-                    detail={`"${t.title}" และงานที่นักเรียนส่งไว้ทั้งหมดจะถูกลบถาวร`}
-                    onConfirm={() => handleDelete(t.id)}
-                  >
-                    ลบ
-                  </ConfirmButton>
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         )}
       </div>

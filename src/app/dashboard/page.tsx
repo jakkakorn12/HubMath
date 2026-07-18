@@ -262,7 +262,9 @@ function Nav({ name }: { name: string }) {
       <div className="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-800">HubMath</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{name}</span>
+          <Link href="/account" className="text-sm text-gray-600 hover:text-gray-800 hover:underline">
+            {name}
+          </Link>
           <form action="/auth/signout" method="POST">
             <button className="text-sm text-red-500 hover:underline">ออกจากระบบ</button>
           </form>

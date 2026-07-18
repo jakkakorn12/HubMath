@@ -40,8 +40,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/forgot-password") ||
     isTeacherLogin;
-  // หน้าที่จัดการ auth เอง (สแกน QR / ตั้งรหัสผ่านใหม่)
-  const isSelfAuthPage = pathname.startsWith("/checkin") || pathname.startsWith("/reset-password");
+  // หน้าที่จัดการ auth เอง (สแกน QR / ตั้งรหัสผ่านใหม่) + หน้า public
+  const isSelfAuthPage =
+    pathname.startsWith("/checkin") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/help");
 
   // ยังไม่ล็อกอิน → ส่งไปหน้าเข้าสู่ระบบที่ตรงกับพื้นที่
   if (!user && !isAuthPage && !isSelfAuthPage) {

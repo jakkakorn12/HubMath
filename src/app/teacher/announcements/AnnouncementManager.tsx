@@ -26,6 +26,21 @@ export default function AnnouncementManager({
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editMessage, setEditMessage] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingId || !editMessage.trim()) return;
+    setSavingEdit(true);
+    const supabase = createClient();
+    await supabase.from("announcements").update({ message: editMessage.trim() }).eq("id", editingId);
+    setSavingEdit(false);
+    setEditingId(null);
+    router.refresh();
+  }
+
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
     if (!subjectId) {
@@ -94,24 +109,60 @@ export default function AnnouncementManager({
           <p className="text-sm text-gray-400">ยังไม่มีประกาศ</p>
         ) : (
           <div className="space-y-2">
-            {announcements.map((a) => (
-              <div key={a.id} className="flex items-start justify-between gap-3 bg-gray-50 rounded-lg px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{a.message}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {a.section_id ? `ห้อง ${roomNameById[a.section_id] ?? "?"}` : "ทุกห้อง"} ·{" "}
-                    {new Date(a.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
-                  </p>
+            {announcements.map((a) =>
+              editingId === a.id ? (
+                <form key={a.id} onSubmit={handleSaveEdit} className="bg-gray-50 border border-blue-200 rounded-lg px-4 py-3 space-y-2">
+                  <textarea
+                    value={editMessage}
+                    onChange={(e) => setEditMessage(e.target.value)}
+                    rows={3}
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={savingEdit}
+                      className="bg-blue-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {savingEdit ? "..." : "บันทึก"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="text-sm text-gray-500 px-3 py-1.5 hover:underline"
+                    >
+                      ยกเลิก
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div key={a.id} className="flex items-start justify-between gap-3 bg-gray-50 rounded-lg px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{a.message}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {a.section_id ? `ห้อง ${roomNameById[a.section_id] ?? "?"}` : "ทุกห้อง"} ·{" "}
+                      {new Date(a.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button
+                      onClick={() => { setEditingId(a.id); setEditMessage(a.message); }}
+                      className="text-xs text-gray-600 hover:text-gray-800 hover:underline"
+                    >
+                      แก้ไข
+                    </button>
+                    <ConfirmButton
+                      message="ลบประกาศนี้ใช่ไหม?"
+                      onConfirm={() => handleDelete(a.id)}
+                      className="text-xs text-red-600 hover:text-red-700 hover:underline"
+                    >
+                      ลบ
+                    </ConfirmButton>
+                  </div>
                 </div>
-                <ConfirmButton
-                  message="ลบประกาศนี้ใช่ไหม?"
-                  onConfirm={() => handleDelete(a.id)}
-                  className="text-xs text-red-600 hover:text-red-700 hover:underline shrink-0"
-                >
-                  ลบ
-                </ConfirmButton>
-              </div>
-            ))}
+              )
+            )}
           </div>
         )}
       </div>

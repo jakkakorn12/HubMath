@@ -97,6 +97,11 @@ function LoginForm() {
             สมัครสมาชิก
           </Link>
         </p>
+        <p className="text-center text-sm text-gray-500 mt-2">
+          <Link href="/help" className="text-gray-400 hover:text-gray-600 hover:underline">
+            วิธีใช้งาน
+          </Link>
+        </p>
       </div>
     </div>
   );
