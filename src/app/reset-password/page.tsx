@@ -17,6 +17,19 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const supabase = createClient();
 
+    // แบบใหม่ (ทำงานข้าม browser): ลิงก์ในอีเมลส่ง ?token_hash=... มาให้ verify ตรงนี้
+    const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
+    if (tokenHash) {
+      supabase.auth
+        .verifyOtp({ type: "recovery", token_hash: tokenHash })
+        .then(({ error }) => {
+          if (error) setInvalid(true);
+          else setReady(true);
+        });
+      return;
+    }
+
+    // แบบเดิม (token มากับ hash ของ URL): รอ supabase-js ประมวลผล
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setReady(true);
