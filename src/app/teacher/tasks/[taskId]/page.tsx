@@ -199,7 +199,7 @@ export default async function TaskSubmissionsPage({
               >
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div className="flex items-baseline gap-2 min-w-0">
-                    <span className="text-xs text-gray-400 shrink-0 w-16">
+                    <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap tabular-nums pt-1">
                       ห้อง {roomName} · {number || "—"}
                     </span>
                     <div className="min-w-0">
@@ -248,7 +248,7 @@ export default async function TaskSubmissionsPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
               {missing.map((m) => (
                 <div key={`${m.room}-${m.code}`} className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-400 w-16 shrink-0">
+                  <span className={`text-gray-400 shrink-0 whitespace-nowrap tabular-nums ${activeRoom === "all" ? "w-24" : "w-8 text-right"}`}>
                     {activeRoom === "all" ? `ห้อง ${m.room} · ` : ""}{m.number || "—"}
                   </span>
                   <span className="text-gray-700 truncate">{m.name}</span>
