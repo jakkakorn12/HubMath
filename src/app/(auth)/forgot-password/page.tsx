@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm">
         <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">ลืมรหัสผ่าน</h1>
         <p className="text-sm text-gray-400 text-center mb-6">
-          กรอกรหัสประจำตัวนักเรียน ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณ
+          กรอกเลขประจำตัวนักเรียน ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณ
         </p>
 
         {sent ? (
