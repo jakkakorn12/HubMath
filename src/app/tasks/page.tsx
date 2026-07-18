@@ -36,9 +36,22 @@ export default async function TasksPage({
     supabase.from("task_submissions").select("*").eq("student_id", user.id),
   ]);
 
-  const tasks = (allTasks ?? []).filter((t) => t.section_id == null || t.section_id === mySectionId);
-
   const subMap = new Map(submissions?.map((s) => [s.task_id, s]) ?? []);
+
+  // เรียง: ยังไม่ส่ง → ส่งแล้วรอตรวจ → ตรวจแล้ว / ในกลุ่มเดียวกันงานที่สั่งล่าสุดขึ้นก่อน
+  const statusRank = (taskId: string) => {
+    const sub = subMap.get(taskId);
+    if (!sub) return 0; // ยังไม่ส่ง
+    if (sub.grade == null) return 1; // รอตรวจ
+    return 2; // ตรวจแล้ว
+  };
+  const tasks = (allTasks ?? [])
+    .filter((t) => t.section_id == null || t.section_id === mySectionId)
+    .sort(
+      (a, b) =>
+        statusRank(a.id) - statusRank(b.id) ||
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
   const fileLinks = new Map<string, string>();
   for (const s of submissions ?? []) {

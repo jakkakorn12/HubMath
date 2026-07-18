@@ -233,21 +233,22 @@ export default async function TaskSubmissionsPage({
                       <p className="text-xs text-gray-400">{student?.student_code}</p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    {matches.length > 0 && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
-                        <AlertTriangle className="w-3 h-3" />
-                        คล้ายกับ {matches[0].name} ({matches[0].percent}%)
-                        {matches.length > 1 && ` +${matches.length - 1}`}
-                      </span>
-                    )}
-                    {sub.grade != null && (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
-                        ตรวจแล้ว · {sub.grade} คะแนน
-                      </span>
-                    )}
-                  </div>
+                  {sub.grade != null && (
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700 shrink-0">
+                      ตรวจแล้ว · {sub.grade} คะแนน
+                    </span>
+                  )}
                 </div>
+
+                {matches.length > 0 && (
+                  <div className="mb-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700">
+                      <span className="font-semibold">คล้ายกับ {matches.length} คน:</span>{" "}
+                      {matches.map((m) => `${m.name} (${m.percent}%)`).join(", ")}
+                    </p>
+                  </div>
+                )}
                 {sub.file_name ? (
                   <a
                     href={fileLink}
