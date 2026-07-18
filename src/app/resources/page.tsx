@@ -40,7 +40,10 @@ export default async function ResourcesPage({
   const signedUrls: Record<string, string> = {};
   const paths = visibleResources.map((r) => r.file_url).filter((p) => p && !p.startsWith("http"));
   if (paths.length) {
-    const { data: signed } = await supabase.storage.from("resources").createSignedUrls(paths, 3600);
+    // download: true → บังคับดาวน์โหลดเป็นไฟล์ แทนการเปิดดูในแท็บ
+    const { data: signed } = await supabase.storage
+      .from("resources")
+      .createSignedUrls(paths, 3600, { download: true });
     for (const s of signed ?? []) {
       const match = visibleResources.find((r) => r.file_url === s.path);
       if (match && s.signedUrl) signedUrls[match.id] = s.signedUrl;
