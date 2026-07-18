@@ -81,7 +81,7 @@ export default async function TasksPage({
               <div key={task.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="font-semibold text-gray-800">{task.title}</h2>
-                  {submission && (
+                  {submission ? (
                     submission.grade != null ? (
                       <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
                         ตรวจแล้ว
@@ -91,7 +91,27 @@ export default async function TasksPage({
                         ส่งแล้ว · รอตรวจ
                       </span>
                     )
-                  )}
+                  ) : task.due_date ? (
+                    (() => {
+                      const msLeft = new Date(task.due_date).getTime() - Date.now();
+                      const daysLeft = Math.floor(msLeft / 86400000);
+                      const label =
+                        msLeft < 0 ? "เลยกำหนดแล้ว"
+                        : daysLeft === 0 ? "ครบกำหนดวันนี้!"
+                        : daysLeft === 1 ? "เหลืออีก 1 วัน"
+                        : `เหลืออีก ${daysLeft} วัน`;
+                      const urgent = msLeft < 0 || daysLeft <= 1;
+                      return (
+                        <span
+                          className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
+                            urgent ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {label}
+                        </span>
+                      );
+                    })()
+                  ) : null}
                 </div>
                 {task.description && <p className="text-sm text-gray-500 mb-2">{task.description}</p>}
                 {task.due_date && (
