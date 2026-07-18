@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { dedupeAttendance } from "@/lib/attendance";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function TeacherDashboardPage() {
     supabase.from("student_sections").select("section_id"),
     supabase.from("roster_enrollments").select("student_code, section_id"),
     supabase.from("score_cache").select("student_code, assignment_id, score"),
-    supabase.from("attendance").select("section_id, status"),
+    supabase.from("attendance").select("section_id, status, student_code, date, method"),
   ]);
 
   const countBySection: Record<string, number> = {};
@@ -64,7 +65,11 @@ export default async function TeacherDashboardPage() {
       .filter((t): t is number => t != null);
     const avg = totals.length ? totals.reduce((a, b) => a + b, 0) / totals.length : null;
 
-    const att = (attendance ?? []).filter((a) => a.section_id === sectionId);
+    // นักเรียน+วันเดียวกันอาจมีทั้งแถว QR และครูกรอก → ของครูชนะ
+    const att = dedupeAttendance(
+      (attendance ?? []).filter((a) => a.section_id === sectionId),
+      (a) => `${a.student_code}__${a.date}`
+    );
     const present = att.filter((a) => a.status === "present" || a.status === "late").length;
     const attendanceRate = att.length ? Math.round((present / att.length) * 100) : null;
 

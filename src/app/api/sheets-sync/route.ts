@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
               status: String(payload?.status ?? ""),
               method: "teacher",
             },
-            { onConflict: "student_code,section_id,date" }
+            { onConflict: "student_code,section_id,date,method" }
           );
         if (error) throw error;
         return NextResponse.json({ ok: true });

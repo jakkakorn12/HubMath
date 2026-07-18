@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
+import { dedupeAttendance } from "@/lib/attendance";
 import type { AttendanceStatus } from "@/lib/supabase/types";
 
 const statusLabel: Record<AttendanceStatus, string> = {
@@ -48,15 +49,18 @@ export default async function AttendancePage({
   // ไม่ได้ลงทะเบียนวิชานี้ → ห้ามดู (กันแก้ subject_id ใน URL)
   if (!section) redirect("/dashboard");
 
-  const { data: records } = await supabase
+  const { data: rawRecords } = await supabase
     .from("attendance")
     .select("*")
     .eq("student_code", student?.student_code ?? "")
     .eq("section_id", section.id)
     .order("date", { ascending: false });
 
+  // วันเดียวกันอาจมีทั้งแถว QR และแถวครูกรอก → ของครูชนะ
+  const records = dedupeAttendance(rawRecords ?? [], (r) => r.date);
+
   const counts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0 };
-  for (const r of records ?? []) {
+  for (const r of records) {
     counts[r.status]++;
   }
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { BarChart3, CalendarDays, ClipboardList, FolderOpen } from "lucide-react";
+import { dedupeAttendance } from "@/lib/attendance";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,7 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     supabase.from("submissions").select("assignment_id, score").eq("student_id", user.id),
     supabase.from("score_cache").select("assignment_id, score").eq("student_code", student?.student_code ?? ""),
-    supabase.from("attendance").select("status, section_id").eq("student_code", student?.student_code ?? "").in("section_id", sectionIds),
+    supabase.from("attendance").select("status, section_id, date, method").eq("student_code", student?.student_code ?? "").in("section_id", sectionIds),
     supabase.from("task_submissions").select("task_id").eq("student_id", user.id),
     supabase.from("assignments").select("id, subject_id").in("subject_id", subjectIds),
     supabase.from("tasks").select("id, subject_id, section_id").in("subject_id", subjectIds),
@@ -96,7 +97,11 @@ export default async function DashboardPage() {
       return sc != null ? sum + sc : sum;
     }, 0);
 
-    const att = (attendance ?? []).filter((a) => a.section_id === sectionId);
+    // วันเดียวกันอาจมีทั้งแถว QR และครูกรอก → ของครูชนะ
+    const att = dedupeAttendance(
+      (attendance ?? []).filter((a) => a.section_id === sectionId),
+      (a) => a.date
+    );
     const presentCount = att.filter((a) => a.status === "present" || a.status === "late").length;
     const absentCount = att.filter((a) => a.status === "absent").length;
 

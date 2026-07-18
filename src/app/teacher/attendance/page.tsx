@@ -4,6 +4,7 @@ import TeacherContentNav from "@/components/TeacherContentNav";
 import TeacherNav from "@/components/TeacherNav";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
+import { dedupeAttendance } from "@/lib/attendance";
 
 export const dynamic = "force-dynamic";
 
@@ -28,14 +29,16 @@ export default async function TeacherAttendancePage({
   let present = 0, absent = 0, total = 0;
   if (section_id) {
     const today = new Date().toISOString().slice(0, 10);
-    const { data: todayAtt } = await supabase
+    const { data: rawTodayAtt } = await supabase
       .from("attendance")
-      .select("status")
+      .select("status, student_code, method")
       .eq("section_id", section_id)
       .eq("date", today);
-    present = (todayAtt ?? []).filter((a) => a.status === "present" || a.status === "late").length;
-    absent = (todayAtt ?? []).filter((a) => a.status === "absent").length;
-    total = (todayAtt ?? []).length;
+    // นักเรียนคนเดียวอาจมีทั้งแถว QR และครูกรอก → ของครูชนะ
+    const todayAtt = dedupeAttendance(rawTodayAtt ?? [], (a) => a.student_code);
+    present = todayAtt.filter((a) => a.status === "present" || a.status === "late").length;
+    absent = todayAtt.filter((a) => a.status === "absent").length;
+    total = todayAtt.length;
   }
 
   // มี section_id = เข้าจาก shell ของห้อง → ใช้แท็บห้อง ไม่ต้องเลือกวิชา/ห้องใหม่

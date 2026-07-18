@@ -127,7 +127,11 @@ export default async function GradebookPage({
           </a>
         </div>
 
-        <GradebookTable rows={rows} colLabels={cols.map((c) => c.label)} />
+        <GradebookTable
+          rows={rows}
+          colLabels={cols.map((c) => c.label)}
+          fileName={`คะแนน-${subject?.name ?? "วิชา"}-ห้อง${section.name}`}
+        />
       </main>
     </div>
   );
