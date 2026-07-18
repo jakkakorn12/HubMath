@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
+import { categoryTitle } from "@/lib/categoryTitles";
 import type { AssignmentCategory } from "@/lib/supabase/types";
 
 const categoryLabel: Record<AssignmentCategory, string> = {
@@ -232,7 +233,7 @@ export default async function AssignmentsPage({
                     <div key={cat} className={`rounded-xl border p-4 ${categoryColor[cat]}`}>
                       <div className="flex items-center justify-between mb-3">
                         <span className={`font-semibold text-sm ${categoryTextColor[cat]}`}>
-                          {categoryLabel[cat]}
+                          {categoryTitle(subject_id, term, cat, categoryLabel[cat])}
                         </span>
                         <span className="text-sm font-bold text-gray-600">
                           {catScore}/{catMax}
