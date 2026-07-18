@@ -10,10 +10,10 @@ export default async function TaskSubmissionsPage({
   searchParams,
 }: {
   params: Promise<{ taskId: string }>;
-  searchParams: Promise<{ section_id?: string }>;
+  searchParams: Promise<{ section_id?: string; room?: string }>;
 }) {
   const { taskId } = await params;
-  const { section_id } = await searchParams;
+  const { section_id, room } = await searchParams;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -25,37 +25,22 @@ export default async function TaskSubmissionsPage({
   const { data: task } = await supabase.from("tasks").select("*, subjects(name, id)").eq("id", taskId).single();
   if (!task) redirect("/teacher/dashboard");
 
+  const subject = task.subjects as { name: string; id: string } | null;
+
   const { data: submissions } = await supabase
     .from("task_submissions")
     .select("*, students(full_name, student_code)")
-    .eq("task_id", taskId)
-    .order("submitted_at", { ascending: false });
+    .eq("task_id", taskId);
 
-  const hashCounts: Record<string, number> = {};
-  for (const s of submissions ?? []) {
-    if (s.content_hash) hashCounts[s.content_hash] = (hashCounts[s.content_hash] ?? 0) + 1;
-  }
-
-  const fileLinks = new Map<string, string>();
-  for (const s of submissions ?? []) {
-    if (s.file_url) {
-      const { data } = await supabase.storage.from("submissions").createSignedUrl(s.file_url, 3600);
-      if (data) fileLinks.set(s.id, data.signedUrl);
-    }
-  }
-
-  const subject = task.subjects as { name: string; id: string } | null;
-
-  // ── หาว่าใครยังไม่ส่ง ──
-  // งานผูกห้อง → เทียบกับ roster ห้องนั้น / งานทั้งวิชา → เทียบทุกห้องในวิชา
+  // ── ห้องเป้าหมายของงานนี้ ──
   const { data: subjectSections } = await supabase
     .from("sections")
     .select("id, name")
-    .eq("subject_id", task.subject_id);
+    .eq("subject_id", task.subject_id)
+    .order("name");
   const targetSections = (subjectSections ?? []).filter(
     (s) => task.section_id == null || s.id === task.section_id
   );
-  const roomNameBySection = new Map(targetSections.map((s) => [s.id, s.name]));
   const targetSectionIds = targetSections.map((s) => s.id);
 
   const { data: rosterEnroll } = targetSectionIds.length
@@ -71,67 +56,165 @@ export default async function TaskSubmissionsPage({
     : { data: [] as { student_code: string; full_name: string }[] };
   const nameByCode = new Map((rosterNames ?? []).map((r) => [r.student_code, r.full_name]));
 
+  // code → {ห้อง, เลขที่} (ถ้าอยู่หลายห้องในวิชา ใช้แถวแรก)
+  const metaByCode = new Map<string, { sectionId: string; number: number }>();
+  for (const r of rosterEnroll ?? []) {
+    if (!metaByCode.has(r.student_code)) {
+      metaByCode.set(r.student_code, { sectionId: r.section_id, number: r.student_number ?? 0 });
+    }
+  }
+
   const submittedCodes = new Set(
     (submissions ?? [])
       .map((s) => (s.students as { student_code: string } | null)?.student_code)
-      .filter(Boolean)
+      .filter(Boolean) as string[]
   );
 
+  // ── ห้องที่กำลังดู: ?room=... > ห้องที่เข้ามา > ทุกห้อง ──
+  const activeRoom =
+    room && (room === "all" || targetSectionIds.includes(room))
+      ? room
+      : section_id && targetSectionIds.includes(section_id)
+        ? section_id
+        : "all";
+
+  const roomNameById = new Map(targetSections.map((s) => [s.id, s.name]));
+
+  // สรุปต่อห้อง (โชว์บน pill)
+  const statsBySection = targetSections.map((s) => {
+    const codes = (rosterEnroll ?? []).filter((r) => r.section_id === s.id).map((r) => r.student_code);
+    const submitted = codes.filter((c) => submittedCodes.has(c)).length;
+    return { id: s.id, name: s.name, submitted, total: codes.length };
+  });
+  const allSubmitted = statsBySection.reduce((s, x) => s + x.submitted, 0);
+  const allTotal = statsBySection.reduce((s, x) => s + x.total, 0);
+
+  // ── งานที่ส่ง: กรองตามห้อง + เรียงตามเลขที่ ──
+  type Submission = NonNullable<typeof submissions>[number];
+  const visibleSubs: { sub: Submission; code: string; number: number; roomName: string }[] =
+    (submissions ?? [])
+      .map((sub) => {
+        const code = (sub.students as { student_code: string } | null)?.student_code ?? "";
+        const meta = metaByCode.get(code);
+        return {
+          sub,
+          code,
+          number: meta?.number ?? 0,
+          roomName: meta ? (roomNameById.get(meta.sectionId) ?? "?") : "?",
+          sectionId: meta?.sectionId ?? "",
+        };
+      })
+      .filter((x) => activeRoom === "all" || x.sectionId === activeRoom)
+      .sort((a, b) => a.roomName.localeCompare(b.roomName, "th", { numeric: true }) || a.number - b.number);
+
+  const hashCounts: Record<string, number> = {};
+  for (const s of submissions ?? []) {
+    if (s.content_hash) hashCounts[s.content_hash] = (hashCounts[s.content_hash] ?? 0) + 1;
+  }
+
+  const fileLinks = new Map<string, string>();
+  for (const { sub } of visibleSubs) {
+    if (sub.file_url) {
+      const { data } = await supabase.storage.from("submissions").createSignedUrl(sub.file_url, 3600);
+      if (data) fileLinks.set(sub.id, data.signedUrl);
+    }
+  }
+
+  // ── ยังไม่ส่ง: กรองตามห้อง + เรียงตามเลขที่ ──
   const missing = (rosterEnroll ?? [])
     .filter((r) => !submittedCodes.has(r.student_code))
+    .filter((r) => activeRoom === "all" || r.section_id === activeRoom)
     .map((r) => ({
       code: r.student_code,
       number: r.student_number ?? 0,
       name: nameByCode.get(r.student_code) ?? "—",
-      room: roomNameBySection.get(r.section_id) ?? "?",
+      room: roomNameById.get(r.section_id) ?? "?",
     }))
     .sort((a, b) => a.room.localeCompare(b.room, "th", { numeric: true }) || a.number - b.number);
+
+  const backQuery = `?subject_id=${subject?.id}${section_id ? `&section_id=${section_id}` : ""}`;
+  const pillQuery = (roomId: string) =>
+    `?${section_id ? `section_id=${section_id}&` : ""}room=${roomId}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link
-            href={`/teacher/tasks?subject_id=${subject?.id}${section_id ? `&section_id=${section_id}` : ""}`}
-            className="text-blue-600 hover:underline text-sm"
-          >
+          <Link href={`/teacher/tasks${backQuery}`} className="text-blue-600 hover:underline text-sm">
             ← กลับ
           </Link>
           <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-800">{task.title}</span>
+          <span className="font-semibold text-gray-800 truncate">{task.title}</span>
         </div>
       </nav>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        <h1 className="text-lg font-bold text-gray-800">งานที่ส่ง ({submissions?.length ?? 0} คน)</h1>
+        {/* เลือกห้อง */}
+        <div className="flex flex-wrap gap-2">
+          {targetSections.length > 1 && (
+            <Link
+              href={pillQuery("all")}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                activeRoom === "all"
+                  ? "bg-gray-800 text-white border-gray-800"
+                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              ทุกห้อง ({allSubmitted}/{allTotal})
+            </Link>
+          )}
+          {statsBySection.map((s) => (
+            <Link
+              key={s.id}
+              href={pillQuery(s.id)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                activeRoom === s.id
+                  ? "bg-gray-800 text-white border-gray-800"
+                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              ห้อง {s.name} ({s.submitted}/{s.total})
+            </Link>
+          ))}
+        </div>
 
-        {!submissions || submissions.length === 0 ? (
+        {/* ส่งแล้ว */}
+        <h2 className="text-lg font-bold text-gray-800">
+          ส่งแล้ว <span className="text-gray-400 font-normal">({visibleSubs.length} คน)</span>
+        </h2>
+
+        {visibleSubs.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
-            ยังไม่มีนักเรียนส่งงาน
+            ยังไม่มีนักเรียนส่งงาน{activeRoom !== "all" ? "ในห้องนี้" : ""}
           </div>
         ) : (
-          submissions.map((s) => {
-            const student = s.students as { full_name: string; student_code: string } | null;
-            const isDuplicate = s.content_hash && hashCounts[s.content_hash] > 1;
-            const fileLink = fileLinks.get(s.id);
+          visibleSubs.map(({ sub, number, roomName }) => {
+            const student = sub.students as { full_name: string; student_code: string } | null;
+            const isDuplicate = sub.content_hash && hashCounts[sub.content_hash] > 1;
+            const fileLink = fileLinks.get(sub.id);
             return (
               <div
-                key={s.id}
+                key={sub.id}
                 className={`bg-white rounded-2xl shadow-sm border p-5 ${isDuplicate ? "border-red-300" : "border-gray-100"}`}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-semibold text-gray-800">{student?.full_name}</p>
-                    <p className="text-xs text-gray-400">{student?.student_code}</p>
+                <div className="flex items-start justify-between mb-2 gap-2">
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="text-xs text-gray-400 shrink-0 w-16">
+                      ห้อง {roomName} · {number || "—"}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-800 truncate">{student?.full_name}</p>
+                      <p className="text-xs text-gray-400">{student?.student_code}</p>
+                    </div>
                   </div>
                   {isDuplicate && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700 shrink-0">
                       <AlertTriangle className="w-3 h-3" />
                       อาจซ้ำกับคนอื่น
                     </span>
                   )}
                 </div>
-                {s.file_name ? (
+                {sub.file_name ? (
                   <a
                     href={fileLink}
                     target="_blank"
@@ -139,15 +222,15 @@ export default async function TaskSubmissionsPage({
                     className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
                   >
                     <Paperclip className="w-3.5 h-3.5" />
-                    {s.file_name}
+                    {sub.file_name}
                   </a>
                 ) : (
                   <p className="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 rounded-lg px-3 py-2">
-                    {s.content}
+                    {sub.content}
                   </p>
                 )}
                 <p className="text-xs text-gray-400 mt-2">
-                  ส่งเมื่อ {new Date(s.submitted_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+                  ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
                 </p>
               </div>
             );
@@ -166,7 +249,7 @@ export default async function TaskSubmissionsPage({
               {missing.map((m) => (
                 <div key={`${m.room}-${m.code}`} className="flex items-center gap-2 text-sm">
                   <span className="text-gray-400 w-16 shrink-0">
-                    ห้อง {m.room} · {m.number || "—"}
+                    {activeRoom === "all" ? `ห้อง ${m.room} · ` : ""}{m.number || "—"}
                   </span>
                   <span className="text-gray-700 truncate">{m.name}</span>
                 </div>
