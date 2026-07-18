@@ -29,6 +29,20 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    // token มากับ hash ของ URL (#access_token=...) → สร้าง session เองตรงๆ
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    if (accessToken && refreshToken) {
+      supabase.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error }) => {
+          if (error) setInvalid(true);
+          else setReady(true);
+        });
+      return;
+    }
+
     // แบบเดิม (token มากับ hash ของ URL): รอ supabase-js ประมวลผล
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
