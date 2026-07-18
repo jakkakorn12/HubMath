@@ -69,9 +69,15 @@ export default async function TasksPage({
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="font-semibold text-gray-800">{task.title}</h2>
                   {submission && (
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
-                      ส่งแล้ว
-                    </span>
+                    submission.grade != null ? (
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
+                        ตรวจแล้ว
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                        ส่งแล้ว · รอตรวจ
+                      </span>
+                    )
                   )}
                 </div>
                 {task.description && <p className="text-sm text-gray-500 mb-2">{task.description}</p>}
@@ -80,6 +86,17 @@ export default async function TasksPage({
                     กำหนดส่ง: {new Date(task.due_date).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
                     {overdue && " (เลยกำหนด)"}
                   </p>
+                )}
+
+                {submission && submission.grade != null && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-3">
+                    <p className="text-sm font-semibold text-green-800">
+                      ครูตรวจแล้ว — ได้ {submission.grade} คะแนน
+                    </p>
+                    {submission.feedback && (
+                      <p className="text-sm text-gray-600 mt-0.5">{submission.feedback}</p>
+                    )}
+                  </div>
                 )}
 
                 {submission && (

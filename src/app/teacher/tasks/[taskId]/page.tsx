@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { AlertTriangle, Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { textSimilarity, SIMILARITY_THRESHOLD } from "@/lib/similarity";
+import GradeForm from "./GradeForm";
 
 export const dynamic = "force-dynamic";
 
@@ -107,10 +109,34 @@ export default async function TaskSubmissionsPage({
       .filter((x) => activeRoom === "all" || x.sectionId === activeRoom)
       .sort((a, b) => a.roomName.localeCompare(b.roomName, "th", { numeric: true }) || a.number - b.number);
 
-  const hashCounts: Record<string, number> = {};
-  for (const s of submissions ?? []) {
-    if (s.content_hash) hashCounts[s.content_hash] = (hashCounts[s.content_hash] ?? 0) + 1;
+  // ── ตรวจคัดลอก: ไฟล์เทียบ hash (เหมือนเป๊ะ) + ข้อความเทียบความคล้าย ≥80% ──
+  // เทียบข้ามทุกห้อง (ก็อปข้ามห้องก็จับได้) พร้อมบอกว่าคล้ายกับใคร กี่ %
+  const subsAll = submissions ?? [];
+  const matchesById = new Map<string, { name: string; percent: number }[]>();
+  const addMatch = (id: string, name: string, percent: number) => {
+    if (!matchesById.has(id)) matchesById.set(id, []);
+    matchesById.get(id)!.push({ name, percent });
+  };
+  for (let i = 0; i < subsAll.length; i++) {
+    for (let j = i + 1; j < subsAll.length; j++) {
+      const a = subsAll[i];
+      const b = subsAll[j];
+      let percent = 0;
+      if (a.content_hash && a.content_hash === b.content_hash) {
+        percent = 100;
+      } else if (a.content && b.content) {
+        const sim = textSimilarity(a.content, b.content);
+        if (sim >= SIMILARITY_THRESHOLD) percent = Math.round(sim * 100);
+      }
+      if (percent > 0) {
+        const nameA = (a.students as { full_name: string } | null)?.full_name ?? "?";
+        const nameB = (b.students as { full_name: string } | null)?.full_name ?? "?";
+        addMatch(a.id, nameB, percent);
+        addMatch(b.id, nameA, percent);
+      }
+    }
   }
+  for (const list of matchesById.values()) list.sort((x, y) => y.percent - x.percent);
 
   const fileLinks = new Map<string, string>();
   for (const { sub } of visibleSubs) {
@@ -190,12 +216,12 @@ export default async function TaskSubmissionsPage({
         ) : (
           visibleSubs.map(({ sub, number, roomName }) => {
             const student = sub.students as { full_name: string; student_code: string } | null;
-            const isDuplicate = sub.content_hash && hashCounts[sub.content_hash] > 1;
+            const matches = matchesById.get(sub.id) ?? [];
             const fileLink = fileLinks.get(sub.id);
             return (
               <div
                 key={sub.id}
-                className={`bg-white rounded-2xl shadow-sm border p-5 ${isDuplicate ? "border-red-300" : "border-gray-100"}`}
+                className={`bg-white rounded-2xl shadow-sm border p-5 ${matches.length > 0 ? "border-red-300" : "border-gray-100"}`}
               >
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div className="flex items-baseline gap-2 min-w-0">
@@ -207,12 +233,20 @@ export default async function TaskSubmissionsPage({
                       <p className="text-xs text-gray-400">{student?.student_code}</p>
                     </div>
                   </div>
-                  {isDuplicate && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700 shrink-0">
-                      <AlertTriangle className="w-3 h-3" />
-                      อาจซ้ำกับคนอื่น
-                    </span>
-                  )}
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {matches.length > 0 && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
+                        <AlertTriangle className="w-3 h-3" />
+                        คล้ายกับ {matches[0].name} ({matches[0].percent}%)
+                        {matches.length > 1 && ` +${matches.length - 1}`}
+                      </span>
+                    )}
+                    {sub.grade != null && (
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
+                        ตรวจแล้ว · {sub.grade} คะแนน
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {sub.file_name ? (
                   <a
@@ -232,6 +266,11 @@ export default async function TaskSubmissionsPage({
                 <p className="text-xs text-gray-400 mt-2">
                   ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
                 </p>
+                <GradeForm
+                  submissionId={sub.id}
+                  initialGrade={sub.grade}
+                  initialFeedback={sub.feedback}
+                />
               </div>
             );
           })

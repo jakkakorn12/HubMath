@@ -159,6 +159,9 @@ export type Database = {
           file_url: string | null;
           file_name: string | null;
           content_hash: string | null;
+          grade: number | null;
+          feedback: string | null;
+          graded_at: string | null;
           submitted_at: string;
           updated_at: string;
         };
