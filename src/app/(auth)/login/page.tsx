@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +12,14 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // ลิงก์รีเซ็ตรหัสผ่านบางกรณีตกลงหน้านี้พร้อม token ใน hash → ส่งต่อไปหน้าตั้งรหัสผ่าน
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("type=recovery")) {
+      router.replace("/reset-password" + hash);
+    }
+  }, [router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
