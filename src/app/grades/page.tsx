@@ -98,6 +98,12 @@ export default async function AssignmentsPage({
     if (!grouped[a.term][a.category]) grouped[a.term][a.category] = [];
     grouped[a.term][a.category]!.push(a);
   }
+  // เรียงตามชื่อภายใน (ฝึก 1 → ฝึก 4 → สอบ) — created_at จาก seed ไม่นิ่งพอ
+  for (const term of Object.values(grouped)) {
+    for (const list of Object.values(term)) {
+      list!.sort((a, b) => a.title.localeCompare(b.title, "th", { numeric: true }));
+    }
+  }
 
   const summaryItems = [
     { label: "คะแนนเก็บ 1", ...practice1, color: "blue" },
