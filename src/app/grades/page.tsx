@@ -216,13 +216,13 @@ export default async function AssignmentsPage({
                     return sc != null ? s + sc : s;
                   }, 0);
                   return (
-                    <div key={cat} className="rounded-xl border border-gray-200 bg-white p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-semibold text-sm text-gray-700">
+                    <div key={cat} className="rounded-2xl border border-gray-100 bg-white shadow-sm p-5">
+                      <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-gray-100">
+                        <span className="font-semibold text-sm text-gray-800">
                           {categoryTitle(subject_id, term, cat, categoryLabel[cat])}
                         </span>
-                        <span className="text-sm font-bold text-gray-800">
-                          {catScore}/{catMax}
+                        <span className="text-base font-bold text-gray-800 shrink-0">
+                          {catScore}<span className="text-sm font-medium text-gray-400">/{catMax}</span>
                         </span>
                       </div>
                       <div className="space-y-2">
@@ -231,7 +231,7 @@ export default async function AssignmentsPage({
                           return (
                             <div
                               key={a.id}
-                              className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
+                              className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5"
                             >
                               <span className="text-sm text-gray-700">{a.display_name ?? a.title}</span>
                               <span className="text-sm shrink-0 whitespace-nowrap">
