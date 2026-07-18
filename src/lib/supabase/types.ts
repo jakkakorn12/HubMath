@@ -126,6 +126,17 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["qr_sessions"]["Row"], "token" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["qr_sessions"]["Insert"]>;
       };
+      announcements: {
+        Row: {
+          id: string;
+          subject_id: string;
+          section_id: string | null;
+          message: string;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["announcements"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["announcements"]["Insert"]>;
+      };
       tasks: {
         Row: {
           id: string;

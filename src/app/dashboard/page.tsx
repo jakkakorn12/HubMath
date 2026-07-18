@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { BarChart3, CalendarDays, ClipboardList, FolderOpen } from "lucide-react";
+import { BarChart3, CalendarDays, ClipboardList, FolderOpen, Megaphone } from "lucide-react";
 import { dedupeAttendance } from "@/lib/attendance";
 
 export const dynamic = "force-dynamic";
@@ -86,6 +86,12 @@ export default async function DashboardPage() {
     supabase.from("resources").select("id, subject_id, section_id").in("subject_id", subjectIds),
   ]);
 
+  const { data: announcements } = await supabase
+    .from("announcements")
+    .select("*")
+    .in("subject_id", subjectIds)
+    .order("created_at", { ascending: false });
+
   const cacheMap = new Map(scoreCache?.map((s) => [s.assignment_id, s.score]) ?? []);
   const subMap = new Map([...cacheMap, ...(submissions?.map((s) => [s.assignment_id, s.score]) ?? [])]);
   const submittedTaskIds = new Set((taskSubs ?? []).map((s) => s.task_id));
@@ -154,6 +160,10 @@ export default async function DashboardPage() {
             },
           ];
 
+          const anns = (announcements ?? [])
+            .filter((a) => a.subject_id === subject.id && (a.section_id == null || a.section_id === section.id))
+            .slice(0, 3);
+
           return (
             <section key={section.id}>
               <div className="flex items-center gap-2 mb-3">
@@ -165,6 +175,22 @@ export default async function DashboardPage() {
                   {subject.code} · ห้อง {section.name} · {currentTerm}/{section.academic_year}
                 </span>
               </div>
+
+              {anns.length > 0 && (
+                <div className="mb-3 bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                  {anns.map((a) => (
+                    <div key={a.id} className="flex items-start gap-2.5">
+                      <Megaphone className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{a.message}</p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          {new Date(a.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {cards.map((card) => {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type TabKey = "students" | "scores" | "files" | "tasks" | "attendance";
+type TabKey = "students" | "scores" | "files" | "tasks" | "attendance" | "announcements";
 
 export default function TeacherNav({
   sectionId,
@@ -21,6 +21,7 @@ export default function TeacherNav({
     { key: "files", label: "จัดการไฟล์", href: `/teacher/resources?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "tasks", label: "มอบหมายงาน", href: `/teacher/tasks?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "attendance", label: "เช็คชื่อ", href: `/teacher/attendance?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "announcements", label: "ประกาศ", href: `/teacher/announcements?subject_id=${subjectId}&section_id=${sectionId}` },
   ];
 
   return (
