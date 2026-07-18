@@ -246,7 +246,7 @@ export default async function AssignmentsPage({
                               key={a.id}
                               className="flex items-center justify-between bg-white rounded-lg px-3 py-2 shadow-sm"
                             >
-                              <span className="text-sm text-gray-700">{a.title}</span>
+                              <span className="text-sm text-gray-700">{a.display_name ?? a.title}</span>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-gray-400">/{a.max_score}</span>
                                 <span className={`text-sm font-bold w-8 text-right ${score != null ? "text-gray-800" : "text-gray-300"}`}>

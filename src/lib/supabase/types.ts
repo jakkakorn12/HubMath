@@ -55,6 +55,7 @@ export type Database = {
           id: string;
           subject_id: string;
           title: string;
+          display_name: string | null;
           description: string | null;
           due_date: string | null;
           max_score: number;
