@@ -120,6 +120,12 @@ export default async function TeacherDashboardPage() {
           >
             เช็คชื่อ
           </Link>
+          <Link
+            href="/teacher/announcements"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
+          >
+            ประกาศ
+          </Link>
         </div>
 
         {(subjects ?? []).map((subject) => (
