@@ -46,6 +46,47 @@ export default async function TaskSubmissionsPage({
 
   const subject = task.subjects as { name: string; id: string } | null;
 
+  // ── หาว่าใครยังไม่ส่ง ──
+  // งานผูกห้อง → เทียบกับ roster ห้องนั้น / งานทั้งวิชา → เทียบทุกห้องในวิชา
+  const { data: subjectSections } = await supabase
+    .from("sections")
+    .select("id, name")
+    .eq("subject_id", task.subject_id);
+  const targetSections = (subjectSections ?? []).filter(
+    (s) => task.section_id == null || s.id === task.section_id
+  );
+  const roomNameBySection = new Map(targetSections.map((s) => [s.id, s.name]));
+  const targetSectionIds = targetSections.map((s) => s.id);
+
+  const { data: rosterEnroll } = targetSectionIds.length
+    ? await supabase
+        .from("roster_enrollments")
+        .select("student_code, student_number, section_id")
+        .in("section_id", targetSectionIds)
+    : { data: [] as { student_code: string; student_number: number | null; section_id: string }[] };
+
+  const rosterCodes = [...new Set((rosterEnroll ?? []).map((r) => r.student_code))];
+  const { data: rosterNames } = rosterCodes.length
+    ? await supabase.from("student_roster").select("student_code, full_name").in("student_code", rosterCodes)
+    : { data: [] as { student_code: string; full_name: string }[] };
+  const nameByCode = new Map((rosterNames ?? []).map((r) => [r.student_code, r.full_name]));
+
+  const submittedCodes = new Set(
+    (submissions ?? [])
+      .map((s) => (s.students as { student_code: string } | null)?.student_code)
+      .filter(Boolean)
+  );
+
+  const missing = (rosterEnroll ?? [])
+    .filter((r) => !submittedCodes.has(r.student_code))
+    .map((r) => ({
+      code: r.student_code,
+      number: r.student_number ?? 0,
+      name: nameByCode.get(r.student_code) ?? "—",
+      room: roomNameBySection.get(r.section_id) ?? "?",
+    }))
+    .sort((a, b) => a.room.localeCompare(b.room, "th", { numeric: true }) || a.number - b.number);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
@@ -112,6 +153,27 @@ export default async function TaskSubmissionsPage({
             );
           })
         )}
+
+        {/* ยังไม่ส่ง */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <h2 className="font-semibold text-gray-800 mb-3">
+            ยังไม่ส่ง <span className="text-gray-400 font-normal">({missing.length} คน)</span>
+          </h2>
+          {missing.length === 0 ? (
+            <p className="text-sm text-green-700">ส่งครบทุกคนแล้ว</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+              {missing.map((m) => (
+                <div key={`${m.room}-${m.code}`} className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-400 w-16 shrink-0">
+                    ห้อง {m.room} · {m.number || "—"}
+                  </span>
+                  <span className="text-gray-700 truncate">{m.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
