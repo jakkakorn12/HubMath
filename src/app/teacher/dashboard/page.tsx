@@ -83,7 +83,7 @@ export default async function TeacherDashboardPage() {
               {(sectionsBySubject[subject.id] ?? []).map((section) => (
                 <Link
                   key={section.id}
-                  href={`/teacher/students?section_id=${section.id}`}
+                  href={`/teacher/gradebook?section_id=${section.id}`}
                   className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow block"
                 >
                   <h3 className="font-semibold text-gray-800">ห้อง {section.name}</h3>

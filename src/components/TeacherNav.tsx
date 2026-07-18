@@ -16,8 +16,8 @@ export default function TeacherNav({
   active: TabKey;
 }) {
   const tabs: { key: TabKey; label: string; href: string }[] = [
-    { key: "students", label: "รายชื่อนักเรียน", href: `/teacher/students?section_id=${sectionId}` },
     { key: "scores", label: "คะแนน", href: `/teacher/gradebook?section_id=${sectionId}` },
+    { key: "students", label: "รายชื่อนักเรียน", href: `/teacher/students?section_id=${sectionId}` },
     { key: "files", label: "จัดการไฟล์", href: `/teacher/resources?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "tasks", label: "มอบหมายงาน", href: `/teacher/tasks?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "attendance", label: "เช็คชื่อ", href: `/teacher/attendance?subject_id=${subjectId}&section_id=${sectionId}` },
