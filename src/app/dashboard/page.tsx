@@ -82,7 +82,7 @@ export default async function DashboardPage() {
     supabase.from("attendance").select("status, section_id, date, method").eq("student_code", student?.student_code ?? "").in("section_id", sectionIds),
     supabase.from("task_submissions").select("task_id").eq("student_id", user.id),
     supabase.from("assignments").select("id, subject_id").in("subject_id", subjectIds),
-    supabase.from("tasks").select("id, subject_id, section_id").in("subject_id", subjectIds),
+    supabase.from("tasks").select("id, subject_id, section_id, due_date").in("subject_id", subjectIds),
     supabase.from("resources").select("id, subject_id, section_id").in("subject_id", subjectIds),
   ]);
 
@@ -112,11 +112,31 @@ export default async function DashboardPage() {
     const absentCount = att.filter((a) => a.status === "absent").length;
 
     const subjTasks = (tasks ?? []).filter((t) => t.subject_id === subjectId && (t.section_id == null || t.section_id === sectionId));
-    const pendingTasks = subjTasks.filter((t) => !submittedTaskIds.has(t.id)).length;
+    const pendingList = subjTasks.filter((t) => !submittedTaskIds.has(t.id));
+    const pendingTasks = pendingList.length;
+
+    // งานค้างที่มีกำหนดส่ง: หาอันเร่งด่วนสุด
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    let overdueCount = 0;
+    let nearestDueDays: number | null = null; // 0=วันนี้ 1=พรุ่งนี้ ...
+    for (const t of pendingList) {
+      if (!t.due_date) continue;
+      const diff = new Date(t.due_date).getTime() - now;
+      if (diff < 0) {
+        overdueCount++;
+      } else {
+        const days = Math.floor(diff / dayMs);
+        if (nearestDueDays == null || days < nearestDueDays) nearestDueDays = days;
+      }
+    }
 
     const resourceCount = (resources ?? []).filter((r) => r.subject_id === subjectId && (r.section_id == null || r.section_id === sectionId)).length;
 
-    return { totalScore, presentCount, absentCount, totalDays: att.length, subjTasks: subjTasks.length, pendingTasks, resourceCount };
+    return {
+      totalScore, presentCount, absentCount, totalDays: att.length,
+      subjTasks: subjTasks.length, pendingTasks, overdueCount, nearestDueDays, resourceCount,
+    };
   }
 
   return (
@@ -147,9 +167,22 @@ export default async function DashboardPage() {
             {
               href: `/tasks?subject_id=${subject.id}`,
               title: "ส่งงาน", icon: ClipboardList,
-              stat: s.subjTasks === 0 ? "—" : s.pendingTasks > 0 ? `ค้าง ${s.pendingTasks} ชิ้น` : "ส่งครบแล้ว",
-              note: `งานทั้งหมด ${s.subjTasks} ชิ้น`,
+              stat:
+                s.subjTasks === 0 ? "—"
+                : s.overdueCount > 0 ? `เลยกำหนด ${s.overdueCount} ชิ้น!`
+                : s.pendingTasks > 0 ? `ค้าง ${s.pendingTasks} ชิ้น`
+                : "ส่งครบแล้ว",
+              note:
+                s.pendingTasks > 0 && s.nearestDueDays != null
+                  ? s.nearestDueDays === 0 ? "ครบกำหนดวันนี้!"
+                  : s.nearestDueDays === 1 ? "ครบกำหนดพรุ่งนี้"
+                  : `ครบกำหนดในอีก ${s.nearestDueDays} วัน`
+                  : `งานทั้งหมด ${s.subjTasks} ชิ้น`,
               statColor: s.subjTasks === 0 ? "text-gray-400" : s.pendingTasks > 0 ? "text-red-600" : "text-green-700",
+              noteColor:
+                s.pendingTasks > 0 && (s.overdueCount > 0 || (s.nearestDueDays != null && s.nearestDueDays <= 1))
+                  ? "text-red-500 font-medium"
+                  : "text-gray-400",
             },
             {
               href: `/resources?subject_id=${subject.id}`,
@@ -207,7 +240,9 @@ export default async function DashboardPage() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className={`text-base font-bold leading-tight ${card.statColor}`}>{card.stat}</p>
-                        <p className="text-[11px] text-gray-400">{card.note}</p>
+                        <p className={`text-[11px] ${("noteColor" in card && card.noteColor) || "text-gray-400"}`}>
+                          {card.note}
+                        </p>
                       </div>
                     </Link>
                   );
