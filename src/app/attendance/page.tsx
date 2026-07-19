@@ -9,6 +9,7 @@ const statusLabel: Record<AttendanceStatus, string> = {
   late: "สาย",
   absent: "ขาด",
   leave: "ลา",
+  truant: "หนีเรียน",
 };
 
 const statusColor: Record<AttendanceStatus, string> = {
@@ -16,6 +17,7 @@ const statusColor: Record<AttendanceStatus, string> = {
   late: "bg-yellow-100 text-yellow-700",
   absent: "bg-red-100 text-red-700",
   leave: "bg-blue-100 text-blue-700",
+  truant: "bg-red-200 text-red-800",
 };
 
 export const dynamic = "force-dynamic";
@@ -59,7 +61,7 @@ export default async function AttendancePage({
   // วันเดียวกันอาจมีทั้งแถว QR และแถวครูกรอก → ของครูชนะ
   const records = dedupeAttendance(rawRecords ?? [], (r) => r.date);
 
-  const counts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0 };
+  const counts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0, truant: 0 };
   for (const r of records) {
     counts[r.status]++;
   }
@@ -71,7 +73,7 @@ export default async function AttendancePage({
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
         <h1 className="text-lg font-bold text-gray-800">การเข้าเรียน</h1>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-2">
           {(Object.keys(statusLabel) as AttendanceStatus[]).map((s) => (
             <div key={s} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
               <p className={`text-2xl font-bold ${statusColor[s].split(" ")[1]}`}>{counts[s]}</p>

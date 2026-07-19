@@ -1,6 +1,6 @@
 export type SubjectType = "basic" | "advanced" | "elective";
 export type AssignmentCategory = "practice" | "midterm" | "final" | "competency";
-export type AttendanceStatus = "present" | "late" | "absent" | "leave";
+export type AttendanceStatus = "present" | "late" | "absent" | "leave" | "truant";
 export type AttendanceMethod = "teacher" | "qr";
 
 export type Database = {

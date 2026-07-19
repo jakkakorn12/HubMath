@@ -86,6 +86,18 @@ export async function POST(req: NextRequest) {
         if (error) throw error;
         return NextResponse.json({ ok: true });
       }
+      case "delete_attendance": {
+        // ลบเฉพาะแถวที่ครูกรอก (ไม่แตะแถว QR ของนักเรียน)
+        const { error } = await supabase
+          .from("attendance")
+          .delete()
+          .eq("student_code", String(payload?.student_code ?? ""))
+          .eq("section_id", String(payload?.section_id ?? ""))
+          .eq("date", String(payload?.date ?? ""))
+          .eq("method", "teacher");
+        if (error) throw error;
+        return NextResponse.json({ ok: true });
+      }
       default:
         return NextResponse.json({ error: "unknown action" }, { status: 400 });
     }

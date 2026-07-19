@@ -109,7 +109,7 @@ export default async function DashboardPage() {
       (a) => a.date
     );
     const presentCount = att.filter((a) => a.status === "present" || a.status === "late").length;
-    const absentCount = att.filter((a) => a.status === "absent").length;
+    const absentCount = att.filter((a) => a.status === "absent" || a.status === "truant").length;
 
     const subjTasks = (tasks ?? []).filter((t) => t.subject_id === subjectId && (t.section_id == null || t.section_id === sectionId));
     const pendingList = subjTasks.filter((t) => !submittedTaskIds.has(t.id));
