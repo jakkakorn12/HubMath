@@ -174,11 +174,11 @@ export default async function AssignmentsPage({
                 <tr className="text-xs text-ink-faint">
                   {summaryItems.map((item) => (
                     <td key={item.label} className="border-[0.5px] border-border px-3 py-1">
-                      /{item.max}
+                      {item.max}
                     </td>
                   ))}
                   <td className="border-[0.5px] border-border px-3 py-1 bg-surface">
-                    /{summaryItems.reduce((s, i) => s + i.max, 0)}
+                    {summaryItems.reduce((s, i) => s + i.max, 0)}
                   </td>
                 </tr>
               </thead>
@@ -234,7 +234,7 @@ export default async function AssignmentsPage({
                           return (
                             <div
                               key={a.id}
-                              className="flex items-center justify-between bg-surface border-[0.5px] border-border rounded-control px-3 py-2.5"
+                              className="flex items-center justify-between bg-white shadow-sm rounded-control px-3 py-2.5"
                             >
                               <span className="text-sm text-ink">{a.display_name ?? a.title}</span>
                               <span className="text-sm shrink-0 whitespace-nowrap">

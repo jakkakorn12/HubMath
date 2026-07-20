@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Noto_Serif_Thai } from "next/font/google";
+import { Noto_Sans_Thai_Looped } from "next/font/google";
 import "./globals.css";
 
-// ฟอนต์เดียวทั้งเว็บ (หัวข้อ+เนื้อหา) — โหลดครบทุกน้ำหนักที่ใช้จริงในเว็บ
-const notoSerifThai = Noto_Serif_Thai({
+// ฟอนต์เดียวทั้งเว็บ (หัวข้อ+เนื้อหา) — ทรงกลม นุ่มกว่าฟอนต์ราชการ
+const notoSansThaiLooped = Noto_Sans_Thai_Looped({
   subsets: ["thai", "latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-noto-serif-thai",
+  variable: "--font-thai",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={notoSerifThai.variable}>
+    <html lang="th" className={notoSansThaiLooped.variable}>
       <body className="font-sans bg-surface text-ink min-h-screen antialiased">{children}</body>
     </html>
   );
