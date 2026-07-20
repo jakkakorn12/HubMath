@@ -97,8 +97,8 @@ export default async function TeacherDashboardPage() {
     <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
-        <div className="flex divide-x-[0.5px] divide-border border-y-[0.5px] border-border overflow-x-auto">
+      <div className="border-b-[0.5px] border-border">
+        <div className="max-w-5xl mx-auto flex divide-x-[0.5px] divide-border overflow-x-auto px-4">
           {[
             { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
             { href: "/teacher/tasks", label: "มอบหมายงาน", icon: ClipboardList },
@@ -115,6 +115,9 @@ export default async function TeacherDashboardPage() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
 
         {(subjects ?? []).map((subject) => (
           <div key={subject.id}>
