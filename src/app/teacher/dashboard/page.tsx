@@ -236,12 +236,12 @@ export default async function TeacherDashboardPage() {
                         </span>
                       </p>
                     </div>
-                    <div className="flex divide-x-[0.5px] divide-border border-t-[0.5px] border-border -mx-5 px-5 pt-3">
+                    <div className="flex gap-2 pt-3 border-t-[0.5px] border-border">
                       {group.items.map((s) => (
                         <Link
                           key={s.id}
                           href={`/teacher/gradebook?section_id=${s.id}`}
-                          className="flex-1 text-center text-sm font-medium text-navy-600 hover:text-navy-900 transition-colors py-1"
+                          className="text-xs font-medium text-navy-600 border-[0.5px] border-navy-600/40 rounded-full px-3 py-1 hover:bg-navy-100 transition-colors"
                         >
                           ห้อง {s.name}
                         </Link>
