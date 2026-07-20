@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 
   if (subjectIds.length === 0) {
     return (
-      <div className="min-h-screen bg-surface">
+      <div className="min-h-screen bg-white">
         <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
         <main className="max-w-5xl mx-auto px-4 py-8">
           <h2 className="text-xl font-semibold text-ink mb-6">วิชาที่เรียน</h2>
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-white">
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
