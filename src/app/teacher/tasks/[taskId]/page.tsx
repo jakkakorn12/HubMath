@@ -3,6 +3,7 @@ import { AlertTriangle, Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { textSimilarity, SIMILARITY_THRESHOLD } from "@/lib/similarity";
+import { imageHammingDistance, IMAGE_HASH_THRESHOLD } from "@/lib/imageHash";
 import GradeForm from "./GradeForm";
 
 export const dynamic = "force-dynamic";
@@ -123,7 +124,11 @@ export default async function TaskSubmissionsPage({
       const b = subsAll[j];
       let percent = 0;
       if (a.content_hash && a.content_hash === b.content_hash) {
-        percent = 100;
+        percent = 100; // ไฟล์/ข้อความเหมือนกันทุกไบต์
+      } else if (a.image_hash && b.image_hash) {
+        // รูปภาพ: เทียบลายนิ้วมือภาพ (ทนต่อการบีบอัด/ส่งต่อ)
+        const dist = imageHammingDistance(a.image_hash, b.image_hash);
+        if (dist <= IMAGE_HASH_THRESHOLD) percent = Math.round((1 - dist / 64) * 100);
       } else if (a.content && b.content) {
         const sim = textSimilarity(a.content, b.content);
         if (sim >= SIMILARITY_THRESHOLD) percent = Math.round(sim * 100);

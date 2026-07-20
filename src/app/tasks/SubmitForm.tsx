@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FileInput from "@/components/FileInput";
+import { imageDHash } from "@/lib/imageHash";
 
 function slugifyFileName(name: string) {
   const dot = name.lastIndexOf(".");
@@ -50,6 +51,7 @@ export default function SubmitForm({
     let file_url: string | null = null;
     let file_name: string | null = null;
     let content_hash: string | null = null;
+    let image_hash: string | null = null;
     let contentValue: string | null = null;
 
     if (mode === "file") {
@@ -60,6 +62,7 @@ export default function SubmitForm({
       }
       const buffer = await file.arrayBuffer();
       content_hash = await sha256Hex(buffer);
+      image_hash = await imageDHash(file); // ลายนิ้วมือภาพ (null ถ้าไม่ใช่รูป)
       const path = `${studentId}/${taskId}/${slugifyFileName(file.name)}`;
       const { error: uploadError } = await supabase.storage
         .from("submissions")
@@ -90,6 +93,7 @@ export default function SubmitForm({
         file_url,
         file_name,
         content_hash,
+        image_hash,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "task_id,student_id" }
