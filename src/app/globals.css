@@ -2,7 +2,8 @@
 
 @theme {
   /* Fonts — set via next/font/google variables in layout.tsx */
-  --font-sans: var(--font-plex-thai), ui-sans-serif, system-ui, sans-serif;
+  /* ใช้ Noto Serif Thai ฟอนต์เดียวทั้งเว็บ (หัวข้อ+เนื้อหา) ตามที่ขอ ไม่ผสมสองฟอนต์ */
+  --font-sans: var(--font-noto-serif-thai), ui-serif, Georgia, serif;
   --font-serif: var(--font-noto-serif-thai), ui-serif, Georgia, serif;
 
   /* Accent — navy (use sparingly: logo, active tab, hero numbers, progress, primary buttons) */

@@ -153,7 +153,7 @@ export default async function AssignmentsPage({
                 </div>
                 <div className="h-2 bg-surface rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${pct >= 50 ? "bg-success" : "bg-danger"}`}
+                    className="h-full rounded-full bg-navy-900"
                     style={{ width: `${Math.min(pct, 100)}%` }}
                   />
                 </div>
@@ -189,7 +189,7 @@ export default async function AssignmentsPage({
                       {item.has ? item.scored : "—"}
                     </td>
                   ))}
-                  <td className="border-[0.5px] border-border px-3 py-3 font-bold text-navy-900 text-base bg-navy-100">
+                  <td className="border-[0.5px] border-border px-3 py-3 font-bold text-ink text-base bg-surface">
                     {summaryItems.some((i) => i.has)
                       ? summaryItems.reduce((s, i) => s + i.scored, 0)
                       : "—"}

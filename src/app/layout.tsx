@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Thai, Noto_Serif_Thai } from "next/font/google";
+import { Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 
-const plexThai = IBM_Plex_Sans_Thai({
-  subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-plex-thai",
-});
-
+// ฟอนต์เดียวทั้งเว็บ (หัวข้อ+เนื้อหา) — โหลดครบทุกน้ำหนักที่ใช้จริงในเว็บ
 const notoSerifThai = Noto_Serif_Thai({
   subsets: ["thai", "latin"],
-  weight: ["500", "600"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-noto-serif-thai",
 });
@@ -35,7 +29,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${plexThai.variable} ${notoSerifThai.variable}`}>
+    <html lang="th" className={notoSerifThai.variable}>
       <body className="font-sans bg-surface text-ink min-h-screen antialiased">{children}</body>
     </html>
   );

@@ -82,7 +82,7 @@ export default async function ResourcesPage({
                     href={signedUrls[r.id] ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-surface hover:bg-surface rounded-control px-4 py-3 transition-colors"
+                    className="flex items-center justify-between bg-white shadow-sm hover:shadow-md rounded-control px-4 py-3 transition-shadow"
                   >
                     <span className="text-sm text-ink">{r.title}</span>
                     <span className="text-xs text-navy-600 font-medium">ดาวน์โหลด →</span>
