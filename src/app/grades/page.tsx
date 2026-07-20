@@ -111,24 +111,22 @@ export default async function AssignmentsPage({
 
         {/* ข้อมูลนักเรียน */}
         <div className="bg-white rounded-card border-[0.5px] border-border p-5">
-          <div className="grid grid-cols-2 gap-y-2 text-sm">
-            <div>
-              <span className="text-ink-faint">ชื่อ</span>
-              <p className="font-semibold text-ink mt-0.5">{student?.full_name ?? "—"}</p>
+          <div className="grid grid-cols-2 gap-y-2.5 text-sm">
+            <div className="flex items-baseline gap-2">
+              <span className="text-ink-faint shrink-0">ชื่อ</span>
+              <span className="font-semibold text-ink">{student?.full_name ?? "—"}</span>
             </div>
-            <div>
-              <span className="text-ink-faint">เลขที่</span>
-              <p className="font-semibold text-ink mt-0.5">{student?.student_number ?? "—"}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-ink-faint shrink-0">เลขที่</span>
+              <span className="font-semibold text-ink">{student?.student_number ?? "—"}</span>
             </div>
-            <div>
-              <span className="text-ink-faint">ชั้น</span>
-              <p className="font-semibold text-ink mt-0.5">
-                {student?.class_level ?? "—"} ห้อง {roomName}
-              </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-ink-faint shrink-0">ชั้น</span>
+              <span className="font-semibold text-ink">{student?.class_level ?? "—"}/{roomName}</span>
             </div>
-            <div>
-              <span className="text-ink-faint">เลขประจำตัว</span>
-              <p className="font-semibold text-ink mt-0.5">{student?.student_code ?? "—"}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-ink-faint shrink-0">เลขประจำตัว</span>
+              <span className="font-semibold text-ink">{student?.student_code ?? "—"}</span>
             </div>
           </div>
         </div>
@@ -169,7 +167,7 @@ export default async function AssignmentsPage({
                       {item.label}
                     </th>
                   ))}
-                  <th className="border-[0.5px] border-border px-3 py-2 font-semibold text-ink bg-surface">รวม</th>
+                  <th className="border-[0.5px] border-border px-3 py-2 font-semibold text-ink">รวม</th>
                 </tr>
                 <tr className="text-xs text-ink-faint">
                   {summaryItems.map((item) => (
@@ -177,7 +175,7 @@ export default async function AssignmentsPage({
                       {item.max}
                     </td>
                   ))}
-                  <td className="border-[0.5px] border-border px-3 py-1 bg-surface">
+                  <td className="border-[0.5px] border-border px-3 py-1">
                     {summaryItems.reduce((s, i) => s + i.max, 0)}
                   </td>
                 </tr>
@@ -189,7 +187,7 @@ export default async function AssignmentsPage({
                       {item.has ? item.scored : "—"}
                     </td>
                   ))}
-                  <td className="border-[0.5px] border-border px-3 py-3 font-bold text-ink text-base bg-surface">
+                  <td className="border-[0.5px] border-border px-3 py-3 font-bold text-ink text-base">
                     {summaryItems.some((i) => i.has)
                       ? summaryItems.reduce((s, i) => s + i.scored, 0)
                       : "—"}

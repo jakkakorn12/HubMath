@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Thai_Looped } from "next/font/google";
+import { IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
 
-// ฟอนต์เดียวทั้งเว็บ (หัวข้อ+เนื้อหา) — ทรงกลม นุ่มกว่าฟอนต์ราชการ
-const notoSansThaiLooped = Noto_Sans_Thai_Looped({
+// ฟอนต์เดียวทั้งเว็บ (หัวข้อ+เนื้อหา ทั้งฝั่งครูและนักเรียน)
+const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -29,7 +29,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={notoSansThaiLooped.variable}>
+    <html lang="th" className={plexThai.variable}>
       <body className="font-sans bg-surface text-ink min-h-screen antialiased">{children}</body>
     </html>
   );
