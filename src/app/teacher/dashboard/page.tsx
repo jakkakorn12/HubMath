@@ -93,6 +93,40 @@ export default async function TeacherDashboardPage() {
     basic: "พื้นฐาน", advanced: "เพิ่มเติม", elective: "เลือก",
   };
 
+  // ห้องที่เรียนพร้อมกันจริง (นักเรียนมาจากคนละห้อง แต่เรียนคาบเดียวกัน) — โชว์รวมกันบน dashboard เท่านั้น
+  // ข้อมูลจริง (เช็คชื่อ/คะแนน/roster) ยังแยกตาม section เดิมทุกอย่าง แค่การ์ดสรุปโชว์รวม
+  const COMBINED_ROOMS: Record<string, string[][]> = {
+    ค32201: [["4", "5"]],
+  };
+
+  function groupSections(subjectCode: string, list: NonNullable<typeof sections>) {
+    const pairs = COMBINED_ROOMS[subjectCode] ?? [];
+    const used = new Set<string>();
+    const groups: { combined: boolean; items: NonNullable<typeof sections> }[] = [];
+    for (const pair of pairs) {
+      const matched = list.filter((s) => pair.includes(s.name));
+      if (matched.length >= 2) {
+        groups.push({ combined: true, items: matched });
+        matched.forEach((s) => used.add(s.id));
+      }
+    }
+    for (const s of list) {
+      if (!used.has(s.id)) groups.push({ combined: false, items: [s] });
+    }
+    return groups;
+  }
+
+  function statsForSections(sectionIds: string[]) {
+    const codes = sectionIds.flatMap((id) => rosterBySection[id] ?? []);
+    const subjId = subjectBySection.get(sectionIds[0]);
+    const totals = codes
+      .map((c) => totalByStudentSubject.get(`${c}__${subjId}`))
+      .filter((t): t is number => t != null);
+    const avg = totals.length ? totals.reduce((a, b) => a + b, 0) / totals.length : null;
+    const registered = sectionIds.reduce((sum, id) => sum + (countBySection[id] ?? 0), 0);
+    return { rosterCount: codes.length, avg, registered };
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
@@ -127,34 +161,70 @@ export default async function TeacherDashboardPage() {
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(sectionsBySubject[subject.id] ?? []).map((section) => {
-                const stats = sectionStats(section.id);
+              {groupSections(subject.code, sectionsBySubject[subject.id] ?? []).map((group) => {
+                if (!group.combined) {
+                  const section = group.items[0];
+                  const stats = sectionStats(section.id);
+                  return (
+                    <Link
+                      key={section.id}
+                      href={`/teacher/gradebook?section_id=${section.id}`}
+                      className="bg-white rounded-card p-5 border-[0.5px] border-border hover:shadow-sm hover:-translate-y-px transition-all block"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <h3 className="font-semibold text-ink">ห้อง {section.name}</h3>
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                            !stats.checkedToday
+                              ? "bg-surface text-ink-faint"
+                              : stats.todayRate === 100
+                              ? "bg-success-soft text-success-strong"
+                              : "bg-warning-soft text-warning-strong"
+                          }`}
+                        >
+                          {!stats.checkedToday ? "ยังไม่เช็คชื่อ" : `มาเรียน ${stats.todayRate}%`}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 text-sm">
+                        <p className="flex items-center gap-1.5 text-ink-faint">
+                          <Users className="w-3.5 h-3.5" />
+                          สมัครแล้ว
+                          <span className="font-medium text-ink">
+                            {countBySection[section.id] ?? 0}/{stats.rosterCount}
+                          </span>
+                          คน
+                        </p>
+                        <p className="flex items-center gap-1.5 text-ink-faint">
+                          <BarChart3 className="w-3.5 h-3.5" />
+                          คะแนนเฉลี่ย
+                          <span className="font-medium text-ink">
+                            {stats.avg != null ? stats.avg.toFixed(1) : "—"}
+                          </span>
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                }
+
+                const ids = group.items.map((s) => s.id);
+                const combined = statsForSections(ids);
                 return (
-                  <Link
-                    key={section.id}
-                    href={`/teacher/gradebook?section_id=${section.id}`}
-                    className="bg-white rounded-card p-5 border-[0.5px] border-border hover:shadow-sm hover:-translate-y-px transition-all block"
+                  <div
+                    key={ids.join("-")}
+                    className="bg-white rounded-card p-5 border-[0.5px] border-border"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <h3 className="font-semibold text-ink">ห้อง {section.name}</h3>
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                          !stats.checkedToday
-                            ? "bg-surface text-ink-faint"
-                            : stats.todayRate === 100
-                            ? "bg-success-soft text-success-strong"
-                            : "bg-warning-soft text-warning-strong"
-                        }`}
-                      >
-                        {!stats.checkedToday ? "ยังไม่เช็คชื่อ" : `มาเรียน ${stats.todayRate}%`}
-                      </span>
+                    <div className="mb-3">
+                      <h3 className="font-semibold text-ink">
+                        ห้อง {group.items.map((s) => s.name).join("-")}
+                      </h3>
+                      <p className="text-xs text-ink-faint mt-0.5">เรียนพร้อมกัน</p>
                     </div>
-                    <div className="space-y-1.5 text-sm">
+                    <div className="space-y-1.5 text-sm mb-4">
                       <p className="flex items-center gap-1.5 text-ink-faint">
                         <Users className="w-3.5 h-3.5" />
                         สมัครแล้ว
                         <span className="font-medium text-ink">
-                          {countBySection[section.id] ?? 0}/{stats.rosterCount}
+                          {combined.registered}/{combined.rosterCount}
                         </span>
                         คน
                       </p>
@@ -162,11 +232,22 @@ export default async function TeacherDashboardPage() {
                         <BarChart3 className="w-3.5 h-3.5" />
                         คะแนนเฉลี่ย
                         <span className="font-medium text-ink">
-                          {stats.avg != null ? stats.avg.toFixed(1) : "—"}
+                          {combined.avg != null ? combined.avg.toFixed(1) : "—"}
                         </span>
                       </p>
                     </div>
-                  </Link>
+                    <div className="flex divide-x-[0.5px] divide-border border-t-[0.5px] border-border -mx-5 px-5 pt-3">
+                      {group.items.map((s) => (
+                        <Link
+                          key={s.id}
+                          href={`/teacher/gradebook?section_id=${s.id}`}
+                          className="flex-1 text-center text-sm font-medium text-navy-600 hover:text-navy-900 transition-colors py-1"
+                        >
+                          ห้อง {s.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 );
               })}
               {(!sectionsBySubject[subject.id] || sectionsBySubject[subject.id]!.length === 0) && (
