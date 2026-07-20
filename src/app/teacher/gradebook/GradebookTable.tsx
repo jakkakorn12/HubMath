@@ -68,50 +68,50 @@ export default function GradebookTable({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="ค้นหาชื่อ หรือเลขประจำตัว..."
-          className="w-full sm:w-72 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-72 border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
         />
         <button
           type="button"
           onClick={exportCsv}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink border-[0.5px] border-border rounded-control px-3 py-2 bg-white hover:bg-surface transition-colors"
         >
           <Download className="w-4 h-4" />
           ดาวน์โหลด Excel (CSV)
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-auto max-h-[70vh]">
+      <div className="bg-white rounded-card border-[0.5px] border-border overflow-auto max-h-[70vh]">
         <table className="w-full text-sm text-center border-separate border-spacing-0 min-w-[640px]">
           <thead>
-            <tr className="text-gray-600">
-              <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-2 py-2 w-12">เลขที่</th>
-              <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-3 py-2 text-left">ชื่อ</th>
+            <tr className="text-ink-muted">
+              <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 w-12">เลขที่</th>
+              <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-3 py-2 text-left">ชื่อ</th>
               {colLabels.map((label) => (
-                <th key={label} className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-2 py-2 font-medium whitespace-nowrap">
+                <th key={label} className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-medium whitespace-nowrap">
                   {label}
                 </th>
               ))}
-              <th className="sticky top-0 z-10 bg-gray-100 border-b border-gray-200 px-2 py-2 font-semibold">รวม/100</th>
+              <th className="sticky top-0 z-10 bg-navy-100 border-b-[0.5px] border-border px-2 py-2 font-semibold text-navy-900">รวม/100</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((r) => (
-              <tr key={r.code}>
-                <td className="border-b border-gray-100 px-2 py-2 text-gray-500">{r.number || "—"}</td>
-                <td className="border-b border-gray-100 px-3 py-2 text-left text-gray-800">{r.name}</td>
+              <tr key={r.code} className="hover:bg-surface transition-colors">
+                <td className="border-b-[0.5px] border-border px-2 py-2 text-ink-faint">{r.number || "—"}</td>
+                <td className="border-b-[0.5px] border-border px-3 py-2 text-left text-ink">{r.name}</td>
                 {COL_KEYS.map((key) => (
-                  <td key={key} className="border-b border-gray-100 px-2 py-2 text-gray-700">
+                  <td key={key} className="border-b-[0.5px] border-border px-2 py-2 text-ink-muted">
                     {r[key].has ? r[key].sum : "—"}
                   </td>
                 ))}
-                <td className="border-b border-gray-100 px-2 py-2 font-bold text-blue-700 bg-blue-50">
+                <td className="border-b-[0.5px] border-border px-2 py-2 font-bold text-navy-900 bg-navy-100">
                   {r.anyScore ? r.total : "—"}
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={colLabels.length + 3} className="px-3 py-6 text-gray-400">
+                <td colSpan={colLabels.length + 3} className="px-3 py-6 text-ink-faint">
                   {search ? "ไม่พบนักเรียนที่ค้นหา" : "ยังไม่มีนักเรียนในห้องนี้"}
                 </td>
               </tr>

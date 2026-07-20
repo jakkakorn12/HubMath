@@ -116,14 +116,14 @@ export default function SubmitForm({
         <button
           type="button"
           onClick={() => setMode("text")}
-          className={`px-3 py-1 rounded-full ${mode === "text" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}
+          className={`px-3 py-1 rounded-full ${mode === "text" ? "bg-navy-900 text-white" : "bg-surface text-ink-muted"}`}
         >
           พิมพ์คำตอบ
         </button>
         <button
           type="button"
           onClick={() => setMode("file")}
-          className={`px-3 py-1 rounded-full ${mode === "file" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"}`}
+          className={`px-3 py-1 rounded-full ${mode === "file" ? "bg-navy-900 text-white" : "bg-surface text-ink-muted"}`}
         >
           แนบไฟล์
         </button>
@@ -135,19 +135,19 @@ export default function SubmitForm({
           onChange={(e) => setContent(e.target.value)}
           rows={4}
           placeholder="พิมพ์คำตอบที่นี่..."
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
         />
       ) : (
         <FileInput file={file} onChange={setFile} />
       )}
 
-      {error && <p className="text-red-500 text-xs">{error}</p>}
-      {done && <p className="text-green-600 text-xs">ส่งงานสำเร็จ!</p>}
+      {error && <p className="text-danger-strong text-xs">{error}</p>}
+      {done && <p className="text-success-strong text-xs">ส่งงานสำเร็จ!</p>}
 
       <button
         type="submit"
         disabled={submitting}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+        className="bg-navy-900 text-white px-4 py-2 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
       >
         {submitting ? "กำลังส่ง..." : existingContent || existingFileName ? "ส่งใหม่" : "ส่งงาน"}
       </button>

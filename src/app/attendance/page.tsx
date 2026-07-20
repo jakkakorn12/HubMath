@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
+import Header from "@/components/Header";
 import { dedupeAttendance } from "@/lib/attendance";
 import type { AttendanceStatus } from "@/lib/supabase/types";
 
@@ -13,11 +14,11 @@ const statusLabel: Record<AttendanceStatus, string> = {
 };
 
 const statusColor: Record<AttendanceStatus, string> = {
-  present: "bg-green-100 text-green-700",
-  late: "bg-yellow-100 text-yellow-700",
-  absent: "bg-red-100 text-red-700",
-  leave: "bg-blue-100 text-blue-700",
-  truant: "bg-red-200 text-red-800",
+  present: "bg-success-soft text-success-strong",
+  late: "bg-warning-soft text-warning-strong",
+  absent: "bg-danger-soft text-danger-strong",
+  leave: "bg-navy-100 text-navy-900",
+  truant: "bg-danger-soft text-danger-strong",
 };
 
 export const dynamic = "force-dynamic";
@@ -67,34 +68,35 @@ export default async function AttendancePage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <SubjectNav subjectId={subject_id} subjectName={subject?.name} active="attendance" />
+    <div className="min-h-screen bg-surface">
+      <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
+      <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="attendance" />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-        <h1 className="text-lg font-bold text-gray-800">การเข้าเรียน</h1>
+        <h1 className="text-lg font-bold text-ink">การเข้าเรียน</h1>
 
         <div className="grid grid-cols-5 gap-2">
           {(Object.keys(statusLabel) as AttendanceStatus[]).map((s) => (
-            <div key={s} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+            <div key={s} className="bg-white rounded-card border-[0.5px] border-border p-4 text-center">
               <p className={`text-2xl font-bold ${statusColor[s].split(" ")[1]}`}>{counts[s]}</p>
-              <p className="text-xs text-gray-400 mt-1">{statusLabel[s]}</p>
+              <p className="text-xs text-ink-faint mt-1">{statusLabel[s]}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h2 className="text-sm font-semibold text-gray-500 mb-3">ประวัติ</h2>
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+          <h2 className="text-sm font-semibold text-ink-muted mb-3">ประวัติ</h2>
           {!records || records.length === 0 ? (
-            <p className="text-sm text-gray-400">ยังไม่มีข้อมูลการเข้าเรียน</p>
+            <p className="text-sm text-ink-faint">ยังไม่มีข้อมูลการเข้าเรียน</p>
           ) : (
             <div className="space-y-2">
               {records.map((r) => (
-                <div key={r.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2">
-                  <span className="text-sm text-gray-700">
+                <div key={r.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-2">
+                  <span className="text-sm text-ink">
                     {new Date(r.date).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" })}
                   </span>
                   <div className="flex items-center gap-2">
-                    {r.method === "qr" && <span className="text-xs text-gray-400">QR</span>}
+                    {r.method === "qr" && <span className="text-xs text-ink-faint">QR</span>}
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColor[r.status]}`}>
                       {statusLabel[r.status]}
                     </span>

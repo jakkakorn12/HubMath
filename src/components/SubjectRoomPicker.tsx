@@ -36,11 +36,11 @@ export default function SubjectRoomPicker({
   return (
     <div className="flex flex-wrap gap-3 mb-5">
       <div>
-        <label className="block text-xs text-gray-400 mb-1">วิชา</label>
+        <label className="block text-xs text-ink-faint mb-1">วิชา</label>
         <select
           value={subjectId ?? ""}
           onChange={(e) => go(e.target.value || undefined, undefined)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 bg-white"
         >
           {showAllSubjects && <option value="">ทุกวิชา</option>}
           {subjects.map((s) => (
@@ -51,11 +51,11 @@ export default function SubjectRoomPicker({
 
       {subjectId && (
         <div>
-          <label className="block text-xs text-gray-400 mb-1">ห้อง</label>
+          <label className="block text-xs text-ink-faint mb-1">ห้อง</label>
           <select
             value={sectionId ?? ""}
             onChange={(e) => go(subjectId, e.target.value || undefined)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 bg-white"
           >
             {!requireRoom && <option value="">ทุกห้อง</option>}
             {requireRoom && <option value="">— เลือกห้อง —</option>}

@@ -50,51 +50,51 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-surface">
+      <nav className="bg-white border-b">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-blue-600 hover:underline text-sm">
+          <button onClick={() => router.back()} className="text-navy-600 hover:underline text-sm">
             ← กลับ
           </button>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-800">บัญชีของฉัน</span>
+          <span className="text-border">|</span>
+          <span className="font-semibold text-ink">บัญชีของฉัน</span>
         </div>
       </nav>
 
       <main className="max-w-md mx-auto px-4 py-8 space-y-5">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-sm text-gray-400">อีเมลที่ใช้เข้าสู่ระบบ</p>
-          <p className="font-semibold text-gray-800 mt-0.5">{email ?? "กำลังโหลด..."}</p>
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+          <p className="text-sm text-ink-faint">อีเมลที่ใช้เข้าสู่ระบบ</p>
+          <p className="font-semibold text-ink mt-0.5">{email ?? "กำลังโหลด..."}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500">เปลี่ยนรหัสผ่าน</h2>
+        <form onSubmit={handleSubmit} className="bg-white rounded-card border-[0.5px] border-border p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-ink-muted">เปลี่ยนรหัสผ่าน</h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">รหัสผ่านใหม่</label>
+            <label className="block text-sm font-medium text-ink mb-1">รหัสผ่านใหม่</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ยืนยันรหัสผ่านใหม่</label>
+            <label className="block text-sm font-medium text-ink mb-1">ยืนยันรหัสผ่านใหม่</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          {done && <p className="text-green-600 text-sm">เปลี่ยนรหัสผ่านสำเร็จ!</p>}
+          {error && <p className="text-danger-strong text-sm">{error}</p>}
+          {done && <p className="text-success-strong text-sm">เปลี่ยนรหัสผ่านสำเร็จ!</p>}
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+            className="w-full bg-navy-900 text-white py-2 rounded-control hover:opacity-90 disabled:opacity-50 font-medium"
           >
             {saving ? "กำลังบันทึก..." : "เปลี่ยนรหัสผ่าน"}
           </button>

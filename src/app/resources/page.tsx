@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
+import Header from "@/components/Header";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,8 @@ export default async function ResourcesPage({
   // ไม่ได้ลงทะเบียนวิชานี้ → ห้ามดู (กันแก้ subject_id ใน URL)
   if (!mySectionId) redirect("/dashboard");
 
-  const [{ data: subject }, { data: resources }] = await Promise.all([
+  const [{ data: student }, { data: subject }, { data: resources }] = await Promise.all([
+    supabase.from("students").select("full_name").eq("id", user.id).single(),
     supabase.from("subjects").select("*").eq("id", subject_id).single(),
     supabase.from("resources").select("*").eq("subject_id", subject_id)
       .order("created_at", { ascending: false }),
@@ -58,20 +60,21 @@ export default async function ResourcesPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
+      <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="resources" />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-        <h1 className="text-lg font-bold text-gray-800">คลังไฟล์เอกสาร</h1>
+        <h1 className="text-lg font-bold text-ink">คลังไฟล์เอกสาร</h1>
 
         {visibleResources.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center text-ink-faint">
             ยังไม่มีไฟล์ในวิชานี้
           </div>
         ) : (
           Object.entries(grouped).map(([category, items]) => (
-            <div key={category} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h2 className="text-sm font-semibold text-gray-500 mb-3">{category}</h2>
+            <div key={category} className="bg-white rounded-card border-[0.5px] border-border p-5">
+              <h2 className="text-sm font-semibold text-ink-muted mb-3">{category}</h2>
               <div className="space-y-2">
                 {items!.map((r) => (
                   <a
@@ -79,10 +82,10 @@ export default async function ResourcesPage({
                     href={signedUrls[r.id] ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-lg px-4 py-3 transition-colors"
+                    className="flex items-center justify-between bg-surface hover:bg-surface rounded-control px-4 py-3 transition-colors"
                   >
-                    <span className="text-sm text-gray-700">{r.title}</span>
-                    <span className="text-xs text-blue-600 font-medium">ดาวน์โหลด →</span>
+                    <span className="text-sm text-ink">{r.title}</span>
+                    <span className="text-xs text-navy-600 font-medium">ดาวน์โหลด →</span>
                   </a>
                 ))}
               </div>

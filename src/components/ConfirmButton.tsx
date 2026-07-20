@@ -8,7 +8,7 @@ export default function ConfirmButton({
   detail,
   confirmLabel = "ลบ",
   onConfirm,
-  className = "text-xs text-red-600 hover:text-red-700 hover:underline",
+  className = "text-xs text-danger hover:text-danger-strong hover:underline",
   children,
 }: {
   message: string;
@@ -43,17 +43,17 @@ export default function ConfirmButton({
           onClick={() => !busy && setOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm"
+            className="bg-white rounded-card border-[0.5px] border-border shadow-sm p-6 w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-semibold text-gray-800">{message}</p>
-            {detail && <p className="text-sm text-gray-500 mt-1">{detail}</p>}
+            <p className="font-semibold text-ink">{message}</p>
+            {detail && <p className="text-sm text-ink-muted mt-1">{detail}</p>}
             <div className="flex justify-end gap-2 mt-5">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={busy}
-                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-ink-muted border-[0.5px] border-border rounded-control hover:bg-surface disabled:opacity-50"
               >
                 ยกเลิก
               </button>
@@ -61,7 +61,7 @@ export default function ConfirmButton({
                 type="button"
                 onClick={handleConfirm}
                 disabled={busy}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-control hover:opacity-90 disabled:opacity-50"
               >
                 {busy ? "กำลังลบ..." : confirmLabel}
               </button>

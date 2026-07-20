@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
+import Header from "@/components/Header";
 import { categoryTitle } from "@/lib/categoryTitles";
 import type { AssignmentCategory } from "@/lib/supabase/types";
 
@@ -102,38 +103,39 @@ export default async function AssignmentsPage({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
+      <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="scores" />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
 
         {/* ข้อมูลนักเรียน */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
           <div className="grid grid-cols-2 gap-y-2 text-sm">
             <div>
-              <span className="text-gray-400">ชื่อ</span>
-              <p className="font-semibold text-gray-800 mt-0.5">{student?.full_name ?? "—"}</p>
+              <span className="text-ink-faint">ชื่อ</span>
+              <p className="font-semibold text-ink mt-0.5">{student?.full_name ?? "—"}</p>
             </div>
             <div>
-              <span className="text-gray-400">เลขที่</span>
-              <p className="font-semibold text-gray-800 mt-0.5">{student?.student_number ?? "—"}</p>
+              <span className="text-ink-faint">เลขที่</span>
+              <p className="font-semibold text-ink mt-0.5">{student?.student_number ?? "—"}</p>
             </div>
             <div>
-              <span className="text-gray-400">ชั้น</span>
-              <p className="font-semibold text-gray-800 mt-0.5">
+              <span className="text-ink-faint">ชั้น</span>
+              <p className="font-semibold text-ink mt-0.5">
                 {student?.class_level ?? "—"} ห้อง {roomName}
               </p>
             </div>
             <div>
-              <span className="text-gray-400">เลขประจำตัว</span>
-              <p className="font-semibold text-gray-800 mt-0.5">{student?.student_code ?? "—"}</p>
+              <span className="text-ink-faint">เลขประจำตัว</span>
+              <p className="font-semibold text-ink mt-0.5">{student?.student_code ?? "—"}</p>
             </div>
           </div>
         </div>
 
         {/* ตารางสรุปคะแนน */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h2 className="text-sm font-semibold text-gray-500 mb-3">สรุปคะแนน</h2>
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+          <h2 className="text-sm font-semibold text-ink-muted mb-3">สรุปคะแนน</h2>
 
           {(() => {
             const totalScored = summaryItems.reduce((s, i) => s + i.scored, 0);
@@ -143,15 +145,15 @@ export default async function AssignmentsPage({
             return (
               <div className="mb-4">
                 <div className="flex items-baseline justify-between mb-1.5">
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold text-ink">
                     {totalScored}
-                    <span className="text-base font-medium text-gray-400">/{totalGradedMax}</span>
+                    <span className="text-base font-medium text-ink-faint">/{totalGradedMax}</span>
                   </p>
-                  <p className="text-xs text-gray-400">จากคะแนนที่ตัดไปแล้ว ({pct}%)</p>
+                  <p className="text-xs text-ink-faint">จากคะแนนที่ตัดไปแล้ว ({pct}%)</p>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-surface rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${pct >= 50 ? "bg-green-500" : "bg-red-500"}`}
+                    className={`h-full rounded-full ${pct >= 50 ? "bg-success" : "bg-danger"}`}
                     style={{ width: `${Math.min(pct, 100)}%` }}
                   />
                 </div>
@@ -161,21 +163,21 @@ export default async function AssignmentsPage({
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-center border-collapse">
               <thead>
-                <tr className="bg-gray-50">
+                <tr className="bg-surface">
                   {summaryItems.map((item) => (
-                    <th key={item.label} className="border border-gray-200 px-3 py-2 font-medium text-gray-600">
+                    <th key={item.label} className="border-[0.5px] border-border px-3 py-2 font-medium text-ink-muted">
                       {item.label}
                     </th>
                   ))}
-                  <th className="border border-gray-200 px-3 py-2 font-semibold text-gray-800 bg-gray-100">รวม</th>
+                  <th className="border-[0.5px] border-border px-3 py-2 font-semibold text-ink bg-surface">รวม</th>
                 </tr>
-                <tr className="text-xs text-gray-400">
+                <tr className="text-xs text-ink-faint">
                   {summaryItems.map((item) => (
-                    <td key={item.label} className="border border-gray-200 px-3 py-1">
+                    <td key={item.label} className="border-[0.5px] border-border px-3 py-1">
                       /{item.max}
                     </td>
                   ))}
-                  <td className="border border-gray-200 px-3 py-1 bg-gray-50">
+                  <td className="border-[0.5px] border-border px-3 py-1 bg-surface">
                     /{summaryItems.reduce((s, i) => s + i.max, 0)}
                   </td>
                 </tr>
@@ -183,11 +185,11 @@ export default async function AssignmentsPage({
               <tbody>
                 <tr>
                   {summaryItems.map((item) => (
-                    <td key={item.label} className="border border-gray-200 px-3 py-3 font-bold text-gray-800 text-base">
+                    <td key={item.label} className="border-[0.5px] border-border px-3 py-3 font-bold text-ink text-base">
                       {item.has ? item.scored : "—"}
                     </td>
                   ))}
-                  <td className="border border-gray-200 px-3 py-3 font-bold text-blue-700 text-base bg-blue-50">
+                  <td className="border-[0.5px] border-border px-3 py-3 font-bold text-navy-900 text-base bg-navy-100">
                     {summaryItems.some((i) => i.has)
                       ? summaryItems.reduce((s, i) => s + i.scored, 0)
                       : "—"}
@@ -204,7 +206,7 @@ export default async function AssignmentsPage({
           if (!termData) return null;
           return (
             <div key={term}>
-              <h2 className="text-base font-bold text-gray-600 mb-3">
+              <h2 className="text-base font-bold text-ink-muted mb-3">
                 {term === 1 ? "ครึ่งแรก" : "ครึ่งหลัง"}
               </h2>
               <div className="space-y-3">
@@ -217,13 +219,13 @@ export default async function AssignmentsPage({
                     return sc != null ? s + sc : s;
                   }, 0);
                   return (
-                    <div key={cat} className="rounded-2xl border border-gray-100 bg-white shadow-sm p-5">
-                      <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-gray-100">
-                        <span className="font-semibold text-sm text-gray-800">
+                    <div key={cat} className="rounded-card border-[0.5px] border-border bg-white shadow-sm p-5">
+                      <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b-[0.5px] border-border">
+                        <span className="font-semibold text-sm text-ink">
                           {categoryTitle(subject_id, term, cat, categoryLabel[cat])}
                         </span>
-                        <span className="text-base font-bold text-gray-800 shrink-0">
-                          {catScore}<span className="text-sm font-medium text-gray-400">/{catMax}</span>
+                        <span className="text-base font-bold text-ink shrink-0">
+                          {catScore}<span className="text-sm font-medium text-ink-faint">/{catMax}</span>
                         </span>
                       </div>
                       <div className="space-y-2">
@@ -232,14 +234,14 @@ export default async function AssignmentsPage({
                           return (
                             <div
                               key={a.id}
-                              className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5"
+                              className="flex items-center justify-between bg-surface border-[0.5px] border-border rounded-control px-3 py-2.5"
                             >
-                              <span className="text-sm text-gray-700">{a.display_name ?? a.title}</span>
+                              <span className="text-sm text-ink">{a.display_name ?? a.title}</span>
                               <span className="text-sm shrink-0 whitespace-nowrap">
-                                <span className={`font-bold ${score != null ? "text-gray-800" : "text-gray-300"}`}>
+                                <span className={`font-bold ${score != null ? "text-ink" : "text-border"}`}>
                                   {score != null ? score : "—"}
                                 </span>
-                                <span className="text-gray-400">/{a.max_score}</span>
+                                <span className="text-ink-faint">/{a.max_score}</span>
                               </span>
                             </div>
                           );

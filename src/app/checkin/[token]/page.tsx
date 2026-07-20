@@ -39,20 +39,20 @@ export default function CheckinPage() {
   const info = resultMessage[result] ?? { text: "เกิดข้อผิดพลาด", ok: false };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+      <div className="bg-white rounded-card border-[0.5px] border-border p-8 w-full max-w-sm text-center">
         {status === "loading" ? (
-          <p className="text-gray-500">กำลังเช็คชื่อ...</p>
+          <p className="text-ink-muted">กำลังเช็คชื่อ...</p>
         ) : (
           <>
             <div className="flex justify-center mb-3">
               {info.ok ? (
-                <CheckCircle2 className="w-12 h-12 text-green-500" />
+                <CheckCircle2 className="w-12 h-12 text-success" />
               ) : (
-                <XCircle className="w-12 h-12 text-red-500" />
+                <XCircle className="w-12 h-12 text-danger-strong" />
               )}
             </div>
-            <p className={`text-lg font-semibold ${info.ok ? "text-green-700" : "text-red-700"}`}>
+            <p className={`text-lg font-semibold ${info.ok ? "text-success-strong" : "text-danger-strong"}`}>
               {info.text}
             </p>
           </>

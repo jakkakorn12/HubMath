@@ -56,50 +56,50 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">สมัครสมาชิก</h1>
-        <p className="text-sm text-gray-400 text-center mb-6">ใช้เลขประจำตัวนักเรียนของคุณ</p>
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+      <div className="bg-white rounded-card border-[0.5px] border-border p-8 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-ink mb-2 text-center">สมัครสมาชิก</h1>
+        <p className="text-sm text-ink-faint text-center mb-6">ใช้เลขประจำตัวนักเรียนของคุณ</p>
         <form onSubmit={handleRegister} noValidate className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัว</label>
+            <label className="block text-sm font-medium text-ink mb-1">เลขประจำตัว</label>
             <input
               type="text"
               value={studentCode}
               onChange={(e) => setStudentCode(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+            <label className="block text-sm font-medium text-ink mb-1">อีเมล</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+            <label className="block text-sm font-medium text-ink mb-1">รหัสผ่าน</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-danger-strong text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+            className="w-full bg-navy-900 text-white py-2 rounded-control hover:opacity-90 disabled:opacity-50 font-medium"
           >
             {loading ? "กำลังสมัคร..." : "สมัครสมาชิก"}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-ink-muted mt-4">
           มีบัญชีแล้ว?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-navy-600 hover:underline">
             เข้าสู่ระบบ
           </Link>
         </p>

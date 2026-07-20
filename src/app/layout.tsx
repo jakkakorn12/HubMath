@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Thai } from "next/font/google";
+import { IBM_Plex_Sans_Thai, Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 
 const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-plex-thai",
+});
+
+const notoSerifThai = Noto_Serif_Thai({
+  subsets: ["thai", "latin"],
+  weight: ["500", "600"],
+  display: "swap",
+  variable: "--font-noto-serif-thai",
 });
 
 export const metadata: Metadata = {
@@ -22,13 +30,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#042c53",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th">
-      <body className={`${plexThai.className} bg-gray-50 min-h-screen`}>{children}</body>
+    <html lang="th" className={`${plexThai.variable} ${notoSerifThai.variable}`}>
+      <body className="font-sans bg-surface text-ink min-h-screen antialiased">{children}</body>
     </html>
   );
 }

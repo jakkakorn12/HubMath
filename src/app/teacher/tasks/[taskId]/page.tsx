@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { textSimilarity, SIMILARITY_THRESHOLD } from "@/lib/similarity";
 import { imageHammingDistance, IMAGE_HASH_THRESHOLD } from "@/lib/imageHash";
+import Header from "@/components/Header";
 import GradeForm from "./GradeForm";
 
 export const dynamic = "force-dynamic";
@@ -168,14 +169,15 @@ export default async function TaskSubmissionsPage({
     `?${section_id ? `section_id=${section_id}&` : ""}room=${roomId}`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href={`/teacher/tasks${backQuery}`} className="text-blue-600 hover:underline text-sm">
+    <div className="min-h-screen bg-surface">
+      <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
+      <nav className="bg-white border-b-[0.5px] border-border">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2.5">
+          <Link href={`/teacher/tasks${backQuery}`} className="text-navy-600 hover:underline text-sm shrink-0">
             ← กลับ
           </Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-semibold text-gray-800 truncate">{task.title}</span>
+          <span className="text-border">|</span>
+          <span className="font-medium text-ink truncate">{task.title}</span>
         </div>
       </nav>
 
@@ -187,8 +189,8 @@ export default async function TaskSubmissionsPage({
               href={pillQuery("all")}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 activeRoom === "all"
-                  ? "bg-gray-800 text-white border-gray-800"
-                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                  ? "bg-navy-900 text-white border-navy-900"
+                  : "bg-white text-ink-muted border-border hover:bg-surface"
               }`}
             >
               ทุกห้อง ({allSubmitted}/{allTotal})
@@ -200,8 +202,8 @@ export default async function TaskSubmissionsPage({
               href={pillQuery(s.id)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 activeRoom === s.id
-                  ? "bg-gray-800 text-white border-gray-800"
-                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                  ? "bg-navy-900 text-white border-navy-900"
+                  : "bg-white text-ink-muted border-border hover:bg-surface"
               }`}
             >
               ห้อง {s.name} ({s.submitted}/{s.total})
@@ -210,12 +212,12 @@ export default async function TaskSubmissionsPage({
         </div>
 
         {/* ส่งแล้ว */}
-        <h2 className="text-lg font-bold text-gray-800">
-          ส่งแล้ว <span className="text-gray-400 font-normal">({visibleSubs.length} คน)</span>
+        <h2 className="text-lg font-bold text-ink">
+          ส่งแล้ว <span className="text-ink-faint font-normal">({visibleSubs.length} คน)</span>
         </h2>
 
         {visibleSubs.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center text-ink-faint">
             ยังไม่มีนักเรียนส่งงาน{activeRoom !== "all" ? "ในห้องนี้" : ""}
           </div>
         ) : (
@@ -226,29 +228,29 @@ export default async function TaskSubmissionsPage({
             return (
               <div
                 key={sub.id}
-                className={`bg-white rounded-2xl shadow-sm border p-5 ${matches.length > 0 ? "border-red-300" : "border-gray-100"}`}
+                className={`bg-white rounded-card border p-5 ${matches.length > 0 ? "border-red-300" : "border-border"}`}
               >
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div className="flex items-baseline gap-2 min-w-0">
-                    <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap tabular-nums pt-1">
+                    <span className="text-xs text-ink-faint shrink-0 whitespace-nowrap tabular-nums pt-1">
                       ห้อง {roomName} · {number || "—"}
                     </span>
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-800 truncate">{student?.full_name}</p>
-                      <p className="text-xs text-gray-400">{student?.student_code}</p>
+                      <p className="font-semibold text-ink truncate">{student?.full_name}</p>
+                      <p className="text-xs text-ink-faint">{student?.student_code}</p>
                     </div>
                   </div>
                   {sub.grade != null && (
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700 shrink-0">
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-success-soft text-success-strong shrink-0">
                       ตรวจแล้ว · {sub.grade} คะแนน
                     </span>
                   )}
                 </div>
 
                 {matches.length > 0 && (
-                  <div className="mb-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-start gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-700">
+                  <div className="mb-3 bg-danger-soft rounded-control px-3 py-2 flex items-start gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-danger-strong shrink-0 mt-0.5" />
+                    <p className="text-xs text-danger-strong">
                       <span className="font-semibold">คล้ายกับ {matches.length} คน:</span>{" "}
                       {matches.map((m) => `${m.name} (${m.percent}%)`).join(", ")}
                     </p>
@@ -259,17 +261,17 @@ export default async function TaskSubmissionsPage({
                     href={fileLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-sm text-navy-600 hover:underline"
                   >
                     <Paperclip className="w-3.5 h-3.5" />
                     {sub.file_name}
                   </a>
                 ) : (
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 rounded-lg px-3 py-2">
+                  <p className="text-sm text-ink-muted whitespace-pre-wrap bg-surface rounded-control px-3 py-2">
                     {sub.content}
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-ink-faint mt-2">
                   ส่งเมื่อ {new Date(sub.submitted_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
                 </p>
                 <GradeForm
@@ -283,20 +285,20 @@ export default async function TaskSubmissionsPage({
         )}
 
         {/* ยังไม่ส่ง */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-gray-800 mb-3">
-            ยังไม่ส่ง <span className="text-gray-400 font-normal">({missing.length} คน)</span>
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+          <h2 className="font-semibold text-ink mb-3">
+            ยังไม่ส่ง <span className="text-ink-faint font-normal">({missing.length} คน)</span>
           </h2>
           {missing.length === 0 ? (
-            <p className="text-sm text-green-700">ส่งครบทุกคนแล้ว</p>
+            <p className="text-sm text-success-strong">ส่งครบทุกคนแล้ว</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
               {missing.map((m) => (
                 <div key={`${m.room}-${m.code}`} className="flex items-center gap-2 text-sm">
-                  <span className={`text-gray-400 shrink-0 whitespace-nowrap tabular-nums ${activeRoom === "all" ? "w-24" : "w-8 text-right"}`}>
+                  <span className={`text-ink-faint shrink-0 whitespace-nowrap tabular-nums ${activeRoom === "all" ? "w-24" : "w-8 text-right"}`}>
                     {activeRoom === "all" ? `ห้อง ${m.room} · ` : ""}{m.number || "—"}
                   </span>
-                  <span className="text-gray-700 truncate">{m.name}</span>
+                  <span className="text-ink truncate">{m.name}</span>
                 </div>
               ))}
             </div>

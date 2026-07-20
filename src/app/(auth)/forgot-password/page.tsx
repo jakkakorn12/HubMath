@@ -40,44 +40,44 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">ลืมรหัสผ่าน</h1>
-        <p className="text-sm text-gray-400 text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+      <div className="bg-white rounded-card border-[0.5px] border-border p-8 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-ink mb-2 text-center">ลืมรหัสผ่าน</h1>
+        <p className="text-sm text-ink-faint text-center mb-6">
           กรอกเลขประจำตัวนักเรียน ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณ
         </p>
 
         {sent ? (
           <div className="text-center space-y-4">
-            <p className="text-green-600 text-sm">
+            <p className="text-success-strong text-sm">
               ส่งอีเมลแล้ว! กรุณาตรวจสอบกล่องจดหมาย (รวมถึงถังขยะ/สแปม) แล้วกดลิงก์เพื่อตั้งรหัสผ่านใหม่
             </p>
-            <Link href="/login" className="text-blue-600 hover:underline text-sm">
+            <Link href="/login" className="text-navy-600 hover:underline text-sm">
               กลับไปหน้าเข้าสู่ระบบ
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัวนักเรียน</label>
+              <label className="block text-sm font-medium text-ink mb-1">เลขประจำตัวนักเรียน</label>
               <input
                 type="text"
                 value={studentCode}
                 onChange={(e) => setStudentCode(e.target.value)}
                 required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
               />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-danger-strong text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+              className="w-full bg-navy-900 text-white py-2 rounded-control hover:opacity-90 disabled:opacity-50 font-medium"
             >
               {loading ? "กำลังส่ง..." : "รีเซ็ตรหัสผ่าน"}
             </button>
-            <p className="text-center text-sm text-gray-500">
-              <Link href="/login" className="text-blue-600 hover:underline">
+            <p className="text-center text-sm text-ink-muted">
+              <Link href="/login" className="text-navy-600 hover:underline">
                 กลับไปหน้าเข้าสู่ระบบ
               </Link>
             </p>

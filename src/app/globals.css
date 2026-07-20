@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+@theme {
+  /* Fonts — set via next/font/google variables in layout.tsx */
+  --font-sans: var(--font-plex-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-noto-serif-thai), ui-serif, Georgia, serif;
+
+  /* Accent — navy (use sparingly: logo, active tab, hero numbers, progress, primary buttons) */
+  --color-navy-900: #042c53;
+  --color-navy-600: #185fa5;
+  --color-navy-100: #e6f1fb;
+
+  /* Status colors — soft = chip/banner background, strong = chip/banner text */
+  --color-success: #639922;
+  --color-success-soft: #eaf3de;
+  --color-success-strong: #3b6d11;
+
+  --color-warning: #ba7517;
+  --color-warning-soft: #faeeda;
+  --color-warning-strong: #633806;
+
+  --color-danger: #993c1d;
+  --color-danger-soft: #faece7;
+  --color-danger-strong: #993c1d;
+
+  /* Neutrals */
+  --color-border: #e5e3dc;
+  --color-surface: #f7f7f4;
+  --color-ink: #2c2c2a;
+  --color-ink-muted: #6b6a64;
+  --color-ink-faint: #9a9992;
+
+  /* Component radius */
+  --radius-card: 12px;
+  --radius-control: 8px;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+  }
+}

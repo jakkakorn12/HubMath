@@ -25,27 +25,24 @@ export default function TeacherNav({
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="max-w-5xl mx-auto px-4 pt-3 flex items-center gap-3">
-        <Link href="/teacher/dashboard" className="text-blue-600 hover:underline text-sm shrink-0">← กลับหน้าหลัก</Link>
-        <span className="text-gray-300">|</span>
-        <span className="font-semibold text-gray-800 truncate">
+    <nav className="bg-white border-b-[0.5px] border-border">
+      <div className="max-w-5xl mx-auto px-4 pt-3 flex items-baseline gap-2.5">
+        <Link href="/teacher/dashboard" className="text-navy-600 hover:underline text-sm shrink-0">← หน้าหลัก</Link>
+        <span className="text-border">|</span>
+        <span className="font-medium text-ink truncate">
           {subjectName}
-          {roomName && <span className="text-gray-400 font-normal text-sm ml-1">· ห้อง {roomName}</span>}
+          {roomName && <span className="text-ink-faint font-normal text-xs ml-1.5">ห้อง {roomName}</span>}
         </span>
-        <form action="/auth/signout" method="POST" className="ml-auto shrink-0">
-          <button className="text-sm text-red-500 hover:underline">ออกจากระบบ</button>
-        </form>
       </div>
-      <div className="max-w-5xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <div className="max-w-5xl mx-auto px-4 flex gap-5 overflow-x-auto mt-3">
         {tabs.map((tab) => (
           <Link
             key={tab.key}
             href={tab.href}
-            className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 transition-colors ${
+            className={`pb-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
               tab.key === active
-                ? "border-blue-600 text-blue-600 font-semibold"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-navy-900 text-navy-900 font-medium"
+                : "border-transparent text-ink-faint hover:text-ink-muted"
             }`}
           >
             {tab.label}

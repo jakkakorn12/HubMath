@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherContentNav from "@/components/TeacherContentNav";
 import TeacherNav from "@/components/TeacherNav";
+import Header from "@/components/Header";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import TaskManager from "./TaskManager";
 
@@ -17,7 +18,7 @@ export default async function TeacherTasksPage({
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/teacher/login");
-  const { data: teacher } = await supabase.from("teachers").select("id").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id, full_name").eq("id", user.id).single();
   if (!teacher) redirect("/teacher/login");
 
   const [{ data: subjects }, { data: sections }] = await Promise.all([
@@ -47,7 +48,8 @@ export default async function TeacherTasksPage({
   const inRoomShell = !!(section_id && subject_id);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
+      <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       {inRoomShell ? (
         <TeacherNav
           sectionId={section_id!}

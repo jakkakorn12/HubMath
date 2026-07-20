@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FolderOpen, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3 } from "lucide-react";
 import { dedupeAttendance } from "@/lib/attendance";
+import Header from "@/components/Header";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,13 @@ export default async function TeacherDashboardPage() {
     const present = att.filter((a) => a.status === "present" || a.status === "late").length;
     const attendanceRate = att.length ? Math.round((present / att.length) * 100) : null;
 
-    return { rosterCount: codes.length, avg, attendanceRate };
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayAtt = att.filter((a) => a.date === todayStr);
+    const checkedToday = todayAtt.length > 0;
+    const todayPresent = todayAtt.filter((a) => a.status === "present" || a.status === "late").length;
+    const todayRate = checkedToday ? Math.round((todayPresent / todayAtt.length) * 100) : null;
+
+    return { rosterCount: codes.length, avg, attendanceRate, checkedToday, todayRate };
   }
 
   const sectionsBySubject: Record<string, typeof sections> = {};
@@ -87,97 +94,85 @@ export default async function TeacherDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-800">HubMath — ครู</h1>
-          <div className="flex items-center gap-4">
-            <Link href="/account" className="text-sm text-gray-600 hover:text-gray-800 hover:underline">
-              {teacher.full_name}
-            </Link>
-            <form action="/auth/signout" method="POST">
-              <button className="text-sm text-red-500 hover:underline">ออกจากระบบ</button>
-            </form>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-surface">
+      <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
         <div className="flex flex-wrap gap-3">
-          <Link
-            href="/teacher/resources"
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
-          >
-            จัดการไฟล์
-          </Link>
-          <Link
-            href="/teacher/tasks"
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
-          >
-            มอบหมายงาน
-          </Link>
-          <Link
-            href="/teacher/attendance"
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
-          >
-            เช็คชื่อ
-          </Link>
-          <Link
-            href="/teacher/announcements"
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-md transition"
-          >
-            ประกาศ
-          </Link>
+          {[
+            { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
+            { href: "/teacher/tasks", label: "มอบหมายงาน", icon: ClipboardList },
+            { href: "/teacher/attendance", label: "เช็คชื่อ", icon: CalendarCheck },
+            { href: "/teacher/announcements", label: "ประกาศ", icon: Megaphone },
+          ].map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className="bg-white border-[0.5px] border-border rounded-control px-4 py-2.5 text-sm font-medium text-ink flex items-center gap-2 hover:bg-surface transition-colors"
+            >
+              <s.icon className="w-4 h-4 text-navy-600" />
+              {s.label}
+            </Link>
+          ))}
         </div>
 
         {(subjects ?? []).map((subject) => (
           <div key={subject.id}>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">{subject.name}</h2>
-              <span className="text-xs text-gray-400">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-[3px] h-6 bg-navy-900 rounded-full shrink-0" />
+              <h2 className="text-lg font-semibold text-ink">{subject.name}</h2>
+              <span className="text-xs text-ink-faint">
                 {subject.code} · {typeLabel[subject.type] ?? subject.type}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(sectionsBySubject[subject.id] ?? []).map((section) => {
                 const stats = sectionStats(section.id);
+                const isActive = (countBySection[section.id] ?? 0) > 0;
                 return (
                   <Link
                     key={section.id}
                     href={`/teacher/gradebook?section_id=${section.id}`}
-                    className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow block"
+                    className="bg-white rounded-card p-5 border-[0.5px] border-border hover:shadow-sm hover:-translate-y-px transition-all block"
                   >
-                    <h3 className="font-semibold text-gray-800">ห้อง {section.name}</h3>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p className="text-gray-500">
-                        สมัครแล้ว{" "}
-                        <span className="font-medium text-gray-700">
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <h3 className="font-semibold text-ink">ห้อง {section.name}</h3>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                          !stats.checkedToday
+                            ? "bg-surface text-ink-faint"
+                            : stats.todayRate === 100
+                            ? "bg-success-soft text-success-strong"
+                            : "bg-warning-soft text-warning-strong"
+                        }`}
+                      >
+                        {!stats.checkedToday ? "ยังไม่เช็คชื่อ" : `มาเรียน ${stats.todayRate}%`}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 text-sm">
+                      <p className="flex items-center gap-1.5 text-ink-faint">
+                        <Users className="w-3.5 h-3.5" />
+                        สมัครแล้ว
+                        <span className="font-medium text-ink">
                           {countBySection[section.id] ?? 0}/{stats.rosterCount}
-                        </span>{" "}
+                        </span>
                         คน
                       </p>
-                      <p className="text-gray-500">
-                        คะแนนเฉลี่ย{" "}
-                        {stats.avg != null ? (
-                          <span className={`font-medium ${stats.avg >= 50 ? "text-green-700" : "text-red-600"}`}>
-                            {stats.avg.toFixed(1)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </p>
-                      <p className="text-gray-500">
-                        อัตรามาเรียน{" "}
-                        {stats.attendanceRate != null ? (
-                          <span className={`font-medium ${stats.attendanceRate >= 80 ? "text-green-700" : "text-red-600"}`}>
-                            {stats.attendanceRate}%
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
+                      <p className="flex items-center gap-1.5 text-ink-faint">
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        คะแนนเฉลี่ย
+                        <span className="font-medium text-ink">
+                          {stats.avg != null ? stats.avg.toFixed(1) : "—"}
+                        </span>
                       </p>
                     </div>
-                    <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-1.5">
+                    <span
+                      className={`mt-4 flex items-center justify-center gap-1.5 text-sm font-medium rounded-control py-2 transition-colors ${
+                        isActive
+                          ? "bg-navy-900 text-white"
+                          : "border-[0.5px] border-navy-600 text-navy-600 hover:bg-navy-100"
+                      }`}
+                    >
                       เข้าจัดการห้อง
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>
@@ -185,7 +180,7 @@ export default async function TeacherDashboardPage() {
                 );
               })}
               {(!sectionsBySubject[subject.id] || sectionsBySubject[subject.id]!.length === 0) && (
-                <div className="text-sm text-gray-400">ยังไม่มีห้องเรียนในวิชานี้</div>
+                <div className="text-sm text-ink-faint">ยังไม่มีห้องเรียนในวิชานี้</div>
               )}
             </div>
           </div>

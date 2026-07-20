@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherContentNav from "@/components/TeacherContentNav";
 import TeacherNav from "@/components/TeacherNav";
+import Header from "@/components/Header";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
 import { dedupeAttendance } from "@/lib/attendance";
@@ -13,11 +14,11 @@ const STATUS_LABEL: Record<AttendanceStatus, string> = {
   present: "มา", late: "สาย", absent: "ขาด", leave: "ลา", truant: "หนีเรียน",
 };
 const STATUS_CHIP: Record<AttendanceStatus, string> = {
-  present: "bg-green-100 text-green-700",
-  late: "bg-yellow-100 text-yellow-700",
-  absent: "bg-red-100 text-red-700",
-  leave: "bg-blue-100 text-blue-700",
-  truant: "bg-red-200 text-red-800",
+  present: "bg-success-soft text-success-strong",
+  late: "bg-warning-soft text-warning-strong",
+  absent: "bg-danger-soft text-danger-strong",
+  leave: "bg-navy-100 text-navy-900",
+  truant: "bg-danger-soft text-danger-strong",
 };
 const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "leave", "truant"];
 
@@ -31,7 +32,7 @@ export default async function TeacherAttendancePage({
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/teacher/login");
-  const { data: teacher } = await supabase.from("teachers").select("id").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id, full_name").eq("id", user.id).single();
   if (!teacher) redirect("/teacher/login");
 
   const [{ data: subjects }, { data: sections }] = await Promise.all([
@@ -101,7 +102,8 @@ export default async function TeacherAttendancePage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
+      <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       {inRoomShell ? (
         <TeacherNav
           sectionId={section_id!}
@@ -127,14 +129,14 @@ export default async function TeacherAttendancePage({
         )}
 
         {!section_id ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center text-ink-faint">
             เลือกวิชาและห้องด้านบนเพื่อเช็คชื่อ
           </div>
         ) : (
           <div className="space-y-5">
             {/* สรุปวันนี้ */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h2 className="text-sm font-semibold text-gray-500 mb-3">
+            <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+              <h2 className="text-sm font-semibold text-ink-muted mb-3">
                 วันนี้ ({new Date().toLocaleDateString("th-TH", { day: "numeric", month: "long" })})
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -143,32 +145,32 @@ export default async function TeacherAttendancePage({
                     {STATUS_LABEL[s]} {todayCounts[s]}
                   </span>
                 ))}
-                <span className="text-sm font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-500">
+                <span className="text-sm font-medium px-3 py-1.5 rounded-full bg-surface text-ink-muted">
                   ยังไม่เช็ค {notCheckedToday}
                 </span>
               </div>
             </div>
 
             {/* QR */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h2 className="text-sm font-semibold text-gray-500 mb-3">QR เช็คชื่อ (นักเรียนสแกนเพื่อบันทึกว่ามาเรียน)</h2>
+            <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+              <h2 className="text-sm font-semibold text-ink-muted mb-3">QR เช็คชื่อ (นักเรียนสแกนเพื่อบันทึกว่ามาเรียน)</h2>
               <QrButton sectionId={section_id} teacherId={teacher.id} />
             </div>
 
             {/* ตารางรายบุคคล */}
             <div>
-              <h2 className="text-sm font-semibold text-gray-500 mb-2">
-                สรุปรายบุคคล <span className="font-normal text-gray-400">(บันทึกแล้ว {recordedDays} วัน)</span>
+              <h2 className="text-sm font-semibold text-ink-muted mb-2">
+                สรุปรายบุคคล <span className="font-normal text-ink-faint">(บันทึกแล้ว {recordedDays} วัน)</span>
               </h2>
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-auto max-h-[70vh]">
+              <div className="bg-white rounded-card border-[0.5px] border-border overflow-auto max-h-[70vh]">
                 <table className="w-full text-sm text-center border-separate border-spacing-0 min-w-[640px]">
                   <thead>
-                    <tr className="text-gray-600">
-                      <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-2 py-2 w-12">เลขที่</th>
-                      <th className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-3 py-2 text-left">ชื่อ</th>
-                      <th className="sticky top-0 z-10 bg-gray-100 border-b border-gray-200 px-2 py-2 font-semibold">วันนี้</th>
+                    <tr className="text-ink-muted">
+                      <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 w-12">เลขที่</th>
+                      <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-3 py-2 text-left">ชื่อ</th>
+                      <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-semibold">วันนี้</th>
                       {STATUS_ORDER.map((s) => (
-                        <th key={s} className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-2 py-2 font-medium whitespace-nowrap">
+                        <th key={s} className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-medium whitespace-nowrap">
                           {STATUS_LABEL[s]}
                         </th>
                       ))}
@@ -177,26 +179,26 @@ export default async function TeacherAttendancePage({
                   <tbody>
                     {rows.map((r) => (
                       <tr key={r.code}>
-                        <td className="border-b border-gray-100 px-2 py-2 text-gray-500">{r.number || "—"}</td>
-                        <td className="border-b border-gray-100 px-3 py-2 text-left text-gray-800">{r.name}</td>
-                        <td className="border-b border-gray-100 px-2 py-2 bg-gray-50/50">
+                        <td className="border-b-[0.5px] border-border px-2 py-2 text-ink-muted">{r.number || "—"}</td>
+                        <td className="border-b-[0.5px] border-border px-3 py-2 text-left text-ink">{r.name}</td>
+                        <td className="border-b-[0.5px] border-border px-2 py-2 bg-surface/50">
                           {r.today ? (
                             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_CHIP[r.today]}`}>
                               {STATUS_LABEL[r.today]}
                             </span>
                           ) : (
-                            <span className="text-gray-300">—</span>
+                            <span className="text-border">—</span>
                           )}
                         </td>
                         {STATUS_ORDER.map((s) => (
                           <td
                             key={s}
-                            className={`border-b border-gray-100 px-2 py-2 ${
+                            className={`border-b-[0.5px] border-border px-2 py-2 ${
                               r.totals[s] > 0
                                 ? s === "absent" || s === "truant"
-                                  ? "text-red-600 font-semibold"
-                                  : "text-gray-700"
-                                : "text-gray-300"
+                                  ? "text-danger-strong font-semibold"
+                                  : "text-ink"
+                                : "text-border"
                             }`}
                           >
                             {r.totals[s] > 0 ? r.totals[s] : "—"}
@@ -206,7 +208,7 @@ export default async function TeacherAttendancePage({
                     ))}
                     {rows.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="px-3 py-6 text-gray-400">ยังไม่มีนักเรียนในห้องนี้</td>
+                        <td colSpan={8} className="px-3 py-6 text-ink-faint">ยังไม่มีนักเรียนในห้องนี้</td>
                       </tr>
                     )}
                   </tbody>
@@ -214,7 +216,7 @@ export default async function TeacherAttendancePage({
               </div>
             </div>
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-faint">
               การเช็คชื่อรายวัน (ม/ส/ข/ล/น) กรอกผ่าน Google Sheets — ลบตัวอักษรในชีทเพื่อลบบันทึกของวันนั้น
             </p>
           </div>

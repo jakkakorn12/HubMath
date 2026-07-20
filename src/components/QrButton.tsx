@@ -55,26 +55,26 @@ export default function QrButton({ sectionId, teacherId }: { sectionId: string; 
         <button
           onClick={generateQr}
           disabled={loading}
-          className="text-sm text-green-600 hover:underline disabled:opacity-50"
+          className="text-sm text-success-strong hover:underline disabled:opacity-50"
         >
           {loading ? "กำลังสร้าง..." : "สร้าง QR เช็คชื่อ"}
         </button>
       ) : (
-        <div className="mt-3 p-4 bg-gray-50 rounded-xl text-center">
+        <div className="mt-3 p-4 bg-surface rounded-card text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrDataUrl} alt="QR เช็คชื่อ" className="mx-auto rounded-lg" />
-          <p className="text-sm text-gray-500 mt-2 font-medium">
+          <img src={qrDataUrl} alt="QR เช็คชื่อ" className="mx-auto rounded-control" />
+          <p className="text-sm text-ink-muted mt-2 font-medium">
             เหลือเวลา {secondsLeft} วินาที
           </p>
           <button
             onClick={() => setQrDataUrl(null)}
-            className="text-xs text-gray-500 hover:underline mt-1"
+            className="text-xs text-ink-muted hover:underline mt-1"
           >
             ปิด
           </button>
         </div>
       )}
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+      {error && <p className="text-danger-strong text-xs mt-1">{error}</p>}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
+import Header from "@/components/Header";
 import SubmitForm from "./SubmitForm";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,8 @@ export default async function TasksPage({
   // ไม่ได้ลงทะเบียนวิชานี้ → ห้ามดู (กันแก้ subject_id ใน URL)
   if (!mySectionId) redirect("/dashboard");
 
-  const [{ data: subject }, { data: allTasks }, { data: submissions }] = await Promise.all([
+  const [{ data: student }, { data: subject }, { data: allTasks }, { data: submissions }] = await Promise.all([
+    supabase.from("students").select("full_name").eq("id", user.id).single(),
     supabase.from("subjects").select("*").eq("id", subject_id).single(),
     supabase.from("tasks").select("*").eq("subject_id", subject_id).order("due_date"),
     supabase.from("task_submissions").select("*").eq("student_id", user.id),
@@ -62,14 +64,15 @@ export default async function TasksPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <SubjectNav subjectId={subject_id} subjectName={subject?.name} active="tasks" />
+    <div className="min-h-screen bg-surface">
+      <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
+      <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="tasks" />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        <h1 className="text-lg font-bold text-gray-800">งานที่มอบหมาย</h1>
+        <h1 className="text-lg font-bold text-ink">งานที่มอบหมาย</h1>
 
         {!tasks || tasks.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center text-ink-faint">
             ยังไม่มีงานที่มอบหมาย
           </div>
         ) : (
@@ -78,16 +81,16 @@ export default async function TasksPage({
             const fileLink = fileLinks.get(task.id);
             const overdue = task.due_date ? new Date(task.due_date) < new Date() : false;
             return (
-              <div key={task.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <div key={task.id} className="bg-white rounded-card border-[0.5px] border-border p-5">
                 <div className="flex items-start justify-between mb-2">
-                  <h2 className="font-semibold text-gray-800">{task.title}</h2>
+                  <h2 className="font-semibold text-ink">{task.title}</h2>
                   {submission ? (
                     submission.grade != null ? (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-success-soft text-success-strong">
                         ตรวจแล้ว
                       </span>
                     ) : (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-surface text-ink-muted">
                         ส่งแล้ว · รอตรวจ
                       </span>
                     )
@@ -104,7 +107,7 @@ export default async function TasksPage({
                       return (
                         <span
                           className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${
-                            urgent ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
+                            urgent ? "bg-danger-soft text-danger-strong" : "bg-surface text-ink-muted"
                           }`}
                         >
                           {label}
@@ -113,39 +116,39 @@ export default async function TasksPage({
                     })()
                   ) : null}
                 </div>
-                {task.description && <p className="text-sm text-gray-500 mb-2">{task.description}</p>}
+                {task.description && <p className="text-sm text-ink-muted mb-2">{task.description}</p>}
                 {task.due_date && (
-                  <p className={`text-xs mb-3 ${overdue ? "text-red-500" : "text-gray-400"}`}>
+                  <p className={`text-xs mb-3 ${overdue ? "text-danger-strong" : "text-ink-faint"}`}>
                     กำหนดส่ง: {new Date(task.due_date).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
                     {overdue && " (เลยกำหนด)"}
                   </p>
                 )}
 
                 {submission && submission.grade != null && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-3">
-                    <p className="text-sm font-semibold text-green-800">
+                  <div className="bg-success-soft rounded-control px-3 py-2 mb-3">
+                    <p className="text-sm font-semibold text-success-strong">
                       ครูตรวจแล้ว — ได้ {submission.grade} คะแนน
                     </p>
                     {submission.feedback && (
-                      <p className="text-sm text-gray-600 mt-0.5">{submission.feedback}</p>
+                      <p className="text-sm text-ink-muted mt-0.5">{submission.feedback}</p>
                     )}
                   </div>
                 )}
 
                 {submission && (
-                  <div className="bg-gray-50 rounded-lg px-3 py-2 mb-3 text-sm">
+                  <div className="bg-surface rounded-control px-3 py-2 mb-3 text-sm">
                     {submission.file_name ? (
                       <a
                         href={fileLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-blue-600 hover:underline"
+                        className="inline-flex items-center gap-1.5 text-navy-600 hover:underline"
                       >
                         <Paperclip className="w-3.5 h-3.5" />
                         {submission.file_name}
                       </a>
                     ) : (
-                      <p className="text-gray-600 whitespace-pre-wrap">{submission.content}</p>
+                      <p className="text-ink-muted whitespace-pre-wrap">{submission.content}</p>
                     )}
                   </div>
                 )}

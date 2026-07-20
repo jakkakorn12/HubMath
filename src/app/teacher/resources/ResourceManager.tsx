@@ -99,61 +99,61 @@ export default function ResourceManager({
   return (
     <div className="space-y-6">
       {subjectId ? (
-        <form onSubmit={handleUpload} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-gray-500">อัปโหลดไฟล์ใหม่ — {targetLabel}</h2>
+        <form onSubmit={handleUpload} className="bg-white rounded-card border-[0.5px] border-border p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-ink-muted">อัปโหลดไฟล์ใหม่ — {targetLabel}</h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อไฟล์ (ที่นักเรียนเห็น)</label>
+            <label className="block text-sm font-medium text-ink mb-1">ชื่อไฟล์ (ที่นักเรียนเห็น)</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่ (ไม่บังคับ)</label>
+            <label className="block text-sm font-medium text-ink mb-1">หมวดหมู่ (ไม่บังคับ)</label>
             <input
               type="text"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="เช่น ใบงาน"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์</label>
+            <label className="block text-sm font-medium text-ink mb-1">ไฟล์</label>
             <FileInput file={file} onChange={setFile} />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-danger-strong text-sm">{error}</p>}
           <button
             type="submit"
             disabled={uploading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="bg-navy-900 text-white px-4 py-2 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
           >
             {uploading ? "กำลังอัปโหลด..." : "อัปโหลด"}
           </button>
         </form>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-sm text-gray-400">
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5 text-sm text-ink-faint">
           เลือกวิชาด้านบนเพื่ออัปโหลดไฟล์
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <h2 className="text-sm font-semibold text-gray-500 mb-3">ไฟล์ทั้งหมด</h2>
+      <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+        <h2 className="text-sm font-semibold text-ink-muted mb-3">ไฟล์ทั้งหมด</h2>
         {resources.length === 0 ? (
-          <p className="text-sm text-gray-400">ยังไม่มีไฟล์</p>
+          <p className="text-sm text-ink-faint">ยังไม่มีไฟล์</p>
         ) : (
           <div className="space-y-2">
             {resources.map((r) => (
               <div
                 key={r.id}
-                className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3"
+                className="flex items-center justify-between bg-surface rounded-control px-4 py-3"
               >
                 <div>
-                  <p className="text-sm text-gray-700">{r.title}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-ink">{r.title}</p>
+                  <p className="text-xs text-ink-faint">
                     {[
                       r.category ?? "ไม่ระบุหมวดหมู่",
                       typeLabelBySubject[r.subject_id],
@@ -167,7 +167,7 @@ export default function ResourceManager({
                       href={signedUrls[r.id]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
+                      className="text-xs font-medium text-ink border-[0.5px] border-border rounded-control px-2.5 py-1.5 hover:bg-surface transition-colors"
                     >
                       เปิดดู
                     </a>

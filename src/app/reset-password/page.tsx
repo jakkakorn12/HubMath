@@ -98,47 +98,47 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">ตั้งรหัสผ่านใหม่</h1>
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+      <div className="bg-white rounded-card border-[0.5px] border-border p-8 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-ink mb-6 text-center">ตั้งรหัสผ่านใหม่</h1>
 
         {invalid ? (
-          <p className="text-red-500 text-sm text-center">
+          <p className="text-danger-strong text-sm text-center">
             ลิงก์นี้หมดอายุหรือไม่ถูกต้อง กรุณาขอลิงก์รีเซ็ตรหัสผ่านใหม่อีกครั้ง
           </p>
         ) : !ready ? (
-          <p className="text-gray-400 text-sm text-center">กำลังตรวจสอบลิงก์...</p>
+          <p className="text-ink-faint text-sm text-center">กำลังตรวจสอบลิงก์...</p>
         ) : done ? (
-          <p className="text-green-600 text-sm text-center">ตั้งรหัสผ่านใหม่สำเร็จ! กำลังพาไปหน้าหลัก...</p>
+          <p className="text-success-strong text-sm text-center">ตั้งรหัสผ่านใหม่สำเร็จ! กำลังพาไปหน้าหลัก...</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">รหัสผ่านใหม่</label>
+              <label className="block text-sm font-medium text-ink mb-1">รหัสผ่านใหม่</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ยืนยันรหัสผ่านใหม่</label>
+              <label className="block text-sm font-medium text-ink mb-1">ยืนยันรหัสผ่านใหม่</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
               />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-danger-strong text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+              className="w-full bg-navy-900 text-white py-2 rounded-control hover:opacity-90 disabled:opacity-50 font-medium"
             >
               {loading ? "กำลังบันทึก..." : "ตั้งรหัสผ่านใหม่"}
             </button>

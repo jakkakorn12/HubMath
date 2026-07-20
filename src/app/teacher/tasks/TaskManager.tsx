@@ -116,102 +116,102 @@ export default function TaskManager({
   return (
     <div className="space-y-6">
       {!subjectId ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-sm text-gray-400">
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5 text-sm text-ink-faint">
           เลือกวิชาด้านบนเพื่อมอบหมายงาน
         </div>
       ) : (
-      <form onSubmit={handleCreate} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500">มอบหมายงานใหม่ — {targetLabel}</h2>
+      <form onSubmit={handleCreate} className="bg-white rounded-card border-[0.5px] border-border p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-ink-muted">มอบหมายงานใหม่ — {targetLabel}</h2>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ชื่องาน</label>
+          <label className="block text-sm font-medium text-ink mb-1">ชื่องาน</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">รายละเอียด (ไม่บังคับ)</label>
+          <label className="block text-sm font-medium text-ink mb-1">รายละเอียด (ไม่บังคับ)</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">กำหนดส่ง (ไม่บังคับ)</label>
+          <label className="block text-sm font-medium text-ink mb-1">กำหนดส่ง (ไม่บังคับ)</label>
           <input
             type="datetime-local"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-danger-strong text-sm">{error}</p>}
         <button
           type="submit"
           disabled={creating}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+          className="bg-navy-900 text-white px-4 py-2 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           {creating ? "กำลังสร้าง..." : "มอบหมายงาน"}
         </button>
       </form>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <h2 className="text-sm font-semibold text-gray-500 mb-3">งานทั้งหมด</h2>
+      <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+        <h2 className="text-sm font-semibold text-ink-muted mb-3">งานทั้งหมด</h2>
         {tasks.length === 0 ? (
-          <p className="text-sm text-gray-400">ยังไม่มีงานที่มอบหมาย</p>
+          <p className="text-sm text-ink-faint">ยังไม่มีงานที่มอบหมาย</p>
         ) : (
           <div className="space-y-2">
             {tasks.map((t) =>
               editingId === t.id ? (
-                <form key={t.id} onSubmit={handleSaveEdit} className="bg-gray-50 border border-blue-200 rounded-lg px-4 py-3 space-y-2">
+                <form key={t.id} onSubmit={handleSaveEdit} className="bg-surface border-[0.5px] border-navy-600 rounded-control px-4 py-3 space-y-2">
                   <input
                     type="text"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
                   />
                   <textarea
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                     rows={2}
                     placeholder="รายละเอียด (ไม่บังคับ)"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
                   />
                   <input
                     type="datetime-local"
                     value={editDueDate}
                     onChange={(e) => setEditDueDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
                   />
                   <div className="flex gap-2">
                     <button
                       type="submit"
                       disabled={savingEdit}
-                      className="bg-blue-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                      className="bg-navy-900 text-white px-3.5 py-1.5 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
                     >
                       {savingEdit ? "..." : "บันทึก"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="text-sm text-gray-500 px-3 py-1.5 hover:underline"
+                      className="text-sm text-ink-muted px-3 py-1.5 hover:underline"
                     >
                       ยกเลิก
                     </button>
                   </div>
                 </form>
               ) : (
-                <div key={t.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                <div key={t.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
                   <div>
-                    <p className="text-sm text-gray-700">{t.title}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm text-ink">{t.title}</p>
+                    <p className="text-xs text-ink-faint">
                       {t.section_id ? `ห้อง ${roomNameById[t.section_id] ?? "?"}` : "ทุกห้อง"} · ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
                       {t.due_date && ` · กำหนดส่ง ${new Date(t.due_date).toLocaleDateString("th-TH")}`}
                     </p>
@@ -219,13 +219,13 @@ export default function TaskManager({
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/teacher/tasks/${t.id}${sectionId ? `?section_id=${sectionId}` : ""}`}
-                      className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
+                      className="text-xs font-medium text-ink border-[0.5px] border-border rounded-control px-2.5 py-1.5 hover:bg-surface transition-colors"
                     >
                       ดูงานที่ส่ง
                     </Link>
                     <button
                       onClick={() => startEdit(t)}
-                      className="text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
+                      className="text-xs font-medium text-ink border-[0.5px] border-border rounded-control px-2.5 py-1.5 hover:bg-surface transition-colors"
                     >
                       แก้ไข
                     </button>

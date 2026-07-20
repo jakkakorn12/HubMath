@@ -22,16 +22,16 @@ export default function FileInput({
         onChange={(e) => onChange(e.target.files?.[0] ?? null)}
       />
       {file ? (
-        <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50">
-          <FileText className="w-4 h-4 text-gray-500 shrink-0" />
-          <span className="text-sm text-gray-700 truncate flex-1">{file.name}</span>
+        <div className="flex items-center gap-2 border-[0.5px] border-border rounded-control px-3 py-2.5 bg-surface">
+          <FileText className="w-4 h-4 text-ink-faint shrink-0" />
+          <span className="text-sm text-ink truncate flex-1">{file.name}</span>
           <button
             type="button"
             onClick={() => {
               onChange(null);
               if (inputRef.current) inputRef.current.value = "";
             }}
-            className="text-gray-400 hover:text-gray-600 shrink-0"
+            className="text-ink-faint hover:text-ink-muted shrink-0"
             aria-label="เอาไฟล์ออก"
           >
             <X className="w-4 h-4" />
@@ -41,9 +41,9 @@ export default function FileInput({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-5 text-sm text-gray-500 hover:border-gray-400 hover:bg-gray-50 transition-colors flex flex-col items-center gap-1.5"
+          className="w-full border-2 border-dashed border-border rounded-control px-3 py-5 text-sm text-ink-muted hover:border-navy-600/40 hover:bg-surface transition-colors flex flex-col items-center gap-1.5"
         >
-          <Upload className="w-5 h-5 text-gray-400" />
+          <Upload className="w-5 h-5 text-ink-faint" />
           กดเพื่อเลือกไฟล์
         </button>
       )}

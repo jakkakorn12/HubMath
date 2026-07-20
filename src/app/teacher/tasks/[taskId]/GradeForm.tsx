@@ -55,37 +55,37 @@ export default function GradeForm({
   }
 
   return (
-    <form onSubmit={handleSave} className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-start gap-2">
+    <form onSubmit={handleSave} className="mt-3 pt-3 border-t-[0.5px] border-border flex flex-wrap items-start gap-2">
       <div>
-        <label className="block text-[11px] text-gray-400 mb-1">คะแนน</label>
+        <label className="block text-[11px] text-ink-faint mb-1">คะแนน</label>
         <input
           type="text"
           inputMode="decimal"
           value={grade}
           onChange={(e) => { setGrade(e.target.value); setSaved(false); }}
-          className="w-20 border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-20 border-[0.5px] border-border rounded-control px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
         />
       </div>
       <div className="flex-1 min-w-[180px]">
-        <label className="block text-[11px] text-gray-400 mb-1">คอมเมนต์ถึงนักเรียน (ไม่บังคับ)</label>
+        <label className="block text-[11px] text-ink-faint mb-1">คอมเมนต์ถึงนักเรียน (ไม่บังคับ)</label>
         <input
           type="text"
           value={feedback}
           onChange={(e) => { setFeedback(e.target.value); setSaved(false); }}
           placeholder="เช่น ข้อ 3 วิธีทำยังไม่ครบ"
-          className="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border-[0.5px] border-border rounded-control px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
         />
       </div>
       <div className="pt-[18px]">
         <button
           type="submit"
           disabled={saving}
-          className="bg-blue-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+          className="bg-navy-900 text-white px-3.5 py-1.5 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "..." : saved ? "บันทึกแล้ว ✓" : "บันทึก"}
         </button>
       </div>
-      {error && <p className="text-red-500 text-xs w-full">{error}</p>}
+      {error && <p className="text-danger-strong text-xs w-full">{error}</p>}
     </form>
   );
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherNav from "@/components/TeacherNav";
+import Header from "@/components/Header";
 import StudentsTable from "./StudentsTable";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export default async function TeacherStudentsPage({
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/teacher/login");
-  const { data: teacher } = await supabase.from("teachers").select("id").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id, full_name").eq("id", user.id).single();
   if (!teacher) redirect("/teacher/login");
   if (!section_id) redirect("/teacher/dashboard");
 
@@ -55,7 +56,8 @@ export default async function TeacherStudentsPage({
   const registeredCount = rows.filter((r) => r.registered).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
+      <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       <TeacherNav
         sectionId={section_id}
         subjectId={section.subject_id}
@@ -65,8 +67,8 @@ export default async function TeacherStudentsPage({
       />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
-        <h1 className="text-lg font-bold text-gray-800 mb-1">รายชื่อนักเรียน ({rows.length} คน)</h1>
-        <p className="text-sm text-gray-400 mb-4">สมัครแล้ว {registeredCount} · ยังไม่สมัคร {rows.length - registeredCount}</p>
+        <h1 className="text-lg font-bold text-ink mb-1">รายชื่อนักเรียน ({rows.length} คน)</h1>
+        <p className="text-sm text-ink-faint mb-4">สมัครแล้ว {registeredCount} · ยังไม่สมัคร {rows.length - registeredCount}</p>
 
         <StudentsTable rows={rows} />
       </main>
