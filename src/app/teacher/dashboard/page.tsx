@@ -213,13 +213,26 @@ export default async function TeacherDashboardPage() {
                     key={ids.join("-")}
                     className="bg-white rounded-card p-5 border-[0.5px] border-border"
                   >
-                    <div className="mb-3">
-                      <h3 className="font-semibold text-ink">
-                        ห้อง {group.items.map((s) => s.name).join("-")}
-                      </h3>
-                      <p className="text-xs text-ink-faint mt-0.5">เรียนพร้อมกัน</p>
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div>
+                        <h3 className="font-semibold text-ink">
+                          ห้อง {group.items.map((s) => s.name).join("-")}
+                        </h3>
+                        <p className="text-xs text-ink-faint mt-0.5">เรียนพร้อมกัน</p>
+                      </div>
+                      <div className="flex gap-1.5 shrink-0">
+                        {group.items.map((s) => (
+                          <Link
+                            key={s.id}
+                            href={`/teacher/gradebook?section_id=${s.id}`}
+                            className="text-xs font-medium text-navy-600 border-[0.5px] border-navy-600/40 rounded-full px-3 py-1 hover:bg-navy-100 transition-colors"
+                          >
+                            ห้อง {s.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                    <div className="space-y-1.5 text-sm mb-4">
+                    <div className="space-y-1.5 text-sm">
                       <p className="flex items-center gap-1.5 text-ink-faint">
                         <Users className="w-3.5 h-3.5" />
                         สมัครแล้ว
@@ -235,17 +248,6 @@ export default async function TeacherDashboardPage() {
                           {combined.avg != null ? combined.avg.toFixed(1) : "—"}
                         </span>
                       </p>
-                    </div>
-                    <div className="flex gap-2 pt-3 border-t-[0.5px] border-border">
-                      {group.items.map((s) => (
-                        <Link
-                          key={s.id}
-                          href={`/teacher/gradebook?section_id=${s.id}`}
-                          className="text-xs font-medium text-navy-600 border-[0.5px] border-navy-600/40 rounded-full px-3 py-1 hover:bg-navy-100 transition-colors"
-                        >
-                          ห้อง {s.name}
-                        </Link>
-                      ))}
                     </div>
                   </div>
                 );
