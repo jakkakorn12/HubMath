@@ -169,7 +169,7 @@ export default async function TaskSubmissionsPage({
     `?${section_id ? `section_id=${section_id}&` : ""}room=${roomId}`;
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       <nav className="bg-white border-b-[0.5px] border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2.5">

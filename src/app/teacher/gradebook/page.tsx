@@ -97,7 +97,7 @@ export default async function GradebookPage({
   ];
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       <TeacherNav
         sectionId={section_id}

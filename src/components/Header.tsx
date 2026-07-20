@@ -30,20 +30,15 @@ export default function Header({
   wide?: boolean;
 }) {
   const displayName = stripTitle(name);
-  const isStudent = role === "student";
 
   return (
-    <header className={isStudent ? "bg-navy-900" : "bg-white border-b-[0.5px] border-border"}>
+    <header className="bg-navy-900">
       <div className={`${wide ? "max-w-5xl" : "max-w-3xl"} mx-auto px-4 h-14 flex items-center justify-between`}>
         <Link href={homeHref} className="flex items-center gap-2 shrink-0">
-          <span
-            className={`w-7 h-7 rounded-[7px] shrink-0 ${isStudent ? "bg-white" : "bg-navy-900"}`}
-          />
-          <span className={`font-serif font-semibold text-[15px] ${isStudent ? "text-white" : "text-ink"}`}>
+          <span className="w-7 h-7 rounded-[7px] bg-white shrink-0" />
+          <span className="font-semibold text-[15px] text-white">
             HubMath
-            {role === "teacher" && (
-              <span className="font-sans font-normal text-ink-faint ml-1">— ครู</span>
-            )}
+            {role === "teacher" && <span className="font-normal text-white/60 ml-1">— ครู</span>}
           </span>
         </Link>
 
@@ -52,22 +47,14 @@ export default function Header({
             <span className="w-7 h-7 rounded-full bg-navy-100 text-navy-900 text-xs font-semibold flex items-center justify-center shrink-0">
               {initials(name)}
             </span>
-            <span
-              className={`text-sm transition-colors hidden sm:inline truncate max-w-[140px] ${
-                isStudent ? "text-white/90 group-hover:text-white" : "text-ink-muted group-hover:text-ink"
-              }`}
-            >
+            <span className="text-sm text-white/90 group-hover:text-white transition-colors hidden sm:inline truncate max-w-[140px]">
               {displayName}
             </span>
           </Link>
           <form action="/auth/signout" method="POST">
             <button
               aria-label="ออกจากระบบ"
-              className={`transition-colors p-1.5 rounded-control ${
-                isStudent
-                  ? "text-white/70 hover:text-white hover:bg-white/10"
-                  : "text-ink-faint hover:text-ink-muted hover:bg-surface"
-              }`}
+              className="text-white/70 hover:text-white hover:bg-white/10 transition-colors p-1.5 rounded-control"
             >
               <LogOut className="w-4 h-4" />
             </button>

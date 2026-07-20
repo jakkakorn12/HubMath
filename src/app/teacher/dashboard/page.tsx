@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { ArrowRight, FolderOpen, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3 } from "lucide-react";
+import { FolderOpen, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3 } from "lucide-react";
 import { dedupeAttendance } from "@/lib/attendance";
 import Header from "@/components/Header";
 
@@ -94,11 +94,11 @@ export default async function TeacherDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex divide-x-[0.5px] divide-border border-y-[0.5px] border-border overflow-x-auto">
           {[
             { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
             { href: "/teacher/tasks", label: "มอบหมายงาน", icon: ClipboardList },
@@ -108,7 +108,7 @@ export default async function TeacherDashboardPage() {
             <Link
               key={s.href}
               href={s.href}
-              className="bg-white border-[0.5px] border-border rounded-control px-4 py-2.5 text-sm font-medium text-ink flex items-center gap-2 hover:bg-surface transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium text-ink py-3 px-2 whitespace-nowrap hover:bg-surface transition-colors"
             >
               <s.icon className="w-4 h-4 text-navy-600" />
               {s.label}
@@ -128,7 +128,6 @@ export default async function TeacherDashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(sectionsBySubject[subject.id] ?? []).map((section) => {
                 const stats = sectionStats(section.id);
-                const isActive = (countBySection[section.id] ?? 0) > 0;
                 return (
                   <Link
                     key={section.id}
@@ -166,16 +165,6 @@ export default async function TeacherDashboardPage() {
                         </span>
                       </p>
                     </div>
-                    <span
-                      className={`mt-4 flex items-center justify-center gap-1.5 text-sm font-medium rounded-control py-2 transition-colors ${
-                        isActive
-                          ? "bg-navy-900 text-white"
-                          : "border-[0.5px] border-navy-600 text-navy-600 hover:bg-navy-100"
-                      }`}
-                    >
-                      เข้าจัดการห้อง
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
                   </Link>
                 );
               })}
