@@ -20,7 +20,7 @@ export default async function TasksPage({
 
   const { data: enrollment } = await supabase
     .from("student_sections")
-    .select("sections(id)")
+    .select("sections!inner(id)")
     .eq("student_id", user.id)
     .eq("sections.subject_id", subject_id)
     .limit(1)

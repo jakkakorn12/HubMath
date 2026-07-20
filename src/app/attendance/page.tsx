@@ -40,7 +40,7 @@ export default async function AttendancePage({
 
   const { data: enrollment } = await supabase
     .from("student_sections")
-    .select("sections(id, name)")
+    .select("sections!inner(id, name)")
     .eq("student_id", user.id)
     .eq("sections.subject_id", subject_id)
     .limit(1)

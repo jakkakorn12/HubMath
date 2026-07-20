@@ -38,7 +38,9 @@ export default async function DashboardPage() {
 
   const validEnrollments = (enrollments ?? [])
     .map((e) => e.sections as EnrollSection | null)
-    .filter((s): s is EnrollSection => !!s?.subjects);
+    .filter((s): s is EnrollSection => !!s?.subjects)
+    // เรียงตามรหัสวิชาให้เหมือนกันทุกคน (query ไม่การันตีลำดับ)
+    .sort((a, b) => (a.subjects!.code).localeCompare(b.subjects!.code, "th", { numeric: true }));
 
   const subjectIds = [...new Set(validEnrollments.map((s) => s.subject_id))];
   const sectionIds = [...new Set(validEnrollments.map((s) => s.id))];

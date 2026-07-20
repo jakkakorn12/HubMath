@@ -29,9 +29,10 @@ export default async function AssignmentsPage({
   const { data: student } = await supabase.from("students").select("*").eq("id", user.id).single();
 
   // เช็คว่าลงทะเบียนวิชานี้จริง (กันแก้ subject_id ใน URL)
+  // ใช้ !inner เพื่อกรองเฉพาะ enrollment ของวิชานี้ (นักเรียนมีได้หลายวิชา)
   const { data: enrollment } = await supabase
     .from("student_sections")
-    .select("sections(name)")
+    .select("sections!inner(name)")
     .eq("student_id", user.id)
     .eq("sections.subject_id", subject_id)
     .limit(1)
