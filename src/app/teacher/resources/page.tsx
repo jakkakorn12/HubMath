@@ -21,12 +21,16 @@ export default async function TeacherResourcesPage({
   if (!teacher) redirect("/teacher/login");
 
   const [{ data: subjects }, { data: sections }] = await Promise.all([
-    supabase.from("subjects").select("id, name").order("code"),
+    supabase.from("subjects").select("id, name, type").order("code"),
     supabase.from("sections").select("id, name, subject_id").order("name"),
   ]);
 
   const roomNameById: Record<string, string> = {};
   for (const s of sections ?? []) roomNameById[s.id] = s.name;
+
+  const typeLabel: Record<string, string> = { basic: "พื้นฐาน", advanced: "เพิ่มเติม", elective: "เลือก" };
+  const typeLabelBySubject: Record<string, string> = {};
+  for (const s of subjects ?? []) typeLabelBySubject[s.id] = typeLabel[s.type] ?? s.type;
 
   // ดึงไฟล์ตามที่เลือก
   let query = supabase.from("resources").select("*").order("created_at", { ascending: false });
@@ -83,6 +87,7 @@ export default async function TeacherResourcesPage({
           targetLabel={targetLabel}
           resources={resources ?? []}
           roomNameById={roomNameById}
+          typeLabelBySubject={typeLabelBySubject}
           signedUrls={signedUrls}
         />
       </main>

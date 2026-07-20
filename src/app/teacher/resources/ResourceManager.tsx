@@ -26,6 +26,7 @@ export default function ResourceManager({
   targetLabel,
   resources,
   roomNameById,
+  typeLabelBySubject,
   signedUrls,
 }: {
   subjectId: string | null;
@@ -33,6 +34,7 @@ export default function ResourceManager({
   targetLabel: string;
   resources: Resource[];
   roomNameById: Record<string, string>;
+  typeLabelBySubject: Record<string, string>;
   signedUrls: Record<string, string>;
 }) {
   const router = useRouter();
@@ -152,7 +154,11 @@ export default function ResourceManager({
                 <div>
                   <p className="text-sm text-gray-700">{r.title}</p>
                   <p className="text-xs text-gray-400">
-                    {r.category ?? "ไม่ระบุหมวดหมู่"} · {r.section_id ? `ห้อง ${roomNameById[r.section_id] ?? "?"}` : "ทุกห้อง"}
+                    {[
+                      r.category ?? "ไม่ระบุหมวดหมู่",
+                      typeLabelBySubject[r.subject_id],
+                      r.section_id ? `ห้อง ${roomNameById[r.section_id] ?? "?"}` : "ทุกห้อง",
+                    ].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
