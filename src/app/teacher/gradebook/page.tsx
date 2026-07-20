@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import TeacherNav from "@/components/TeacherNav";
 import Header from "@/components/Header";
 import GradebookTable from "./GradebookTable";
-import { SHEET_URL, SHEET_TAB_BY_SUBJECT } from "@/lib/sheets";
+import { SHEET_URL } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -110,29 +110,11 @@ export default async function GradebookPage({
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
         <h1 className="text-lg font-bold text-ink">คะแนนทั้งห้อง ({rows.length} คน)</h1>
 
-        {/* กล่องหมายเหตุ: แก้คะแนนต้องไปที่ Google Sheets */}
-        <div className="bg-warning-soft rounded-card p-4 flex flex-wrap items-center gap-3">
-          <p className="text-sm text-warning-strong flex-1 min-w-[200px]">
-            หน้านี้เป็นมุมมองอย่างเดียว — การกรอก/แก้คะแนนทำที่ Google Sheets
-            {SHEET_TAB_BY_SUBJECT[section.subject_id] && (
-              <> แท็บ <span className="font-semibold">{SHEET_TAB_BY_SUBJECT[section.subject_id]}</span></>
-            )}{" "}
-            แล้วระบบจะอัปเดตให้อัตโนมัติ
-          </p>
-          <a
-            href={SHEET_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 bg-white border-[0.5px] border-warning text-warning-strong text-sm font-medium px-4 py-2 rounded-control hover:bg-warning-soft transition-colors"
-          >
-            เปิด Google Sheets
-          </a>
-        </div>
-
         <GradebookTable
           rows={rows}
           colLabels={cols.map((c) => c.label)}
           fileName={`คะแนน-${subject?.name ?? "วิชา"}-ห้อง${section.name}`}
+          sheetUrl={SHEET_URL}
         />
       </main>
     </div>

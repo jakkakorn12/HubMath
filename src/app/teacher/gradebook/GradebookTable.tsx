@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 
 type Bucket = { sum: number; has: boolean };
 export type GradebookRow = {
@@ -19,14 +19,21 @@ export type GradebookRow = {
 
 const COL_KEYS = ["keep1", "mid", "keep2", "comp", "fin"] as const;
 
+// ปัดแค่ตอนแสดงผล กันเศษทศนิยมเพี้ยนจากการบวกเลขทศนิยมของ JS (เช่น 18.880000000000003)
+function fmt(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
 export default function GradebookTable({
   rows,
   colLabels,
   fileName,
+  sheetUrl,
 }: {
   rows: GradebookRow[];
   colLabels: string[];
   fileName: string;
+  sheetUrl: string;
 }) {
   const [search, setSearch] = useState("");
 
@@ -46,8 +53,8 @@ export default function GradebookTable({
         r.number || "",
         r.code,
         r.name,
-        ...COL_KEYS.map((k) => (r[k].has ? r[k].sum : "")),
-        r.anyScore ? r.total : "",
+        ...COL_KEYS.map((k) => (r[k].has ? fmt(r[k].sum) : "")),
+        r.anyScore ? fmt(r.total) : "",
       ].map(esc).join(",")
     );
     // ﻿ (BOM) เพื่อให้ Excel เปิดภาษาไทยไม่เพี้ยน
@@ -78,6 +85,15 @@ export default function GradebookTable({
           <Download className="w-4 h-4" />
           ดาวน์โหลด Excel (CSV)
         </button>
+        <a
+          href={sheetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink border-[0.5px] border-border rounded-control px-3 py-2 bg-white hover:bg-surface transition-colors"
+        >
+          <ExternalLink className="w-4 h-4" />
+          เปิด Google Sheets
+        </a>
       </div>
 
       <div className="bg-white rounded-card border-[0.5px] border-border overflow-auto max-h-[70vh]">
@@ -101,11 +117,11 @@ export default function GradebookTable({
                 <td className="border-b-[0.5px] border-border px-3 py-2 text-left text-ink">{r.name}</td>
                 {COL_KEYS.map((key) => (
                   <td key={key} className="border-b-[0.5px] border-border px-2 py-2 text-ink-muted">
-                    {r[key].has ? r[key].sum : "—"}
+                    {r[key].has ? fmt(r[key].sum) : "—"}
                   </td>
                 ))}
                 <td className="border-b-[0.5px] border-border px-2 py-2 font-bold text-navy-900 bg-navy-100">
-                  {r.anyScore ? r.total : "—"}
+                  {r.anyScore ? fmt(r.total) : "—"}
                 </td>
               </tr>
             ))}

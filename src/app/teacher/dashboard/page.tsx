@@ -97,24 +97,22 @@ export default async function TeacherDashboardPage() {
     <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
 
-      <div className="border-b-[0.5px] border-border">
-        <div className="max-w-5xl mx-auto flex divide-x-[0.5px] divide-border overflow-x-auto px-4">
-          {[
-            { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
-            { href: "/teacher/tasks", label: "มอบหมายงาน", icon: ClipboardList },
-            { href: "/teacher/attendance", label: "เช็คชื่อ", icon: CalendarCheck },
-            { href: "/teacher/announcements", label: "ประกาศ", icon: Megaphone },
-          ].map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium text-ink py-3 px-2 whitespace-nowrap hover:bg-surface transition-colors"
-            >
-              <s.icon className="w-4 h-4 text-navy-600" />
-              {s.label}
-            </Link>
-          ))}
-        </div>
+      <div className="max-w-5xl mx-auto flex items-center gap-6 overflow-x-auto px-4 pt-4">
+        {[
+          { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
+          { href: "/teacher/tasks", label: "มอบหมายงาน", icon: ClipboardList },
+          { href: "/teacher/attendance", label: "เช็คชื่อ", icon: CalendarCheck },
+          { href: "/teacher/announcements", label: "ประกาศ", icon: Megaphone },
+        ].map((s) => (
+          <Link
+            key={s.href}
+            href={s.href}
+            className="flex items-center gap-2 text-sm font-medium text-ink whitespace-nowrap hover:text-navy-600 transition-colors"
+          >
+            <s.icon className="w-4 h-4 text-navy-600" />
+            {s.label}
+          </Link>
+        ))}
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
