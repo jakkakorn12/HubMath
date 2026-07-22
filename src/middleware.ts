@@ -35,6 +35,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isTeacherLogin = pathname.startsWith("/teacher/login");
   const isTeacherArea = pathname.startsWith("/teacher") && !isTeacherLogin;
+  const isAdminArea = pathname.startsWith("/admin");
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -48,7 +49,7 @@ export async function middleware(request: NextRequest) {
 
   // ยังไม่ล็อกอิน → ส่งไปหน้าเข้าสู่ระบบที่ตรงกับพื้นที่
   if (!user && !isAuthPage && !isSelfAuthPage) {
-    const loginUrl = new URL(isTeacherArea ? "/teacher/login" : "/login", request.url);
+    const loginUrl = new URL(isTeacherArea || isAdminArea ? "/teacher/login" : "/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -59,18 +60,23 @@ export async function middleware(request: NextRequest) {
     );
 
     // เช็ค role เฉพาะตอนที่จำเป็น (กันยิง DB ทุก request)
-    if (isTeacherArea || isStudentArea || isAuthPage) {
+    if (isTeacherArea || isStudentArea || isAuthPage || isAdminArea) {
       const { data: teacherRow } = await supabase
         .from("teachers")
-        .select("id")
+        .select("id, is_admin")
         .eq("id", user.id)
         .maybeSingle();
       const isTeacher = !!teacherRow;
+      const isAdmin = !!teacherRow?.is_admin;
 
       if (isAuthPage) {
         return NextResponse.redirect(
           new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url)
         );
+      }
+      // ไม่ใช่แอดมินพยายามเข้าพื้นที่แอดมิน
+      if (isAdminArea && !isAdmin) {
+        return NextResponse.redirect(new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url));
       }
       // นักเรียนพยายามเข้าพื้นที่ครู
       if (isTeacherArea && !isTeacher) {

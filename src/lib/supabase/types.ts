@@ -6,12 +6,22 @@ export type AttendanceMethod = "teacher" | "qr";
 export type Database = {
   public: {
     Tables: {
+      schools: {
+        Row: {
+          id: string;
+          name: string;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["schools"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["schools"]["Insert"]>;
+      };
       subjects: {
         Row: {
           id: string;
           name: string;
           code: string;
           type: SubjectType;
+          teacher_id: string | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["subjects"]["Row"], "id" | "created_at">;
@@ -35,9 +45,10 @@ export type Database = {
           full_name: string;
           class_level: string;
           student_number: number | null;
+          school_id: string | null;
           created_at: string;
         };
-        Insert: { id: string; student_code: string; full_name: string; class_level?: string; student_number?: number | null };
+        Insert: { id: string; student_code: string; full_name: string; class_level?: string; student_number?: number | null; school_id?: string | null };
         Update: Partial<Database["public"]["Tables"]["students"]["Insert"]>;
       };
       student_sections: {
@@ -82,9 +93,14 @@ export type Database = {
           id: string;
           full_name: string;
           email: string;
+          school_id: string | null;
+          is_admin: boolean;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at">;
+        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin"> & {
+          school_id?: string | null;
+          is_admin?: boolean;
+        };
         Update: Partial<Database["public"]["Tables"]["teachers"]["Insert"]>;
       };
       resources: {
