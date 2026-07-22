@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { AssignmentListItem } from "./AssignmentManager";
+import { sortAssignments, type AssignmentListItem } from "./AssignmentManager";
 
 type StudentRow = { code: string; number: number; name: string };
 
@@ -37,10 +37,7 @@ export default function EditScoresTable({
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  const sortedAssignments = useMemo(
-    () => [...assignments].sort((a, b) => a.term - b.term || a.category.localeCompare(b.category) || a.title.localeCompare(b.title, "th")),
-    [assignments]
-  );
+  const sortedAssignments = useMemo(() => sortAssignments(assignments), [assignments]);
 
   function getValue(code: string, assignmentId: string) {
     const key = cellKey(code, assignmentId);

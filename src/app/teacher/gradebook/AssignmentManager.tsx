@@ -19,6 +19,25 @@ export type AssignmentListItem = {
   max_score: number;
 };
 
+// ลำดับตามหลักสูตรจริง: เก็บก่อนกลางภาค → กลางภาค → เก็บหลังกลางภาค → สมรรถนะ → ปลายภาค
+// (เรียงตามตัวอักษร category เฉยๆ จะได้ลำดับผิด เพราะ "practice" มาทั้งก่อนและหลังกลางภาค)
+function sortPriority(category: AssignmentCategory, term: 1 | 2) {
+  if (category === "practice" && term === 1) return 0;
+  if (category === "midterm") return 1;
+  if (category === "practice" && term === 2) return 2;
+  if (category === "competency") return 3;
+  if (category === "final") return 4;
+  return 5;
+}
+
+export function sortAssignments(list: AssignmentListItem[]) {
+  return [...list].sort(
+    (a, b) =>
+      sortPriority(a.category, a.term) - sortPriority(b.category, b.term) ||
+      a.title.localeCompare(b.title, "th")
+  );
+}
+
 export default function AssignmentManager({
   subjectId,
   assignments,
@@ -62,7 +81,7 @@ export default function AssignmentManager({
     <div className="space-y-4">
       {assignments.length > 0 && (
         <div className="space-y-1.5">
-          {assignments.map((a) => (
+          {sortAssignments(assignments).map((a) => (
             <div key={a.id} className="flex items-center justify-between bg-surface rounded-control px-3 py-2 text-sm">
               <span className="text-ink">{a.title}</span>
               <span className="text-ink-faint text-xs">
