@@ -40,7 +40,9 @@ export async function POST(req: NextRequest) {
 
   const svc = serviceClient();
 
-  const { data: invited, error: inviteError } = await svc.auth.admin.inviteUserByEmail(email);
+  const { data: invited, error: inviteError } = await svc.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${req.nextUrl.origin}/reset-password`,
+  });
   if (inviteError || !invited.user) {
     return NextResponse.json({ error: inviteError?.message ?? "เชิญไม่สำเร็จ" }, { status: 400 });
   }
