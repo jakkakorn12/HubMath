@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { FolderOpen, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3 } from "lucide-react";
+import { FolderOpen, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3, Plus } from "lucide-react";
 import { dedupeAttendance } from "@/lib/attendance";
 import Header from "@/components/Header";
 
@@ -147,9 +147,29 @@ export default async function TeacherDashboardPage() {
             {s.label}
           </Link>
         ))}
+        <Link
+          href="/teacher/subjects/new"
+          className="flex items-center gap-2 text-sm font-medium text-navy-600 whitespace-nowrap hover:text-navy-900 transition-colors ml-auto"
+        >
+          <Plus className="w-4 h-4" />
+          สร้างวิชาใหม่
+        </Link>
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
+
+        {(subjects ?? []).length === 0 && (
+          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center">
+            <p className="text-sm text-ink-muted mb-4">ยังไม่มีวิชาเป็นของคุณ เริ่มสร้างวิชาแรกได้เลย</p>
+            <Link
+              href="/teacher/subjects/new"
+              className="inline-flex items-center gap-2 bg-navy-900 text-white px-4 py-2 rounded-control text-sm font-medium hover:opacity-90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              สร้างวิชาใหม่
+            </Link>
+          </div>
+        )}
 
         {(subjects ?? []).map((subject) => (
           <div key={subject.id}>
