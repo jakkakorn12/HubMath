@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import TeacherNav from "@/components/TeacherNav";
 import Header from "@/components/Header";
 import GradebookTable from "./GradebookTable";
+import AssignmentManager from "./AssignmentManager";
+import EditScoresTable from "./EditScoresTable";
 import { SHEET_URL } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +13,10 @@ export const dynamic = "force-dynamic";
 export default async function GradebookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ section_id?: string }>;
+  searchParams: Promise<{ section_id?: string; mode?: string }>;
 }) {
-  const { section_id } = await searchParams;
+  const { section_id, mode } = await searchParams;
+  const editMode = mode === "edit";
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -40,7 +44,7 @@ export default async function GradebookPage({
 
   const [{ data: roster }, { data: assignments }, { data: scoreCache }] = await Promise.all([
     codes.length ? supabase.from("student_roster").select("student_code, full_name").in("student_code", codes) : Promise.resolve({ data: [] as { student_code: string; full_name: string }[] }),
-    supabase.from("assignments").select("id, term, category, max_score").eq("subject_id", section.subject_id),
+    supabase.from("assignments").select("id, title, term, category, max_score").eq("subject_id", section.subject_id),
     codes.length ? supabase.from("score_cache").select("assignment_id, student_code, score").in("student_code", codes) : Promise.resolve({ data: [] as { assignment_id: string; student_code: string; score: number | null }[] }),
   ]);
 
@@ -96,6 +100,13 @@ export default async function GradebookPage({
     { label: `ปลายภาค/${maxFinal}`, key: "fin" as const },
   ];
 
+  const students = rows.map((r) => ({ code: r.code, number: r.number, name: r.name }));
+  const initialScores: Record<string, number | null> = {};
+  for (const s of scoreCache ?? []) {
+    initialScores[`${s.student_code}__${s.assignment_id}`] = s.score;
+  }
+  const baseQuery = `?section_id=${section_id}`;
+
   return (
     <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
@@ -108,14 +119,45 @@ export default async function GradebookPage({
       />
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
-        <h1 className="text-lg font-bold text-ink">คะแนนทั้งห้อง ({rows.length} คน)</h1>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h1 className="text-lg font-bold text-ink">คะแนนทั้งห้อง ({rows.length} คน)</h1>
+          <div className="flex gap-1 text-sm">
+            <Link
+              href={`/teacher/gradebook${baseQuery}`}
+              className={`px-3 py-1.5 rounded-control font-medium ${!editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+            >
+              ดูสรุป
+            </Link>
+            <Link
+              href={`/teacher/gradebook${baseQuery}&mode=edit`}
+              className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+            >
+              แก้ไขคะแนน
+            </Link>
+          </div>
+        </div>
 
-        <GradebookTable
-          rows={rows}
-          colLabels={cols.map((c) => c.label)}
-          fileName={`คะแนน-${subject?.name ?? "วิชา"}-ห้อง${section.name}`}
-          sheetUrl={SHEET_URL}
-        />
+        {!editMode ? (
+          <GradebookTable
+            rows={rows}
+            colLabels={cols.map((c) => c.label)}
+            fileName={`คะแนน-${subject?.name ?? "วิชา"}-ห้อง${section.name}`}
+            sheetUrl={SHEET_URL}
+          />
+        ) : (
+          <div className="space-y-6">
+            <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+              <h2 className="text-sm font-semibold text-ink-muted mb-3">ช่องคะแนน</h2>
+              <AssignmentManager subjectId={section.subject_id} assignments={assign} />
+            </div>
+            <EditScoresTable
+              subjectId={section.subject_id}
+              assignments={assign}
+              students={students}
+              initialScores={initialScores}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
