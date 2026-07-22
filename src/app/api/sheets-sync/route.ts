@@ -61,6 +61,27 @@ export async function POST(req: NextRequest) {
         if (error) throw error;
         return NextResponse.json({ ok: true });
       }
+      // เหมือน upsert_score แต่รับหลายแถวในคำขอเดียว — กันสคริปต์ยิง 1 request ต่อ 1 เซลล์
+      // ตอนวาง/import คะแนนทีเดียวหลายร้อยแถว (เสี่ยงชน execution time limit ของ Apps Script)
+      case "upsert_scores_batch": {
+        const rows = Array.isArray(payload?.rows) ? (payload!.rows as unknown[]) : [];
+        if (rows.length === 0) return NextResponse.json({ ok: true, count: 0 });
+        const { error } = await supabase
+          .from("score_cache")
+          .upsert(
+            rows.map((r) => {
+              const row = r as Record<string, unknown>;
+              return {
+                student_code: String(row.student_code ?? ""),
+                assignment_id: String(row.assignment_id ?? ""),
+                score: Number(row.score),
+              };
+            }),
+            { onConflict: "student_code,assignment_id" }
+          );
+        if (error) throw error;
+        return NextResponse.json({ ok: true, count: rows.length });
+      }
       case "delete_score": {
         const { error } = await supabase
           .from("score_cache")
@@ -85,6 +106,28 @@ export async function POST(req: NextRequest) {
           );
         if (error) throw error;
         return NextResponse.json({ ok: true });
+      }
+      // เหมือน upsert_attendance แต่รับหลายแถวในคำขอเดียว — เหตุผลเดียวกับ upsert_scores_batch
+      case "upsert_attendance_batch": {
+        const rows = Array.isArray(payload?.rows) ? (payload!.rows as unknown[]) : [];
+        if (rows.length === 0) return NextResponse.json({ ok: true, count: 0 });
+        const { error } = await supabase
+          .from("attendance")
+          .upsert(
+            rows.map((r) => {
+              const row = r as Record<string, unknown>;
+              return {
+                student_code: String(row.student_code ?? ""),
+                section_id: String(row.section_id ?? ""),
+                date: String(row.date ?? ""),
+                status: String(row.status ?? ""),
+                method: "teacher",
+              };
+            }),
+            { onConflict: "student_code,section_id,date,method" }
+          );
+        if (error) throw error;
+        return NextResponse.json({ ok: true, count: rows.length });
       }
       case "delete_attendance": {
         // ลบเฉพาะแถวที่ครูกรอก (ไม่แตะแถว QR ของนักเรียน)
