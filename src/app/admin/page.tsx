@@ -4,6 +4,7 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 import InviteTeacherForm from "./InviteTeacherForm";
+import SuspendToggleButton from "./SuspendToggleButton";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,10 @@ export default async function AdminPage() {
   const svc = serviceClient();
 
   const { data: schools } = await svc.from("schools").select("id, name, school_code").order("name");
-  const { data: teachers } = await svc.from("teachers").select("id, full_name, email, school_id, is_admin").order("full_name");
+  const { data: teachers } = await svc
+    .from("teachers")
+    .select("id, full_name, email, school_id, is_admin, is_suspended")
+    .order("full_name");
   const { data: teacherSubjects } = await svc.from("teacher_subjects").select("teacher_id");
 
   const countByTeacher: Record<string, number> = {};
@@ -74,7 +78,7 @@ export default async function AdminPage() {
                 ) : (
                   <div className="space-y-2">
                     {schoolTeachers.map((t) => (
-                      <div key={t.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
+                      <div key={t.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3 gap-3">
                         <div>
                           <p className="text-sm text-ink font-medium">
                             {t.full_name}
@@ -83,10 +87,16 @@ export default async function AdminPage() {
                                 แอดมิน
                               </span>
                             )}
+                            {t.is_suspended && (
+                              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-danger-soft text-danger-strong">
+                                ถูกระงับ
+                              </span>
+                            )}
                           </p>
                           <p className="text-xs text-ink-faint mt-0.5">{t.email}</p>
+                          <p className="text-xs text-ink-faint mt-0.5">{countByTeacher[t.id] ?? 0} วิชา</p>
                         </div>
-                        <p className="text-xs text-ink-faint shrink-0">{countByTeacher[t.id] ?? 0} วิชา</p>
+                        {t.id !== me.id && <SuspendToggleButton teacherId={t.id} isSuspended={!!t.is_suspended} />}
                       </div>
                     ))}
                   </div>

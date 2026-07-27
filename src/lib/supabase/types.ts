@@ -97,13 +97,15 @@ export type Database = {
           school_id: string | null;
           is_admin: boolean;
           is_super_admin: boolean;
+          is_suspended: boolean;
           sync_secret: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "is_super_admin" | "sync_secret"> & {
+        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "is_super_admin" | "is_suspended" | "sync_secret"> & {
           school_id?: string | null;
           is_admin?: boolean;
           is_super_admin?: boolean;
+          is_suspended?: boolean;
           sync_secret?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["teachers"]["Insert"]>;

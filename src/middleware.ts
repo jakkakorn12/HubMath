@@ -67,11 +67,19 @@ export async function middleware(request: NextRequest) {
     if (isTeacherArea || isStudentArea || isAuthPage || isAdminArea || isPlatformArea) {
       const { data: teacherRow } = await supabase
         .from("teachers")
-        .select("id, is_admin, is_super_admin")
+        .select("id, is_admin, is_super_admin, is_suspended")
         .eq("id", user.id)
         .maybeSingle();
       const isTeacher = !!teacherRow;
       const isSuperAdmin = !!teacherRow?.is_super_admin;
+
+      // บัญชีถูกระงับ (เช่น ระหว่าง session ยังไม่หมดอายุ) → เตะออกทันทีที่เจอ ไม่ว่าจะพยายามเข้าพื้นที่ไหน
+      if (teacherRow?.is_suspended) {
+        await supabase.auth.signOut();
+        const suspendedUrl = new URL("/teacher/login", request.url);
+        suspendedUrl.searchParams.set("suspended", "1");
+        return NextResponse.redirect(suspendedUrl);
+      }
 
       if (isAuthPage) {
         return NextResponse.redirect(

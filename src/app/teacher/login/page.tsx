@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function TeacherLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <TeacherLoginForm />
+    </Suspense>
+  );
+}
+
+function TeacherLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("suspended") ? "บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ" : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
@@ -31,13 +42,20 @@ export default function TeacherLoginPage() {
 
     const { data: teacher } = await supabase
       .from("teachers")
-      .select("id")
+      .select("id, is_suspended")
       .eq("id", signInData.user.id)
       .single();
 
     if (!teacher) {
       await supabase.auth.signOut();
       setError("บัญชีนี้ไม่ใช่บัญชีครู");
+      setLoading(false);
+      return;
+    }
+
+    if (teacher.is_suspended) {
+      await supabase.auth.signOut();
+      setError("บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ");
       setLoading(false);
       return;
     }
