@@ -81,6 +81,11 @@ export default function TeacherLoginPage() {
           </button>
         </form>
         <p className="text-center text-sm text-ink-faint mt-4">
+          <Link href="/teacher/forgot-password" className="text-navy-600 hover:underline">
+            ลืมรหัสผ่าน / หาลิงก์คำเชิญไม่เจอ?
+          </Link>
+        </p>
+        <p className="text-center text-sm text-ink-faint mt-2">
           <Link href="/request-school" className="text-navy-600 hover:underline">
             อยากเปิดใช้งานให้โรงเรียนอื่น?
           </Link>

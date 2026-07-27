@@ -34,7 +34,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isTeacherLogin = pathname.startsWith("/teacher/login");
-  const isTeacherArea = pathname.startsWith("/teacher") && !isTeacherLogin;
+  const isTeacherForgotPassword = pathname.startsWith("/teacher/forgot-password");
+  const isTeacherArea = pathname.startsWith("/teacher") && !isTeacherLogin && !isTeacherForgotPassword;
   const isAdminArea = pathname.startsWith("/admin");
   const isPlatformArea = pathname.startsWith("/platform");
   const isAuthPage =
@@ -47,7 +48,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/checkin") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/help") ||
-    pathname.startsWith("/request-school");
+    pathname.startsWith("/request-school") ||
+    isTeacherForgotPassword;
 
   // ยังไม่ล็อกอิน → ส่งไปหน้าเข้าสู่ระบบที่ตรงกับพื้นที่
   if (!user && !isAuthPage && !isSelfAuthPage) {
