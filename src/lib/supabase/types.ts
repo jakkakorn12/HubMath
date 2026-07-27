@@ -95,11 +95,13 @@ export type Database = {
           email: string;
           school_id: string | null;
           is_admin: boolean;
+          sync_secret: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin"> & {
+        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "sync_secret"> & {
           school_id?: string | null;
           is_admin?: boolean;
+          sync_secret?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["teachers"]["Insert"]>;
       };
