@@ -18,8 +18,9 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const { data: teacher } = await supabase.from("teachers").select("id").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id, school_id").eq("id", user.id).single();
   if (!teacher) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!teacher.school_id) return NextResponse.json({ error: "บัญชีนี้ยังไม่ได้ผูกกับโรงเรียน" }, { status: 400 });
 
   let body: { section_id?: string; class_level?: string; rows?: RosterRow[] };
   try {
@@ -50,14 +51,14 @@ export async function POST(req: NextRequest) {
   if (!link) return NextResponse.json({ error: "คุณไม่ได้สอนวิชานี้" }, { status: 403 });
 
   const { error: rosterError } = await svc.from("student_roster").upsert(
-    rows.map((r) => ({ student_code: r.student_code, full_name: r.full_name, class_level: classLevel })),
-    { onConflict: "student_code" }
+    rows.map((r) => ({ student_code: r.student_code, full_name: r.full_name, class_level: classLevel, school_id: teacher.school_id })),
+    { onConflict: "school_id,student_code" }
   );
   if (rosterError) return NextResponse.json({ error: rosterError.message }, { status: 500 });
 
   const { error: enrollError } = await svc.from("roster_enrollments").upsert(
-    rows.map((r) => ({ student_code: r.student_code, section_id: sectionId, student_number: r.student_number })),
-    { onConflict: "student_code,section_id" }
+    rows.map((r) => ({ student_code: r.student_code, section_id: sectionId, student_number: r.student_number, school_id: teacher.school_id })),
+    { onConflict: "school_id,student_code,section_id" }
   );
   if (enrollError) return NextResponse.json({ error: enrollError.message }, { status: 500 });
 

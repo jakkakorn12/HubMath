@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     .single();
   if (!me?.is_super_admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-  let body: { request_id?: string; action?: string };
+  let body: { request_id?: string; action?: string; school_code?: string };
   try {
     body = await req.json();
   } catch {
@@ -32,8 +32,12 @@ export async function POST(req: NextRequest) {
 
   const requestId = body.request_id ?? "";
   const action = body.action;
+  const schoolCode = (body.school_code ?? "").trim().toUpperCase();
   if (!requestId || (action !== "approve" && action !== "reject")) {
     return NextResponse.json({ error: "invalid params" }, { status: 400 });
+  }
+  if (action === "approve" && !/^[A-Z0-9_-]{2,32}$/.test(schoolCode)) {
+    return NextResponse.json({ error: "รหัสโรงเรียนไม่ถูกต้อง (ใช้ตัวอักษร A-Z, 0-9, - หรือ _ ความยาว 2-32)" }, { status: 400 });
   }
 
   const svc = serviceClient();
@@ -58,9 +62,12 @@ export async function POST(req: NextRequest) {
   }
 
   // action === "approve": สร้างโรงเรียนใหม่ แล้วเชิญผู้ขอเป็นแอดมินของโรงเรียนนั้น
+  const { data: existingCode } = await svc.from("schools").select("id").eq("school_code", schoolCode).maybeSingle();
+  if (existingCode) return NextResponse.json({ error: "รหัสโรงเรียนนี้ถูกใช้ไปแล้ว" }, { status: 400 });
+
   const { data: school, error: schoolError } = await svc
     .from("schools")
-    .insert({ name: schoolReq.school_name })
+    .insert({ name: schoolReq.school_name, school_code: schoolCode })
     .select("id")
     .single();
   if (schoolError || !school) {

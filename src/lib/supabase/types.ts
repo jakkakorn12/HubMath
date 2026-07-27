@@ -10,6 +10,7 @@ export type Database = {
         Row: {
           id: string;
           name: string;
+          school_code: string;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["schools"]["Row"], "id" | "created_at">;

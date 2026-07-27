@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [schoolCode, setSchoolCode] = useState("");
   const [studentCode, setStudentCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +18,10 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
+    if (!schoolCode.trim()) {
+      setError("กรุณากรอกรหัสโรงเรียน");
+      return;
+    }
     if (!studentCode.trim()) {
       setError("กรุณากรอกเลขประจำตัว");
       return;
@@ -31,13 +36,22 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+
+    const resolveRes = await fetch(`/api/public/resolve-school?code=${encodeURIComponent(schoolCode.trim())}`);
+    const resolveData = await resolveRes.json();
+    if (!resolveRes.ok) {
+      setError(resolveData.error ?? "ไม่พบรหัสโรงเรียนนี้");
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
 
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { student_code: studentCode },
+        data: { student_code: studentCode, school_id: resolveData.school_id },
       },
     });
 
@@ -61,6 +75,16 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold text-ink mb-2 text-center">สมัครสมาชิก</h1>
         <p className="text-sm text-ink-faint text-center mb-6">ใช้เลขประจำตัวนักเรียนของคุณ</p>
         <form onSubmit={handleRegister} noValidate className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">รหัสโรงเรียน</label>
+            <input
+              type="text"
+              value={schoolCode}
+              onChange={(e) => setSchoolCode(e.target.value)}
+              placeholder="เช่น DEBSIRIN"
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-600"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-ink mb-1">เลขประจำตัว</label>
             <input
