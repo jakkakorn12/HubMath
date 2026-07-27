@@ -10,7 +10,7 @@ function cellKey(code: string, assignmentId: string) {
   return `${code}__${assignmentId}`;
 }
 
-const AUTOSAVE_DELAY_MS = 1500;
+const AUTOSAVE_DELAY_MS = 600;
 
 export default function EditScoresTable({
   subjectId,
