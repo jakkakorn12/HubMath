@@ -43,6 +43,11 @@ export async function POST(req: NextRequest) {
   const { data: school } = await svc.from("schools").select("id").eq("id", schoolId).maybeSingle();
   if (!school) return NextResponse.json({ error: "ไม่พบโรงเรียนนี้" }, { status: 404 });
 
+  // เช็คก่อนเชิญว่ามีครูอีเมลนี้อยู่แล้วหรือยัง — กันไม่ให้ inviteUserByEmail คืน user เดิมที่มีอยู่แล้ว
+  // แล้วโดน insert ชนกับ teachers_pkey จนโค้ด rollback ไปลบบัญชีของคนที่มีอยู่แล้วทิ้งโดยไม่ตั้งใจ
+  const { data: existingTeacher } = await svc.from("teachers").select("id").eq("email", email).maybeSingle();
+  if (existingTeacher) return NextResponse.json({ error: "มีครูอีเมลนี้อยู่ในระบบแล้ว" }, { status: 400 });
+
   const { data: invited, error: inviteError } = await svc.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${req.nextUrl.origin}/reset-password`,
   });

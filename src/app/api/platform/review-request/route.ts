@@ -65,6 +65,11 @@ export async function POST(req: NextRequest) {
   const { data: existingCode } = await svc.from("schools").select("id").eq("school_code", schoolCode).maybeSingle();
   if (existingCode) return NextResponse.json({ error: "รหัสโรงเรียนนี้ถูกใช้ไปแล้ว" }, { status: 400 });
 
+  // เช็คก่อนสร้างโรงเรียนว่ามีครูอีเมลนี้อยู่แล้วหรือยัง — กันไม่ให้ inviteUserByEmail คืน user เดิมที่มีอยู่แล้ว
+  // แล้วโดน insert ชนกับ teachers_pkey จนโค้ด rollback ไปลบบัญชีของคนที่มีอยู่แล้วทิ้งโดยไม่ตั้งใจ
+  const { data: existingTeacher } = await svc.from("teachers").select("id").eq("email", schoolReq.requester_email).maybeSingle();
+  if (existingTeacher) return NextResponse.json({ error: "มีครูอีเมลนี้อยู่ในระบบแล้ว" }, { status: 400 });
+
   const { data: school, error: schoolError } = await svc
     .from("schools")
     .insert({ name: schoolReq.school_name, school_code: schoolCode })
