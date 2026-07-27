@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sortAssignments, type AssignmentListItem } from "./AssignmentManager";
 
@@ -9,6 +9,8 @@ type StudentRow = { code: string; number: number; name: string };
 function cellKey(code: string, assignmentId: string) {
   return `${code}__${assignmentId}`;
 }
+
+const AUTOSAVE_DELAY_MS = 1500;
 
 export default function EditScoresTable({
   subjectId,
@@ -35,6 +37,21 @@ export default function EditScoresTable({
 
   const sortedAssignments = useMemo(() => sortAssignments(assignments), [assignments]);
 
+  // ref เก็บค่าล่าสุดไว้ให้ runSave (ที่อาจถูกเรียกจาก timer เก่า) อ่านค่าปัจจุบันเสมอ ไม่ใช่ค่าตอน schedule
+  const valuesRef = useRef(values);
+  useEffect(() => {
+    valuesRef.current = values;
+  }, [values]);
+
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savingRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, []);
+
   function getValue(code: string, assignmentId: string) {
     const key = cellKey(code, assignmentId);
     return values[key] ?? (initialScores[key] != null ? String(initialScores[key]) : "");
@@ -43,17 +60,27 @@ export default function EditScoresTable({
   function setValue(code: string, assignmentId: string, v: string) {
     setValues((prev) => ({ ...prev, [cellKey(code, assignmentId)]: v }));
     setDone(false);
+
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      runSave();
+    }, AUTOSAVE_DELAY_MS);
   }
 
-  async function handleSave() {
+  // รวมทุกช่องที่เปลี่ยนเป็น request เดียวเสมอ ไม่ว่าจะบันทึกอัตโนมัติหรือกดปุ่มเอง
+  // (กันปัญหาเดิมที่เคยเจอตอน sync จาก Sheets ที่ยิง 1 request ต่อ 1 ช่องจนระบบค้าง)
+  async function runSave() {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setError(null);
 
+    const currentValues = valuesRef.current;
     const rows: { student_code: string; assignment_id: string; score: number | null }[] = [];
     for (const s of students) {
       for (const a of sortedAssignments) {
         const key = cellKey(s.code, a.id);
-        const current = key in values ? values[key] : (initialScores[key] != null ? String(initialScores[key]) : "");
+        const current = key in currentValues ? currentValues[key] : (initialScores[key] != null ? String(initialScores[key]) : "");
         const initial = initialScores[key];
         const currentNum = current.trim() === "" ? null : Number(current);
         if (currentNum === initial) continue; // ไม่เปลี่ยน ไม่ต้องส่ง
@@ -65,6 +92,7 @@ export default function EditScoresTable({
     if (rows.length === 0) {
       setSaving(false);
       setDone(true);
+      savingRef.current = false;
       return;
     }
 
@@ -78,12 +106,19 @@ export default function EditScoresTable({
     if (!res.ok) {
       setError(data.error ?? "บันทึกไม่สำเร็จ");
       setSaving(false);
+      savingRef.current = false;
       return;
     }
 
     setSaving(false);
+    savingRef.current = false;
     setDone(true);
     router.refresh();
+  }
+
+  async function handleSaveClick() {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    await runSave();
   }
 
   if (sortedAssignments.length === 0) {
@@ -120,7 +155,8 @@ export default function EditScoresTable({
                   {s.number || "—"}
                 </td>
                 <td className="sticky left-9 z-10 bg-white border border-border px-2 py-1 text-left text-ink whitespace-nowrap" style={i % 2 === 1 ? { background: "var(--color-surface)" } : undefined}>
-                  {s.name}
+                  <span className="block">{s.name}</span>
+                  <span className="block text-[10px] text-ink-faint font-normal">{s.code}</span>
                 </td>
                 {sortedAssignments.map((a) => (
                   <td key={a.id} className="border border-border px-0.5 py-1">
@@ -150,14 +186,14 @@ export default function EditScoresTable({
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={handleSaveClick}
           disabled={saving || students.length === 0}
           className="bg-navy-900 text-white px-4 py-2 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "กำลังบันทึก..." : "บันทึกคะแนน"}
         </button>
         {error && <p className="text-danger-strong text-sm">{error}</p>}
-        {done && !error && <p className="text-success-strong text-sm">บันทึกแล้ว</p>}
+        {done && !error && !saving && <p className="text-success-strong text-sm">บันทึกแล้ว (บันทึกอัตโนมัติเปิดอยู่)</p>}
       </div>
     </div>
   );
