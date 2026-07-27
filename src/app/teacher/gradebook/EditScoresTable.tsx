@@ -75,45 +75,46 @@ export default function EditScoresTable({
     setSaving(true);
     setError(null);
 
-    const currentValues = valuesRef.current;
-    const rows: { student_code: string; assignment_id: string; score: number | null }[] = [];
-    for (const s of students) {
-      for (const a of sortedAssignments) {
-        const key = cellKey(s.code, a.id);
-        const current = key in currentValues ? currentValues[key] : (initialScores[key] != null ? String(initialScores[key]) : "");
-        const initial = initialScores[key];
-        const currentNum = current.trim() === "" ? null : Number(current);
-        if (currentNum === initial) continue; // ไม่เปลี่ยน ไม่ต้องส่ง
-        if (current.trim() !== "" && Number.isNaN(currentNum)) continue; // กันค่าที่พิมพ์ไม่ใช่ตัวเลข
-        rows.push({ student_code: s.code, assignment_id: a.id, score: currentNum });
+    try {
+      const currentValues = valuesRef.current;
+      const rows: { student_code: string; assignment_id: string; score: number | null }[] = [];
+      for (const s of students) {
+        for (const a of sortedAssignments) {
+          const key = cellKey(s.code, a.id);
+          const current = key in currentValues ? currentValues[key] : (initialScores[key] != null ? String(initialScores[key]) : "");
+          const initial = initialScores[key];
+          const currentNum = current.trim() === "" ? null : Number(current);
+          if (currentNum === initial) continue; // ไม่เปลี่ยน ไม่ต้องส่ง
+          if (current.trim() !== "" && Number.isNaN(currentNum)) continue; // กันค่าที่พิมพ์ไม่ใช่ตัวเลข
+          rows.push({ student_code: s.code, assignment_id: a.id, score: currentNum });
+        }
       }
-    }
 
-    if (rows.length === 0) {
-      setSaving(false);
+      if (rows.length === 0) {
+        setDone(true);
+        return;
+      }
+
+      const res = await fetch("/api/teacher/update-scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject_id: subjectId, rows }),
+      });
+      const data = await res.json().catch(() => ({ error: "เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองใหม่อีกครั้ง" }));
+
+      if (!res.ok) {
+        setError(data.error ?? "บันทึกไม่สำเร็จ");
+        return;
+      }
+
       setDone(true);
-      savingRef.current = false;
-      return;
-    }
-
-    const res = await fetch("/api/teacher/update-scores", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject_id: subjectId, rows }),
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.error ?? "บันทึกไม่สำเร็จ");
+      router.refresh();
+    } catch {
+      setError("บันทึกไม่สำเร็จ (เชื่อมต่อไม่ได้) กรุณาลองใหม่อีกครั้ง");
+    } finally {
       setSaving(false);
       savingRef.current = false;
-      return;
     }
-
-    setSaving(false);
-    savingRef.current = false;
-    setDone(true);
-    router.refresh();
   }
 
   async function handleSaveClick() {
