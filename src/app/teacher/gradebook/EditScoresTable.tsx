@@ -6,10 +6,6 @@ import { sortAssignments, type AssignmentListItem } from "./AssignmentManager";
 
 type StudentRow = { code: string; number: number; name: string };
 
-const CATEGORY_LABEL: Record<string, string> = {
-  practice: "เก็บคะแนน", midterm: "กลางภาค", final: "ปลายภาค", competency: "สมรรถนะ",
-};
-
 function cellKey(code: string, assignmentId: string) {
   return `${code}__${assignmentId}`;
 }
@@ -38,8 +34,6 @@ export default function EditScoresTable({
   const [done, setDone] = useState(false);
 
   const sortedAssignments = useMemo(() => sortAssignments(assignments), [assignments]);
-  const term1Assignments = useMemo(() => sortedAssignments.filter((a) => a.term === 1), [sortedAssignments]);
-  const term2Assignments = useMemo(() => sortedAssignments.filter((a) => a.term === 2), [sortedAssignments]);
 
   function getValue(code: string, assignmentId: string) {
     const key = cellKey(code, assignmentId);
@@ -99,42 +93,24 @@ export default function EditScoresTable({
   return (
     <div className="space-y-3">
       <div className="bg-white rounded-card border-[0.5px] border-border overflow-auto max-h-[70vh]">
-        <table className="w-full text-sm text-center border-collapse min-w-[640px]">
+        <table className="w-full text-sm text-center border-collapse">
           <thead>
             <tr className="text-ink-muted">
-              <th rowSpan={2} className="sticky top-0 left-0 z-20 bg-surface border border-border px-2 py-1.5 w-10">
+              <th className="sticky top-0 left-0 z-20 bg-surface border border-border px-2 py-1.5 w-9">
                 เลขที่
               </th>
-              <th rowSpan={2} className="sticky top-0 left-10 z-20 bg-surface border border-border px-3 py-1.5 text-left min-w-[110px]">
+              <th className="sticky top-0 left-9 z-20 bg-surface border border-border px-2 py-1.5 text-left min-w-[90px]">
                 ชื่อ
               </th>
-              {term1Assignments.length > 0 && (
-                <th colSpan={term1Assignments.length} className="sticky top-0 z-10 bg-navy-100 border border-border px-2 py-1 text-xs font-semibold text-navy-900">
-                  เทอม 1
+              {sortedAssignments.map((a) => (
+                <th
+                  key={a.id}
+                  title={a.display_name ?? a.title}
+                  className="sticky top-0 z-10 bg-surface border border-border px-1 py-1.5 font-medium w-12"
+                >
+                  <span className="block truncate max-w-[44px] mx-auto">{a.title}</span>
                 </th>
-              )}
-              {term2Assignments.length > 0 && (
-                <th colSpan={term2Assignments.length} className="sticky top-0 z-10 bg-navy-100 border border-border px-2 py-1 text-xs font-semibold text-navy-900">
-                  เทอม 2
-                </th>
-              )}
-            </tr>
-            <tr className="text-ink-muted">
-              {sortedAssignments.map((a) => {
-                const name = a.display_name ?? a.title;
-                return (
-                  <th
-                    key={a.id}
-                    title={name}
-                    className="sticky top-[29px] z-10 bg-surface border border-border px-1.5 py-1.5 font-medium w-20"
-                  >
-                    <span className="block truncate max-w-[76px] mx-auto">{name}</span>
-                    <span className="block text-[10px] text-ink-faint font-normal">
-                      {CATEGORY_LABEL[a.category]} · /{a.max_score}
-                    </span>
-                  </th>
-                );
-              })}
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -143,18 +119,18 @@ export default function EditScoresTable({
                 <td className="sticky left-0 z-10 bg-white border border-border px-2 py-1 text-ink-faint" style={i % 2 === 1 ? { background: "var(--color-surface)" } : undefined}>
                   {s.number || "—"}
                 </td>
-                <td className="sticky left-10 z-10 bg-white border border-border px-3 py-1 text-left text-ink whitespace-nowrap" style={i % 2 === 1 ? { background: "var(--color-surface)" } : undefined}>
+                <td className="sticky left-9 z-10 bg-white border border-border px-2 py-1 text-left text-ink whitespace-nowrap" style={i % 2 === 1 ? { background: "var(--color-surface)" } : undefined}>
                   {s.name}
                 </td>
                 {sortedAssignments.map((a) => (
-                  <td key={a.id} className="border border-border px-1 py-1">
+                  <td key={a.id} className="border border-border px-0.5 py-1">
                     <input
                       type="number"
                       min={0}
                       max={a.max_score}
                       value={getValue(s.code, a.id)}
                       onChange={(e) => setValue(s.code, a.id, e.target.value)}
-                      className="w-14 text-center border-[0.5px] border-border rounded-control px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
+                      className="w-10 text-center border-[0.5px] border-border rounded-control px-0.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
                     />
                   </td>
                 ))}

@@ -62,6 +62,7 @@ export default function AssignmentManager({
   const [maxScore, setMaxScore] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showList, setShowList] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,26 +98,26 @@ export default function AssignmentManager({
   return (
     <div className="space-y-4">
       {assignments.length > 0 && (
-        <div className="space-y-4">
-          {([1, 2] as const).map((term) => {
-            const items = sortAssignments(assignments.filter((a) => a.term === term));
-            if (items.length === 0) return null;
-            return (
-              <div key={term}>
-                <h3 className="text-xs font-semibold text-ink-faint mb-1.5">เทอม {term}</h3>
-                <div className="space-y-1.5">
-                  {items.map((a) => (
-                    <div key={a.id} className="flex items-center justify-between bg-surface rounded-control px-3 py-2 text-sm">
-                      <span className="text-ink">{a.display_name ?? a.title}</span>
-                      <span className="text-ink-faint text-xs">
-                        {CATEGORY_LABEL[a.category]} · เต็ม {a.max_score}
-                      </span>
-                    </div>
-                  ))}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowList((v) => !v)}
+            className="text-sm font-medium text-navy-600 hover:underline"
+          >
+            {showList ? "ซ่อนรายละเอียดช่องคะแนน" : `ดูรายละเอียดช่องคะแนน (${assignments.length})`}
+          </button>
+          {showList && (
+            <div className="space-y-1.5 mt-2">
+              {sortAssignments(assignments).map((a) => (
+                <div key={a.id} className="flex items-center justify-between bg-surface rounded-control px-3 py-2 text-sm">
+                  <span className="text-ink">{a.display_name ?? a.title}</span>
+                  <span className="text-ink-faint text-xs">
+                    {CATEGORY_LABEL[a.category]} · เทอม {a.term} · เต็ม {a.max_score}
+                  </span>
                 </div>
-              </div>
-            );
-          })}
+              ))}
+            </div>
+          )}
         </div>
       )}
 
