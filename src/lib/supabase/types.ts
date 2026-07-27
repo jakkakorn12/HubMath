@@ -95,15 +95,32 @@ export type Database = {
           email: string;
           school_id: string | null;
           is_admin: boolean;
+          is_super_admin: boolean;
           sync_secret: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "sync_secret"> & {
+        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "is_super_admin" | "sync_secret"> & {
           school_id?: string | null;
           is_admin?: boolean;
+          is_super_admin?: boolean;
           sync_secret?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["teachers"]["Insert"]>;
+      };
+      school_requests: {
+        Row: {
+          id: string;
+          requester_name: string;
+          requester_email: string;
+          school_name: string;
+          status: "pending" | "approved" | "rejected";
+          created_at: string;
+          reviewed_at: string | null;
+        };
+        Insert: Omit<Database["public"]["Tables"]["school_requests"]["Row"], "id" | "created_at" | "status" | "reviewed_at"> & {
+          status?: "pending" | "approved" | "rejected";
+        };
+        Update: Partial<Database["public"]["Tables"]["school_requests"]["Insert"]>;
       };
       resources: {
         Row: {

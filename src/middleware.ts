@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest) {
   const isTeacherLogin = pathname.startsWith("/teacher/login");
   const isTeacherArea = pathname.startsWith("/teacher") && !isTeacherLogin;
   const isAdminArea = pathname.startsWith("/admin");
+  const isPlatformArea = pathname.startsWith("/platform");
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -45,7 +46,8 @@ export async function middleware(request: NextRequest) {
   const isSelfAuthPage =
     pathname.startsWith("/checkin") ||
     pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/help");
+    pathname.startsWith("/help") ||
+    pathname.startsWith("/request-school");
 
   // ยังไม่ล็อกอิน → ส่งไปหน้าเข้าสู่ระบบที่ตรงกับพื้นที่
   if (!user && !isAuthPage && !isSelfAuthPage) {
@@ -60,19 +62,24 @@ export async function middleware(request: NextRequest) {
     );
 
     // เช็ค role เฉพาะตอนที่จำเป็น (กันยิง DB ทุก request)
-    if (isTeacherArea || isStudentArea || isAuthPage || isAdminArea) {
+    if (isTeacherArea || isStudentArea || isAuthPage || isAdminArea || isPlatformArea) {
       const { data: teacherRow } = await supabase
         .from("teachers")
-        .select("id, is_admin")
+        .select("id, is_admin, is_super_admin")
         .eq("id", user.id)
         .maybeSingle();
       const isTeacher = !!teacherRow;
       const isAdmin = !!teacherRow?.is_admin;
+      const isSuperAdmin = !!teacherRow?.is_super_admin;
 
       if (isAuthPage) {
         return NextResponse.redirect(
           new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url)
         );
+      }
+      // ไม่ใช่ super-admin พยายามเข้าพื้นที่ platform
+      if (isPlatformArea && !isSuperAdmin) {
+        return NextResponse.redirect(new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url));
       }
       // ไม่ใช่แอดมินพยายามเข้าพื้นที่แอดมิน
       if (isAdminArea && !isAdmin) {

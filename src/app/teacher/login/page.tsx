@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function TeacherLoginPage() {
@@ -79,6 +80,11 @@ export default function TeacherLoginPage() {
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </button>
         </form>
+        <p className="text-center text-sm text-ink-faint mt-4">
+          <Link href="/request-school" className="text-navy-600 hover:underline">
+            อยากเปิดใช้งานให้โรงเรียนอื่น?
+          </Link>
+        </p>
       </div>
     </div>
   );
