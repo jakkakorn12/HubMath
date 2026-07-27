@@ -45,6 +45,7 @@ export default function EditScoresTable({
 
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
+  const pendingResaveRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -63,6 +64,12 @@ export default function EditScoresTable({
 
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
+      // ถ้ามีการเซฟค้างอยู่ (request ก่อนหน้ายังไม่เสร็จ) ห้ามเงียบๆ ทิ้งการเปลี่ยนแปลงนี้ไป —
+      // ตั้งค่าไว้ให้ runSave เรียกตัวเองซ้ำทันทีหลังรอบปัจจุบันเสร็จ กันคะแนนหายตอนพิมพ์เร็วๆ ข้ามหลายเซลล์
+      if (savingRef.current) {
+        pendingResaveRef.current = true;
+        return;
+      }
       runSave();
     }, AUTOSAVE_DELAY_MS);
   }
@@ -70,7 +77,10 @@ export default function EditScoresTable({
   // รวมทุกช่องที่เปลี่ยนเป็น request เดียวเสมอ ไม่ว่าจะบันทึกอัตโนมัติหรือกดปุ่มเอง
   // (กันปัญหาเดิมที่เคยเจอตอน sync จาก Sheets ที่ยิง 1 request ต่อ 1 ช่องจนระบบค้าง)
   async function runSave() {
-    if (savingRef.current) return;
+    if (savingRef.current) {
+      pendingResaveRef.current = true;
+      return;
+    }
     savingRef.current = true;
     setSaving(true);
     setError(null);
@@ -114,6 +124,11 @@ export default function EditScoresTable({
     } finally {
       setSaving(false);
       savingRef.current = false;
+      // มีการเปลี่ยนแปลงเกิดขึ้นระหว่างที่รอบนี้กำลังเซฟอยู่ → เซฟต่ออีกรอบทันที ให้ครอบคลุมของที่ค้างไว้
+      if (pendingResaveRef.current) {
+        pendingResaveRef.current = false;
+        runSave();
+      }
     }
   }
 
