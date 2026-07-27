@@ -38,6 +38,16 @@ export function sortAssignments(list: AssignmentListItem[]) {
   );
 }
 
+// 5 หมวดจริงที่ใช้ทั้งระบบ (ตรงกับคอลัมน์ในหน้าดูสรุป) — รวม category+เทอมเป็นตัวเลือกเดียว
+// กันสับสนแบบ "เก็บคะแนน" เฉยๆ ที่ไม่รู้ว่าจะได้เก็บ1 หรือเก็บ2
+const BUCKET_OPTIONS: { value: string; label: string; category: AssignmentCategory; term: 1 | 2 }[] = [
+  { value: "keep1", label: "เก็บก่อนกลางภาค (เก็บ 1)", category: "practice", term: 1 },
+  { value: "mid", label: "กลางภาค", category: "midterm", term: 1 },
+  { value: "keep2", label: "เก็บหลังกลางภาค (เก็บ 2)", category: "practice", term: 2 },
+  { value: "comp", label: "สมรรถนะ", category: "competency", term: 2 },
+  { value: "final", label: "ปลายภาค", category: "final", term: 2 },
+];
+
 export default function AssignmentManager({
   subjectId,
   assignments,
@@ -47,21 +57,27 @@ export default function AssignmentManager({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<AssignmentCategory>("practice");
-  const [term, setTerm] = useState<1 | 2>(1);
+  const [bucket, setBucket] = useState(BUCKET_OPTIONS[0].value);
   const [maxScore, setMaxScore] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const chosen = BUCKET_OPTIONS.find((b) => b.value === bucket)!;
     setSaving(true);
     setError(null);
 
     const res = await fetch("/api/teacher/create-assignment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject_id: subjectId, title, category, term, max_score: Number(maxScore) }),
+      body: JSON.stringify({
+        subject_id: subjectId,
+        title,
+        category: chosen.category,
+        term: chosen.term,
+        max_score: Number(maxScore),
+      }),
     });
     const data = await res.json();
 
@@ -104,27 +120,16 @@ export default function AssignmentManager({
             className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-ink mb-1">หมวด</label>
+        <div className="min-w-[190px]">
+          <label className="block text-xs font-medium text-ink mb-1">ประเภทคะแนน</label>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as AssignmentCategory)}
-            className="border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+            value={bucket}
+            onChange={(e) => setBucket(e.target.value)}
+            className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
           >
-            {(Object.keys(CATEGORY_LABEL) as AssignmentCategory[]).map((c) => (
-              <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>
+            {BUCKET_OPTIONS.map((b) => (
+              <option key={b.value} value={b.value}>{b.label}</option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-ink mb-1">เทอม</label>
-          <select
-            value={term}
-            onChange={(e) => setTerm(Number(e.target.value) as 1 | 2)}
-            className="border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
-          >
-            <option value={1}>1</option>
-            <option value={2}>2</option>
           </select>
         </div>
         <div className="w-24">
