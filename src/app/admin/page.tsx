@@ -49,6 +49,11 @@ export default async function AdminPage() {
           <p className="text-sm text-ink-faint mt-0.5">{schools?.length ?? 0} โรงเรียน</p>
         </div>
 
+        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+          <h2 className="text-sm font-semibold text-ink-muted mb-3">เชิญครูใหม่</h2>
+          <InviteTeacherForm schools={schools ?? []} />
+        </div>
+
         {(schools ?? []).map((school) => {
           const schoolTeachers = (teachers ?? []).filter((t) => t.school_id === school.id);
           return (
@@ -56,11 +61,6 @@ export default async function AdminPage() {
               <div>
                 <h2 className="text-lg font-semibold text-ink">{school.name}</h2>
                 <p className="text-xs text-ink-faint mt-0.5">รหัสโรงเรียน: {school.school_code}</p>
-              </div>
-
-              <div className="bg-white rounded-card border-[0.5px] border-border p-5">
-                <h3 className="text-sm font-semibold text-ink-muted mb-3">เชิญครูใหม่เข้าโรงเรียนนี้</h3>
-                <InviteTeacherForm schoolId={school.id} />
               </div>
 
               <div className="bg-white rounded-card border-[0.5px] border-border p-5">

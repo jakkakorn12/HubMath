@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function InviteTeacherForm({ schoolId }: { schoolId: string }) {
+type School = { id: string; name: string; school_code: string };
+
+export default function InviteTeacherForm({ schools }: { schools: School[] }) {
   const router = useRouter();
+  const [schoolId, setSchoolId] = useState(schools[0]?.id ?? "");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -39,6 +42,21 @@ export default function InviteTeacherForm({ schoolId }: { schoolId: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
+      <div className="flex-1 min-w-[180px]">
+        <label className="block text-sm font-medium text-ink mb-1">โรงเรียน</label>
+        <select
+          value={schoolId}
+          onChange={(e) => setSchoolId(e.target.value)}
+          required
+          className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 bg-white"
+        >
+          {schools.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.school_code})
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="flex-1 min-w-[160px]">
         <label className="block text-sm font-medium text-ink mb-1">ชื่อ-นามสกุล</label>
         <input
@@ -61,7 +79,7 @@ export default function InviteTeacherForm({ schoolId }: { schoolId: string }) {
       </div>
       <button
         type="submit"
-        disabled={sending}
+        disabled={sending || !schoolId}
         className="bg-navy-900 text-white px-4 py-2 rounded-control text-sm font-medium hover:opacity-90 disabled:opacity-50"
       >
         {sending ? "กำลังเชิญ..." : "ส่งคำเชิญ"}
