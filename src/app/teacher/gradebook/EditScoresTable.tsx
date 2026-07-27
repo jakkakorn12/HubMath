@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { sortAssignments, type AssignmentListItem } from "./AssignmentManager";
 
 type StudentRow = { code: string; number: number; name: string };
@@ -23,7 +22,6 @@ export default function EditScoresTable({
   students: StudentRow[];
   initialScores: Record<string, number | null>;
 }) {
-  const router = useRouter();
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     for (const [key, score] of Object.entries(initialScores)) {
@@ -42,6 +40,10 @@ export default function EditScoresTable({
   useEffect(() => {
     valuesRef.current = values;
   }, [values]);
+
+  // baseline ของ "ค่าที่เซฟไปแล้วจริง" เก็บไว้เอง ไม่พึ่ง initialScores (prop ที่อัปเดตผ่าน router.refresh()
+  // ซึ่งช้ากว่าและไม่ควรเป็นเงื่อนไขตัดสินว่าช่องไหนเปลี่ยนไปแล้วบ้างระหว่างพิมพ์ต่อเนื่อง)
+  const baselineRef = useRef<Record<string, number | null>>(initialScores);
 
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
@@ -87,14 +89,15 @@ export default function EditScoresTable({
 
     try {
       const currentValues = valuesRef.current;
+      const baseline = baselineRef.current;
       const rows: { student_code: string; assignment_id: string; score: number | null }[] = [];
       for (const s of students) {
         for (const a of sortedAssignments) {
           const key = cellKey(s.code, a.id);
-          const current = key in currentValues ? currentValues[key] : (initialScores[key] != null ? String(initialScores[key]) : "");
-          const initial = initialScores[key];
+          const current = key in currentValues ? currentValues[key] : (baseline[key] != null ? String(baseline[key]) : "");
+          const base = baseline[key] ?? null;
           const currentNum = current.trim() === "" ? null : Number(current);
-          if (currentNum === initial) continue; // ไม่เปลี่ยน ไม่ต้องส่ง
+          if (currentNum === base) continue; // ไม่เปลี่ยนจากที่เซฟไว้ล่าสุด ไม่ต้องส่งซ้ำ
           if (current.trim() !== "" && Number.isNaN(currentNum)) continue; // กันค่าที่พิมพ์ไม่ใช่ตัวเลข
           rows.push({ student_code: s.code, assignment_id: a.id, score: currentNum });
         }
@@ -117,8 +120,11 @@ export default function EditScoresTable({
         return;
       }
 
+      // อัปเดต baseline ทันทีในเครื่อง ไม่รอ router.refresh() (ซึ่งอาจช้าและไปชนกับการพิมพ์ต่อเนื่องในช่องอื่น)
+      for (const r of rows) {
+        baselineRef.current[cellKey(r.student_code, r.assignment_id)] = r.score;
+      }
       setDone(true);
-      router.refresh();
     } catch {
       setError("บันทึกไม่สำเร็จ (เชื่อมต่อไม่ได้) กรุณาลองใหม่อีกครั้ง");
     } finally {
