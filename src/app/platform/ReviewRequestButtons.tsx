@@ -3,9 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ReviewRequestButtons({ requestId }: { requestId: string }) {
+export default function ReviewRequestButtons({
+  requestId,
+  suggestedCode,
+}: {
+  requestId: string;
+  suggestedCode?: string;
+}) {
   const router = useRouter();
-  const [schoolCode, setSchoolCode] = useState("");
+  const [schoolCode, setSchoolCode] = useState(suggestedCode ?? "");
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,8 +46,13 @@ export default function ReviewRequestButtons({ requestId }: { requestId: string 
         value={schoolCode}
         onChange={(e) => setSchoolCode(e.target.value)}
         placeholder="รหัสโรงเรียน เช่น DEBSIRIN"
-        className="border-[0.5px] border-border rounded-control px-2 py-1 text-xs w-40 focus:outline-none focus:ring-2 focus:ring-navy-600"
+        className="border-[0.5px] border-border rounded-control px-2 py-1 text-xs w-48 focus:outline-none focus:ring-2 focus:ring-navy-600"
       />
+      {suggestedCode && (
+        <p className="text-xs text-ink-faint w-48 text-right">
+          พบชื่อโรงเรียนตรงกับที่มีอยู่แล้ว (รหัส {suggestedCode}) — ถ้าใช่ที่เดียวกันกดอนุมัติได้เลย ถ้าคนละที่ให้ลบรหัสนี้แล้วตั้งรหัสใหม่
+        </p>
+      )}
       <div className="flex gap-2">
         <button
           onClick={() => review("approve")}

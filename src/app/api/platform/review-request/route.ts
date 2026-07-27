@@ -61,29 +61,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // action === "approve": สร้างโรงเรียนใหม่ แล้วเชิญผู้ขอเป็นแอดมินของโรงเรียนนั้น
-  const { data: existingCode } = await svc.from("schools").select("id").eq("school_code", schoolCode).maybeSingle();
-  if (existingCode) return NextResponse.json({ error: "รหัสโรงเรียนนี้ถูกใช้ไปแล้ว" }, { status: 400 });
+  // action === "approve": ถ้ารหัสโรงเรียนตรงกับที่มีอยู่แล้ว ให้ผูกครูเข้าโรงเรียนเดิม (ไม่สร้างซ้ำ)
+  // ถ้าไม่ตรงกับที่มีอยู่ ค่อยสร้างโรงเรียนใหม่ — ยึดรหัสเป็นตัวตัดสิน ไม่ใช่ชื่อ กันโรงเรียนชื่อเดียวกันแต่คนละที่ถูกรวมกันโดยไม่ตั้งใจ
+  const { data: existingSchool } = await svc.from("schools").select("id").eq("school_code", schoolCode).maybeSingle();
 
-  // เช็คก่อนสร้างโรงเรียนว่ามีครูอีเมลนี้อยู่แล้วหรือยัง — กันไม่ให้ inviteUserByEmail คืน user เดิมที่มีอยู่แล้ว
+  // เช็คก่อนเชิญว่ามีครูอีเมลนี้อยู่แล้วหรือยัง — กันไม่ให้ inviteUserByEmail คืน user เดิมที่มีอยู่แล้ว
   // แล้วโดน insert ชนกับ teachers_pkey จนโค้ด rollback ไปลบบัญชีของคนที่มีอยู่แล้วทิ้งโดยไม่ตั้งใจ
   const { data: existingTeacher } = await svc.from("teachers").select("id").eq("email", schoolReq.requester_email).maybeSingle();
   if (existingTeacher) return NextResponse.json({ error: "มีครูอีเมลนี้อยู่ในระบบแล้ว" }, { status: 400 });
 
-  const { data: school, error: schoolError } = await svc
-    .from("schools")
-    .insert({ name: schoolReq.school_name, school_code: schoolCode })
-    .select("id")
-    .single();
-  if (schoolError || !school) {
-    return NextResponse.json({ error: schoolError?.message ?? "สร้างโรงเรียนไม่สำเร็จ" }, { status: 500 });
+  let schoolId = existingSchool?.id;
+  if (!schoolId) {
+    const { data: school, error: schoolError } = await svc
+      .from("schools")
+      .insert({ name: schoolReq.school_name, school_code: schoolCode })
+      .select("id")
+      .single();
+    if (schoolError || !school) {
+      return NextResponse.json({ error: schoolError?.message ?? "สร้างโรงเรียนไม่สำเร็จ" }, { status: 500 });
+    }
+    schoolId = school.id;
   }
+  const createdNewSchool = !existingSchool;
 
   const { data: invited, error: inviteError } = await svc.auth.admin.inviteUserByEmail(schoolReq.requester_email, {
     redirectTo: `${req.nextUrl.origin}/reset-password`,
   });
   if (inviteError || !invited.user) {
-    await svc.from("schools").delete().eq("id", school.id);
+    if (createdNewSchool) await svc.from("schools").delete().eq("id", schoolId);
     return NextResponse.json({ error: inviteError?.message ?? "เชิญไม่สำเร็จ" }, { status: 400 });
   }
 
@@ -91,12 +96,12 @@ export async function POST(req: NextRequest) {
     id: invited.user.id,
     full_name: schoolReq.requester_name,
     email: schoolReq.requester_email,
-    school_id: school.id,
+    school_id: schoolId,
     is_admin: false,
   });
   if (teacherError) {
     await svc.auth.admin.deleteUser(invited.user.id);
-    await svc.from("schools").delete().eq("id", school.id);
+    if (createdNewSchool) await svc.from("schools").delete().eq("id", schoolId);
     return NextResponse.json({ error: teacherError.message }, { status: 500 });
   }
 

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
@@ -47,6 +48,9 @@ export default async function AdminPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink">จัดการครูทุกโรงเรียน</h1>
           <p className="text-sm text-ink-faint mt-0.5">{schools?.length ?? 0} โรงเรียน</p>
+          <Link href="/platform" className="text-sm text-navy-600 hover:underline mt-2 inline-block">
+            ไปหน้าคำขอเปิดใช้งานโรงเรียนใหม่ →
+          </Link>
         </div>
 
         <div className="bg-white rounded-card border-[0.5px] border-border p-5">
