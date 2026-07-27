@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import TeacherNav from "@/components/TeacherNav";
 import Header from "@/components/Header";
 import StudentsTable from "./StudentsTable";
+import ImportRosterForm from "./ImportRosterForm";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,15 @@ export default async function TeacherStudentsPage({
       <main className="max-w-3xl mx-auto px-4 py-6">
         <h1 className="text-lg font-bold text-ink mb-1">รายชื่อนักเรียน ({rows.length} คน)</h1>
         <p className="text-sm text-ink-faint mb-4">สมัครแล้ว {registeredCount} · ยังไม่สมัคร {rows.length - registeredCount}</p>
+
+        <details className="bg-white rounded-card border-[0.5px] border-border mb-4 group" open={rows.length === 0}>
+          <summary className="px-5 py-3 text-sm font-semibold text-ink-muted cursor-pointer select-none">
+            นำเข้ารายชื่อนักเรียน
+          </summary>
+          <div className="px-5 pb-5">
+            <ImportRosterForm sectionId={section_id} />
+          </div>
+        </details>
 
         <StudentsTable rows={rows} />
       </main>
