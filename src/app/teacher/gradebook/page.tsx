@@ -44,7 +44,7 @@ export default async function GradebookPage({
 
   const [{ data: roster }, { data: assignments }, { data: scoreCache }] = await Promise.all([
     codes.length ? supabase.from("student_roster").select("student_code, full_name").in("student_code", codes) : Promise.resolve({ data: [] as { student_code: string; full_name: string }[] }),
-    supabase.from("assignments").select("id, title, term, category, max_score").eq("subject_id", section.subject_id),
+    supabase.from("assignments").select("id, title, display_name, term, category, max_score").eq("subject_id", section.subject_id),
     codes.length ? supabase.from("score_cache").select("assignment_id, student_code, score").in("student_code", codes) : Promise.resolve({ data: [] as { assignment_id: string; student_code: string; score: number | null }[] }),
   ]);
 

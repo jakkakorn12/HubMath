@@ -104,7 +104,7 @@ export default function EditScoresTable({
               <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-3 py-2 text-left">ชื่อ</th>
               {sortedAssignments.map((a) => (
                 <th key={a.id} className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-medium whitespace-nowrap">
-                  {a.title}
+                  {a.display_name ?? a.title}
                   <span className="block text-[11px] text-ink-faint font-normal">
                     {CATEGORY_LABEL[a.category]} · เทอม{a.term} · /{a.max_score}
                   </span>
