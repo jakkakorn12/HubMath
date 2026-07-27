@@ -93,11 +93,11 @@ export default async function GradebookPage({
     .sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 
   const cols = [
-    { label: `เก็บ1/${maxKeep1}`, key: "keep1" as const },
-    { label: `กลางภาค/${maxMid}`, key: "mid" as const },
-    { label: `เก็บ2/${maxKeep2}`, key: "keep2" as const },
-    { label: `สมรรถนะ/${maxComp}`, key: "comp" as const },
-    { label: `ปลายภาค/${maxFinal}`, key: "fin" as const },
+    { label: `เก็บ1 (${maxKeep1})`, key: "keep1" as const },
+    { label: `กลางภาค (${maxMid})`, key: "mid" as const },
+    { label: `เก็บ2 (${maxKeep2})`, key: "keep2" as const },
+    { label: `สมรรถนะ (${maxComp})`, key: "comp" as const },
+    { label: `ปลายภาค (${maxFinal})`, key: "fin" as const },
   ];
 
   const students = rows.map((r) => ({ code: r.code, number: r.number, name: r.name }));

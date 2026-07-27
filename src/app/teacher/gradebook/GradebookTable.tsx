@@ -101,19 +101,21 @@ export default function GradebookTable({
           <thead>
             <tr className="text-ink-muted">
               <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 w-12">เลขที่</th>
+              <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2">เลขประจำตัว</th>
               <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-3 py-2 text-left">ชื่อ</th>
               {colLabels.map((label) => (
                 <th key={label} className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-medium whitespace-nowrap">
                   {label}
                 </th>
               ))}
-              <th className="sticky top-0 z-10 bg-navy-100 border-b-[0.5px] border-border px-2 py-2 font-semibold text-navy-900">รวม/100</th>
+              <th className="sticky top-0 z-10 bg-navy-100 border-b-[0.5px] border-border px-2 py-2 font-semibold text-navy-900">รวม (100)</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((r) => (
               <tr key={r.code} className="hover:bg-surface transition-colors">
                 <td className="border-b-[0.5px] border-border px-2 py-2 text-ink-faint">{r.number || "—"}</td>
+                <td className="border-b-[0.5px] border-border px-2 py-2 text-ink-faint">{r.code}</td>
                 <td className="border-b-[0.5px] border-border px-3 py-2 text-left text-ink">{r.name}</td>
                 {COL_KEYS.map((key) => (
                   <td key={key} className="border-b-[0.5px] border-border px-2 py-2 text-ink-muted">
@@ -127,7 +129,7 @@ export default function GradebookTable({
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={colLabels.length + 3} className="px-3 py-6 text-ink-faint">
+                <td colSpan={colLabels.length + 4} className="px-3 py-6 text-ink-faint">
                   {search ? "ไม่พบนักเรียนที่ค้นหา" : "ยังไม่มีนักเรียนในห้องนี้"}
                 </td>
               </tr>
