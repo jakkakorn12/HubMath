@@ -69,7 +69,6 @@ export async function middleware(request: NextRequest) {
         .eq("id", user.id)
         .maybeSingle();
       const isTeacher = !!teacherRow;
-      const isAdmin = !!teacherRow?.is_admin;
       const isSuperAdmin = !!teacherRow?.is_super_admin;
 
       if (isAuthPage) {
@@ -77,12 +76,8 @@ export async function middleware(request: NextRequest) {
           new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url)
         );
       }
-      // ไม่ใช่ super-admin พยายามเข้าพื้นที่ platform
-      if (isPlatformArea && !isSuperAdmin) {
-        return NextResponse.redirect(new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url));
-      }
-      // ไม่ใช่แอดมินพยายามเข้าพื้นที่แอดมิน
-      if (isAdminArea && !isAdmin) {
+      // แอดมิน (จักพงคนเดียว) เท่านั้นที่เข้า /platform และ /admin ได้
+      if ((isPlatformArea || isAdminArea) && !isSuperAdmin) {
         return NextResponse.redirect(new URL(isTeacher ? "/teacher/dashboard" : "/dashboard", request.url));
       }
       // นักเรียนพยายามเข้าพื้นที่ครู

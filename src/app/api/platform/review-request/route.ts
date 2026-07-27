@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     full_name: schoolReq.requester_name,
     email: schoolReq.requester_email,
     school_id: school.id,
-    is_admin: true,
+    is_admin: false,
   });
   if (teacherError) {
     await svc.auth.admin.deleteUser(invited.user.id);

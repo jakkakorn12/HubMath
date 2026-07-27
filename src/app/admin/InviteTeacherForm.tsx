@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function InviteTeacherForm() {
+export default function InviteTeacherForm({ schoolId }: { schoolId: string }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,7 +20,7 @@ export default function InviteTeacherForm() {
     const res = await fetch("/api/admin/invite-teacher", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name: fullName, email }),
+      body: JSON.stringify({ full_name: fullName, email, school_id: schoolId }),
     });
     const data = await res.json();
 

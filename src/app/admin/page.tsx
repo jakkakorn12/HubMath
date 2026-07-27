@@ -20,29 +20,20 @@ export default async function AdminPage() {
   if (!user) redirect("/teacher/login");
 
   // เช็คสิทธิ์ผ่าน session ปกติก่อน (RLS "teachers see own profile" อนุญาตแค่แถวตัวเอง — พอสำหรับเช็คสิทธิ์)
-  const { data: admin } = await supabase
+  const { data: me } = await supabase
     .from("teachers")
-    .select("id, full_name, school_id, is_admin")
+    .select("id, full_name, is_super_admin")
     .eq("id", user.id)
     .single();
-  if (!admin || !admin.is_admin) redirect("/teacher/dashboard");
+  if (!me || !me.is_super_admin) redirect("/teacher/dashboard");
 
-  // ดึงรายชื่อครูคนอื่นในโรงเรียนต้องผ่าน service role
-  // (RLS ปกติให้ครูเห็นแค่แถวตัวเอง — แอดมินต้องเห็นข้ามครูได้ ไม่งั้นเห็นแค่ตัวเองเสมอ)
+  // จักพงเป็นแอดมินเดียวของทุกโรงเรียน — ต้องเห็นครูข้ามโรงเรียนได้ ผ่าน service role
   const svc = serviceClient();
 
-  const { data: school } = admin.school_id
-    ? await svc.from("schools").select("id, name").eq("id", admin.school_id).single()
-    : { data: null };
-
-  const { data: teachers } = await svc
-    .from("teachers")
-    .select("id, full_name, email, is_admin")
-    .eq("school_id", admin.school_id ?? "")
-    .order("full_name");
-
-  // นับวิชาต่อครูจาก teacher_subjects (กลไกจริงที่ RLS ใช้ตัดสิน ไม่ใช่ subjects.teacher_id ที่เพิ่งเพิ่ม)
+  const { data: schools } = await svc.from("schools").select("id, name, school_code").order("name");
+  const { data: teachers } = await svc.from("teachers").select("id, full_name, email, school_id, is_admin").order("full_name");
   const { data: teacherSubjects } = await svc.from("teacher_subjects").select("teacher_id");
+
   const countByTeacher: Record<string, number> = {};
   for (const ts of teacherSubjects ?? []) {
     countByTeacher[ts.teacher_id] = (countByTeacher[ts.teacher_id] ?? 0) + 1;
@@ -50,44 +41,56 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header name={admin.full_name} role="teacher" homeHref="/admin" />
+      <Header name={me.full_name} role="teacher" homeHref="/admin" />
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
         <div>
-          <h1 className="text-xl font-semibold text-ink">จัดการครู</h1>
-          <p className="text-sm text-ink-faint mt-0.5">{school?.name ?? "โรงเรียน"}</p>
+          <h1 className="text-xl font-semibold text-ink">จัดการครูทุกโรงเรียน</h1>
+          <p className="text-sm text-ink-faint mt-0.5">{schools?.length ?? 0} โรงเรียน</p>
         </div>
 
-        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
-          <h2 className="text-sm font-semibold text-ink-muted mb-3">เชิญครูใหม่เข้าโรงเรียนนี้</h2>
-          <InviteTeacherForm />
-        </div>
+        {(schools ?? []).map((school) => {
+          const schoolTeachers = (teachers ?? []).filter((t) => t.school_id === school.id);
+          return (
+            <div key={school.id} className="space-y-3">
+              <div>
+                <h2 className="text-lg font-semibold text-ink">{school.name}</h2>
+                <p className="text-xs text-ink-faint mt-0.5">รหัสโรงเรียน: {school.school_code}</p>
+              </div>
 
-        <div className="bg-white rounded-card border-[0.5px] border-border p-5">
-          <h2 className="text-sm font-semibold text-ink-muted mb-3">ครูทั้งหมด ({teachers?.length ?? 0} คน)</h2>
-          {!teachers || teachers.length === 0 ? (
-            <p className="text-sm text-ink-faint">ยังไม่มีครูในโรงเรียนนี้</p>
-          ) : (
-            <div className="space-y-2">
-              {teachers.map((t) => (
-                <div key={t.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
-                  <div>
-                    <p className="text-sm text-ink font-medium">
-                      {t.full_name}
-                      {t.is_admin && (
-                        <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-navy-100 text-navy-900">
-                          แอดมิน
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-ink-faint mt-0.5">{t.email}</p>
+              <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+                <h3 className="text-sm font-semibold text-ink-muted mb-3">เชิญครูใหม่เข้าโรงเรียนนี้</h3>
+                <InviteTeacherForm schoolId={school.id} />
+              </div>
+
+              <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+                <h3 className="text-sm font-semibold text-ink-muted mb-3">ครูทั้งหมด ({schoolTeachers.length} คน)</h3>
+                {schoolTeachers.length === 0 ? (
+                  <p className="text-sm text-ink-faint">ยังไม่มีครูในโรงเรียนนี้</p>
+                ) : (
+                  <div className="space-y-2">
+                    {schoolTeachers.map((t) => (
+                      <div key={t.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
+                        <div>
+                          <p className="text-sm text-ink font-medium">
+                            {t.full_name}
+                            {t.is_admin && (
+                              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-navy-100 text-navy-900">
+                                แอดมิน
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-ink-faint mt-0.5">{t.email}</p>
+                        </div>
+                        <p className="text-xs text-ink-faint shrink-0">{countByTeacher[t.id] ?? 0} วิชา</p>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs text-ink-faint shrink-0">{countByTeacher[t.id] ?? 0} วิชา</p>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          );
+        })}
       </main>
     </div>
   );

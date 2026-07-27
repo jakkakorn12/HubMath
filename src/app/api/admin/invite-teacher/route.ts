@@ -19,13 +19,12 @@ export async function POST(req: NextRequest) {
 
   const { data: admin } = await supabase
     .from("teachers")
-    .select("id, school_id, is_admin")
+    .select("id, is_super_admin")
     .eq("id", user.id)
     .single();
-  if (!admin?.is_admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  if (!admin.school_id) return NextResponse.json({ error: "แอดมินยังไม่ได้ผูกกับโรงเรียน" }, { status: 400 });
+  if (!admin?.is_super_admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-  let body: { full_name?: string; email?: string };
+  let body: { full_name?: string; email?: string; school_id?: string };
   try {
     body = await req.json();
   } catch {
@@ -34,11 +33,15 @@ export async function POST(req: NextRequest) {
 
   const fullName = (body.full_name ?? "").trim();
   const email = (body.email ?? "").trim();
-  if (!fullName || !email) {
+  const schoolId = (body.school_id ?? "").trim();
+  if (!fullName || !email || !schoolId) {
     return NextResponse.json({ error: "กรุณากรอกชื่อและอีเมล" }, { status: 400 });
   }
 
   const svc = serviceClient();
+
+  const { data: school } = await svc.from("schools").select("id").eq("id", schoolId).maybeSingle();
+  if (!school) return NextResponse.json({ error: "ไม่พบโรงเรียนนี้" }, { status: 404 });
 
   const { data: invited, error: inviteError } = await svc.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${req.nextUrl.origin}/reset-password`,
@@ -51,7 +54,7 @@ export async function POST(req: NextRequest) {
     id: invited.user.id,
     full_name: fullName,
     email,
-    school_id: admin.school_id,
+    school_id: schoolId,
     is_admin: false,
   });
   if (insertError) {
