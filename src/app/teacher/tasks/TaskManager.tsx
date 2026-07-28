@@ -62,6 +62,7 @@ export default function TaskManager({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [allowLate, setAllowLate] = useState(true);
   const [assignmentId, setAssignmentId] = useState("");
   const [maxScore, setMaxScore] = useState("");
   const [reducedMaxScore, setReducedMaxScore] = useState("");
@@ -73,6 +74,7 @@ export default function TaskManager({
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
+  const [editAllowLate, setEditAllowLate] = useState(true);
   const [editAssignmentId, setEditAssignmentId] = useState("");
   const [editMaxScore, setEditMaxScore] = useState("");
   const [editReducedMaxScore, setEditReducedMaxScore] = useState("");
@@ -89,6 +91,7 @@ export default function TaskManager({
     setEditTitle(t.title);
     setEditDescription(t.description ?? "");
     setEditDueDate(toLocalInput(t.due_date));
+    setEditAllowLate(t.allow_late_submission);
     setEditAssignmentId(t.assignment_id ?? "");
     setEditMaxScore(t.max_score != null ? String(t.max_score) : "");
     setEditReducedMaxScore(t.reduced_max_score != null ? String(t.reduced_max_score) : "");
@@ -115,6 +118,7 @@ export default function TaskManager({
         title: editTitle.trim(),
         description: editDescription.trim() || null,
         due_date: editDueDate ? new Date(editDueDate).toISOString() : null,
+        allow_late_submission: editAllowLate,
         assignment_id: editAssignmentId || null,
         max_score: editMaxNum,
         reduced_max_score: reducedNum,
@@ -157,6 +161,7 @@ export default function TaskManager({
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      allow_late_submission: allowLate,
       assignment_id: assignmentId || null,
       max_score: maxNum,
       reduced_max_score: reducedNum,
@@ -171,6 +176,7 @@ export default function TaskManager({
     setTitle("");
     setDescription("");
     setDueDate("");
+    setAllowLate(true);
     setAssignmentId("");
     setMaxScore("");
     setReducedMaxScore("");
@@ -221,6 +227,15 @@ export default function TaskManager({
             className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
           />
         </div>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={allowLate}
+            onChange={(e) => setAllowLate(e.target.checked)}
+            className="rounded border-border"
+          />
+          อนุญาตให้ส่งงานหลังครบกำหนด
+        </label>
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-ink mb-1">คะแนนปลายทาง (ไม่บังคับ)</label>
@@ -298,6 +313,15 @@ export default function TaskManager({
                     onChange={(e) => setEditDueDate(e.target.value)}
                     className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
                   />
+                  <label className="flex items-center gap-2 text-sm text-ink">
+                    <input
+                      type="checkbox"
+                      checked={editAllowLate}
+                      onChange={(e) => setEditAllowLate(e.target.checked)}
+                      className="rounded border-border"
+                    />
+                    อนุญาตให้ส่งงานหลังครบกำหนด
+                  </label>
                   <div className="flex flex-wrap gap-3">
                     <select
                       value={editAssignmentId}
@@ -353,6 +377,7 @@ export default function TaskManager({
                     <p className="text-xs text-ink-faint">
                       {t.section_id ? `ห้อง ${roomNameById[t.section_id] ?? "?"}` : "ทุกห้อง"} · ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
                       {t.due_date && ` · กำหนดส่ง ${new Date(t.due_date).toLocaleDateString("th-TH")}`}
+                      {!t.allow_late_submission && " · ไม่รับงานหลังครบกำหนด"}
                     </p>
                     {t.assignment_id && (
                       <p className="text-xs text-navy-600 mt-0.5">

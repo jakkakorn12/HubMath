@@ -200,6 +200,7 @@ export type Database = {
           assignment_id: string | null;
           max_score: number | null;
           reduced_max_score: number | null;
+          allow_late_submission: boolean;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["tasks"]["Row"], "id" | "created_at">;

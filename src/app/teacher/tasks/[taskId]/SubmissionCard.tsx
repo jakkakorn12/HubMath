@@ -41,6 +41,7 @@ export default function SubmissionCard({
 }) {
   const [grade, setGrade] = useState(initialGrade);
   const isLate = dueDate != null && new Date(submittedAt) > new Date(dueDate);
+  const lateDays = isLate ? Math.max(1, Math.ceil((new Date(submittedAt).getTime() - new Date(dueDate!).getTime()) / 86400000)) : 0;
 
   return (
     <div className={`bg-white rounded-card border p-5 ${matches.length > 0 ? "border-red-300" : "border-border"}`}>
@@ -54,18 +55,11 @@ export default function SubmissionCard({
             <p className="text-xs text-ink-faint">{studentCode}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {isLate && (
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-danger-soft text-danger-strong">
-              ส่งช้า
-            </span>
-          )}
-          {grade != null && (
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-success-soft text-success-strong">
-              ตรวจแล้ว · {grade} คะแนน
-            </span>
-          )}
-        </div>
+        {grade != null && (
+          <span className="text-xs font-medium px-2 py-1 rounded-full bg-success-soft text-success-strong shrink-0">
+            ตรวจแล้ว · {grade} คะแนน
+          </span>
+        )}
       </div>
 
       {matches.length > 0 && (
@@ -92,10 +86,17 @@ export default function SubmissionCard({
           {content}
         </p>
       )}
-      <p className={`text-xs mt-2 ${isLate ? "text-danger-strong" : "text-ink-faint"}`}>
-        ส่งเมื่อ {new Date(submittedAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
-        {dueDate && ` (กำหนดส่ง ${new Date(dueDate).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })})`}
-      </p>
+      <div className="flex items-center justify-between gap-2 mt-2">
+        <p className="text-xs text-ink-faint">
+          ส่งเมื่อ {new Date(submittedAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+          {dueDate && ` (กำหนดส่ง ${new Date(dueDate).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })})`}
+        </p>
+        {isLate && (
+          <p className="text-xs font-medium text-danger-strong shrink-0 whitespace-nowrap">
+            ส่งช้า {lateDays} วัน
+          </p>
+        )}
+      </div>
       <GradeForm
         submissionId={submissionId}
         initialGrade={initialGrade}

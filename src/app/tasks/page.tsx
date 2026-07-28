@@ -80,6 +80,7 @@ export default async function TasksPage({
             const submission = subMap.get(task.id);
             const fileLink = fileLinks.get(task.id);
             const overdue = task.due_date ? new Date(task.due_date) < new Date() : false;
+            const locked = overdue && !task.allow_late_submission;
             return (
               <div key={task.id} className="bg-white rounded-card border-[0.5px] border-border p-5">
                 <div className="flex items-start justify-between mb-2">
@@ -153,12 +154,18 @@ export default async function TasksPage({
                   </div>
                 )}
 
-                <SubmitForm
-                  taskId={task.id}
-                  studentId={user.id}
-                  existingContent={submission?.content ?? null}
-                  existingFileName={submission?.file_name ?? null}
-                />
+                {locked ? (
+                  <p className="text-sm text-danger-strong bg-danger-soft rounded-control px-3 py-2">
+                    หมดเขตส่งงานแล้ว ไม่สามารถส่ง{submission ? "หรือแก้ไข" : ""}งานนี้ได้อีก
+                  </p>
+                ) : (
+                  <SubmitForm
+                    taskId={task.id}
+                    studentId={user.id}
+                    existingContent={submission?.content ?? null}
+                    existingFileName={submission?.file_name ?? null}
+                  />
+                )}
               </div>
             );
           })
