@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Entry = { grade: string; feedback: string };
@@ -16,12 +15,13 @@ export default function GradeForm({
   submissionId,
   initialGrade,
   initialFeedback,
+  onSaved,
 }: {
   submissionId: string;
   initialGrade: number | null;
   initialFeedback: string | null;
+  onSaved?: (grade: number | null) => void;
 }) {
-  const router = useRouter();
   const initial: Entry = { grade: initialGrade != null ? String(initialGrade) : "", feedback: initialFeedback ?? "" };
   const [values, setValues] = useState<Entry>(initial);
   const [saving, setSaving] = useState(false);
@@ -106,7 +106,7 @@ export default function GradeForm({
 
       baselineRef.current = cur;
       setDone(true);
-      router.refresh();
+      onSaved?.(gradeNum);
     } catch {
       setError("บันทึกไม่สำเร็จ (เชื่อมต่อไม่ได้) กรุณาลองใหม่อีกครั้ง");
     } finally {
