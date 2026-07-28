@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const VALID_STATUSES = [
   "present", "late", "absent", "truant", "leave",
-  "sick_leave", "personal_leave", "field_trip", "school_holiday",
+  "sick_leave", "personal_leave", "field_trip", "school_holiday", "excused_activity",
 ];
 
 function serviceClient() {

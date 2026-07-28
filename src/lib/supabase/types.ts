@@ -8,8 +8,9 @@ export type AttendanceStatus =
   | "leave" // เดิม เก็บไว้เพื่อความเข้ากันได้กับ Sheets sync ที่ยังอาจส่งค่านี้ — ไม่เสนอในตัวเลือกหน้าเว็บใหม่แล้ว
   | "sick_leave"
   | "personal_leave"
-  | "field_trip"
-  | "school_holiday";
+  | "field_trip" // ทัศนศึกษาทั้งห้อง — ตั้งผ่านปุ่มทั้งห้องเท่านั้น ไม่ใช่ตัวเลือกรายคน
+  | "school_holiday" // หยุดพิเศษทั้งห้อง — เช่นเดียวกัน
+  | "excused_activity"; // ขอเวลาเรียน (เป็นพิธีกร/ไป open house/สอบคัดค่ายฯ ที่ได้รับอนุญาต) — นับเป็นมาเรียน
 export type AttendanceMethod = "teacher" | "qr";
 
 export type Database = {

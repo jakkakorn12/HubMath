@@ -9,10 +9,10 @@ type EntryValue = { status: AttendanceStatus | ""; note: string };
 const STATUS_LABEL: Record<AttendanceStatus, string> = {
   present: "มา", late: "สาย", absent: "ขาด", truant: "หนีเรียน",
   leave: "ลา", sick_leave: "ลาป่วย", personal_leave: "ลากิจ",
-  field_trip: "ทัศนศึกษา", school_holiday: "หยุดพิเศษ",
+  field_trip: "ทัศนศึกษา", school_holiday: "หยุดพิเศษ", excused_activity: "ขอเวลาเรียน",
 };
-// "leave" (เดิม) ไม่เสนอในตัวเลือกใหม่แล้ว — ใช้ ลาป่วย/ลากิจ ที่ละเอียดกว่าแทน
-const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "truant", "sick_leave", "personal_leave", "field_trip", "school_holiday"];
+// ตัวเลือกรายคน — ไม่มี "leave" (เดิม, ใช้ ลาป่วย/ลากิจ แทน) และไม่มีทัศนศึกษา/หยุดพิเศษ (ตั้งผ่านปุ่มทั้งห้องเท่านั้น ด้านล่าง)
+const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "truant", "sick_leave", "personal_leave", "excused_activity"];
 
 const AUTOSAVE_DELAY_MS = 300;
 
@@ -43,6 +43,7 @@ export default function AttendanceEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [confirmBulk, setConfirmBulk] = useState<"field_trip" | "school_holiday" | null>(null);
 
   const valuesRef = useRef(values);
   useEffect(() => {
@@ -99,6 +100,20 @@ export default function AttendanceEditor({
       return next;
     });
     setDone(false);
+    scheduleSave();
+  }
+
+  // ทัศนศึกษา/หยุดพิเศษ เป็นเหตุการณ์ทั้งห้อง — ทับสถานะเดิมของทุกคนเสมอ (ต่างจากมาทั้งหมดที่เติมแค่คนยังไม่เช็ค)
+  function bulkSetWholeClass(status: "field_trip" | "school_holiday") {
+    setValues((prev) => {
+      const next = { ...prev };
+      for (const s of students) {
+        next[s.code] = { status, note: next[s.code]?.note ?? "" };
+      }
+      return next;
+    });
+    setDone(false);
+    setConfirmBulk(null);
     scheduleSave();
   }
 
@@ -166,7 +181,7 @@ export default function AttendanceEditor({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         <button
           type="button"
           onClick={markAllUncheckedPresent}
@@ -174,6 +189,43 @@ export default function AttendanceEditor({
         >
           ทำเครื่องหมายมาทั้งหมด (เฉพาะคนที่ยังไม่เช็ค)
         </button>
+
+        {confirmBulk ? (
+          <span className="text-sm text-ink-faint">
+            ยืนยันตั้งทั้งห้องเป็น "{STATUS_LABEL[confirmBulk]}"? จะทับสถานะเดิมของทุกคน{" "}
+            <button
+              type="button"
+              onClick={() => bulkSetWholeClass(confirmBulk)}
+              className="font-medium text-danger-strong hover:underline ml-1"
+            >
+              ยืนยัน
+            </button>{" "}
+            <button
+              type="button"
+              onClick={() => setConfirmBulk(null)}
+              className="font-medium text-ink-muted hover:underline ml-1"
+            >
+              ยกเลิก
+            </button>
+          </span>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setConfirmBulk("field_trip")}
+              className="text-sm font-medium text-navy-600 hover:underline"
+            >
+              ทัศนศึกษาทั้งห้อง
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmBulk("school_holiday")}
+              className="text-sm font-medium text-navy-600 hover:underline"
+            >
+              หยุดพิเศษทั้งห้อง
+            </button>
+          </>
+        )}
       </div>
 
       <div className="bg-white rounded-card border-[0.5px] border-border overflow-auto max-h-[70vh]">

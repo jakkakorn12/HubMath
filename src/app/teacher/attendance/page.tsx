@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 const STATUS_LABEL: Record<AttendanceStatus, string> = {
   present: "มา", late: "สาย", absent: "ขาด", truant: "หนีเรียน",
   leave: "ลา", sick_leave: "ลาป่วย", personal_leave: "ลากิจ",
-  field_trip: "ทัศนศึกษา", school_holiday: "หยุดพิเศษ",
+  field_trip: "ทัศนศึกษา", school_holiday: "หยุดพิเศษ", excused_activity: "ขอเวลาเรียน",
 };
 const STATUS_CHIP: Record<AttendanceStatus, string> = {
   present: "bg-success-soft text-success-strong",
@@ -31,14 +31,23 @@ const STATUS_CHIP: Record<AttendanceStatus, string> = {
   personal_leave: "bg-navy-100 text-navy-900",
   field_trip: "bg-navy-100 text-navy-900",
   school_holiday: "bg-navy-100 text-navy-900",
+  excused_activity: "bg-success-soft text-success-strong",
 };
 // ลา/ลาป่วย/ลากิจ/ทัศนศึกษา/หยุดพิเศษ — ไม่นับเป็นวันขาด (ไม่หักคะแนนร้อยละ) แต่ก็ไม่นับเป็นวันมาเรียน
 const LEAVE_LIKE = new Set<AttendanceStatus>(["leave", "sick_leave", "personal_leave", "field_trip", "school_holiday"]);
-// "leave" (เดิม) เก็บไว้แสดงให้เห็นข้อมูลเก่า/จาก Sheets sync แต่ตัวเลือกใหม่ในหน้าเว็บใช้ 4 ตัวหลังแทน
-const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "truant", "leave", "sick_leave", "personal_leave", "field_trip", "school_holiday"];
+// ขอเวลาเรียน (เป็นพิธีกร/ไป open house/สอบคัดค่ายฯ ที่ได้รับอนุญาตเป็นลายลักษณ์อักษร) — นับเป็นมาเรียนจริง ต่างจากลา/ทัศนศึกษาที่แค่ไม่หัก
+const ATTENDED_LIKE = new Set<AttendanceStatus>(["present", "late", "excused_activity"]);
+// "leave" (เดิม) เก็บไว้แสดงให้เห็นข้อมูลเก่า/จาก Sheets sync — ทัศนศึกษา/หยุดพิเศษ ตั้งผ่านปุ่มทั้งห้องเท่านั้น
+const STATUS_ORDER: AttendanceStatus[] = [
+  "present", "late", "excused_activity", "absent", "truant",
+  "leave", "sick_leave", "personal_leave", "field_trip", "school_holiday",
+];
 
 function emptyStatusCounts(): Record<AttendanceStatus, number> {
-  return { present: 0, late: 0, absent: 0, truant: 0, leave: 0, sick_leave: 0, personal_leave: 0, field_trip: 0, school_holiday: 0 };
+  return {
+    present: 0, late: 0, absent: 0, truant: 0, leave: 0, sick_leave: 0,
+    personal_leave: 0, field_trip: 0, school_holiday: 0, excused_activity: 0,
+  };
 }
 
 export default async function TeacherAttendancePage({
@@ -141,15 +150,15 @@ export default async function TeacherAttendancePage({
     reportRows = editorStudents.map((s) => {
       const byDate: Record<string, AttendanceStatus | null> = {};
       const notesByDate: Record<string, string | null> = {};
-      let attended = 0; // มา + สาย
-      let countable = 0; // วันเรียนทั้งหมด - วันลา (ไม่มีข้อมูล = นับเป็นขาด)
+      let attended = 0; // มา + สาย + ขอเวลาเรียน
+      let countable = 0; // วันเรียนทั้งหมด - วันลา/ทัศนศึกษา/หยุดพิเศษ (ไม่มีข้อมูล = นับเป็นขาด)
       for (const d of reportDates) {
         const status = statusByCodeDate.get(`${s.code}__${d}`) ?? null;
         byDate[d] = status;
         notesByDate[d] = noteByCodeDate.get(`${s.code}__${d}`) ?? null;
         if (status && LEAVE_LIKE.has(status)) continue;
         countable++;
-        if (status === "present" || status === "late") attended++;
+        if (status && ATTENDED_LIKE.has(status)) attended++;
       }
       const percentage = countable > 0 ? Math.round((attended / countable) * 100) : null;
       const eligible = percentage == null ? null : percentage >= ATTENDANCE_PASS_THRESHOLD;
@@ -360,7 +369,7 @@ export default async function TeacherAttendancePage({
             <p className="text-xs text-ink-faint">
               กรอกเช็คชื่อได้ทั้งที่หน้า "เช็คชื่อ" ด้านบน หรือผ่าน Google Sheets เหมือนเดิม — ลบตัวอักษรในชีทเพื่อลบบันทึกของวันนั้น
               <br />
-              มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา/ทัศนศึกษา/หยุดพิเศษ) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด · วางเมาส์บนสถานะที่มีขีดเส้นใต้เพื่อดูหมายเหตุ
+              มาเรียนร้อยละ = (จำนวนวันมา + สาย + ขอเวลาเรียน) ÷ (วันเรียนทั้งหมด − วันลา/ทัศนศึกษา/หยุดพิเศษ) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด · วางเมาส์บนสถานะที่มีขีดเส้นใต้เพื่อดูหมายเหตุ
             </p>
               </>
             )}

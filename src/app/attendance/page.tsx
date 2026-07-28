@@ -15,6 +15,7 @@ const statusLabel: Record<AttendanceStatus, string> = {
   personal_leave: "ลากิจ",
   field_trip: "ทัศนศึกษา",
   school_holiday: "หยุดพิเศษ",
+  excused_activity: "ขอเวลาเรียน",
 };
 
 const statusColor: Record<AttendanceStatus, string> = {
@@ -27,6 +28,7 @@ const statusColor: Record<AttendanceStatus, string> = {
   personal_leave: "bg-navy-100 text-navy-900",
   field_trip: "bg-navy-100 text-navy-900",
   school_holiday: "bg-navy-100 text-navy-900",
+  excused_activity: "bg-success-soft text-success-strong",
 };
 
 export const dynamic = "force-dynamic";
@@ -71,7 +73,7 @@ export default async function AttendancePage({
   const records = dedupeAttendance(rawRecords ?? [], (r) => r.date);
 
   const counts: Record<AttendanceStatus, number> = {
-    present: 0, late: 0, absent: 0, truant: 0,
+    present: 0, late: 0, absent: 0, truant: 0, excused_activity: 0,
     leave: 0, sick_leave: 0, personal_leave: 0, field_trip: 0, school_holiday: 0,
   };
   for (const r of records) {

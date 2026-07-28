@@ -5,7 +5,7 @@ import { Download } from "lucide-react";
 import type { AttendanceStatus } from "@/lib/supabase/types";
 
 const STATUS_LETTER: Record<AttendanceStatus, string> = {
-  present: "ม", late: "ส", absent: "ข", truant: "น",
+  present: "ม", late: "ส", absent: "ข", truant: "น", excused_activity: "ขร",
   leave: "ล", sick_leave: "ลป", personal_leave: "ลก", field_trip: "ทศ", school_holiday: "หพ",
 };
 const STATUS_CHIP: Record<AttendanceStatus, string> = {
@@ -13,6 +13,7 @@ const STATUS_CHIP: Record<AttendanceStatus, string> = {
   late: "text-warning-strong",
   absent: "text-danger-strong font-semibold",
   truant: "text-danger-strong font-semibold",
+  excused_activity: "text-success-strong",
   leave: "text-ink-faint",
   sick_leave: "text-ink-faint",
   personal_leave: "text-ink-faint",
