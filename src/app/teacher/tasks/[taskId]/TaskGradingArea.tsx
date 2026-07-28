@@ -52,6 +52,7 @@ export default function TaskGradingArea({
   initialReducedMaxScore,
   submissions,
   emptyLabel,
+  dueDate,
 }: {
   taskId: string;
   assignments: AssignmentOption[];
@@ -60,6 +61,7 @@ export default function TaskGradingArea({
   initialReducedMaxScore: number | null;
   submissions: SubmissionProps[];
   emptyLabel: string;
+  dueDate: string | null;
 }) {
   const initial: LinkValues = {
     assignmentId: initialAssignmentId ?? "",
@@ -252,6 +254,7 @@ export default function TaskGradingArea({
             fileLink={s.fileLink}
             content={s.content}
             submittedAt={s.submittedAt}
+            dueDate={dueDate}
           />
         ))
       )}

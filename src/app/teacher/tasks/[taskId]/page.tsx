@@ -225,6 +225,7 @@ export default async function TaskSubmissionsPage({
           initialMaxScore={task.max_score}
           initialReducedMaxScore={task.reduced_max_score}
           emptyLabel={`ยังไม่มีนักเรียนส่งงาน${activeRoom !== "all" ? "ในห้องนี้" : ""}`}
+          dueDate={task.due_date}
           submissions={visibleSubs.map(({ sub, number, roomName }) => {
             const student = sub.students as { full_name: string; student_code: string } | null;
             return {

@@ -20,6 +20,7 @@ export default function SubmissionCard({
   fileLink,
   content,
   submittedAt,
+  dueDate,
 }: {
   submissionId: string;
   roomName: string;
@@ -36,8 +37,10 @@ export default function SubmissionCard({
   fileLink: string | undefined;
   content: string | null;
   submittedAt: string;
+  dueDate: string | null;
 }) {
   const [grade, setGrade] = useState(initialGrade);
+  const isLate = dueDate != null && new Date(submittedAt) > new Date(dueDate);
 
   return (
     <div className={`bg-white rounded-card border p-5 ${matches.length > 0 ? "border-red-300" : "border-border"}`}>
@@ -51,11 +54,18 @@ export default function SubmissionCard({
             <p className="text-xs text-ink-faint">{studentCode}</p>
           </div>
         </div>
-        {grade != null && (
-          <span className="text-xs font-medium px-2 py-1 rounded-full bg-success-soft text-success-strong shrink-0">
-            ตรวจแล้ว · {grade} คะแนน
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isLate && (
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-danger-soft text-danger-strong">
+              ส่งช้า
+            </span>
+          )}
+          {grade != null && (
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-success-soft text-success-strong">
+              ตรวจแล้ว · {grade} คะแนน
+            </span>
+          )}
+        </div>
       </div>
 
       {matches.length > 0 && (
@@ -82,8 +92,9 @@ export default function SubmissionCard({
           {content}
         </p>
       )}
-      <p className="text-xs text-ink-faint mt-2">
+      <p className={`text-xs mt-2 ${isLate ? "text-danger-strong" : "text-ink-faint"}`}>
         ส่งเมื่อ {new Date(submittedAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+        {dueDate && ` (กำหนดส่ง ${new Date(dueDate).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })})`}
       </p>
       <GradeForm
         submissionId={submissionId}
