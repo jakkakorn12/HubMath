@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeacherContentNav from "@/components/TeacherContentNav";
@@ -5,6 +6,7 @@ import TeacherNav from "@/components/TeacherNav";
 import Header from "@/components/Header";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
+import AttendanceEditor from "./AttendanceEditor";
 import { dedupeAttendance } from "@/lib/attendance";
 import type { AttendanceStatus } from "@/lib/supabase/types";
 
@@ -25,9 +27,12 @@ const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "leave", 
 export default async function TeacherAttendancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ subject_id?: string; section_id?: string }>;
+  searchParams: Promise<{ subject_id?: string; section_id?: string; mode?: string; date?: string }>;
 }) {
-  const { subject_id, section_id } = await searchParams;
+  const { subject_id, section_id, mode, date: dateParam } = await searchParams;
+  const editMode = mode === "edit";
+  const today = new Date().toISOString().slice(0, 10);
+  const date = dateParam || today;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -56,6 +61,8 @@ export default async function TeacherAttendancePage({
   let todayCounts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0, truant: 0 };
   let notCheckedToday = 0;
   let recordedDays = 0;
+  let editorStudents: { code: string; number: number; name: string }[] = [];
+  let editorInitialStatuses: Record<string, AttendanceStatus | null> = {};
 
   if (section_id) {
     const [{ data: rosterEnroll }, { data: attRaw }] = await Promise.all([
@@ -69,10 +76,18 @@ export default async function TeacherAttendancePage({
       : { data: [] as { student_code: string; full_name: string }[] };
     const nameByCode = new Map((rosterNames ?? []).map((r) => [r.student_code, r.full_name]));
 
+    editorStudents = (rosterEnroll ?? [])
+      .map((r) => ({ code: r.student_code, number: r.student_number ?? 0, name: nameByCode.get(r.student_code) ?? "—" }))
+      .sort((a, b) => a.number - b.number);
+
     // นักเรียน+วันเดียวกันอาจมีทั้งแถว QR และครูกรอก → ของครูชนะ
     const att = dedupeAttendance(attRaw ?? [], (a) => `${a.student_code}__${a.date}`);
-    const today = new Date().toISOString().slice(0, 10);
     recordedDays = new Set(att.map((a) => a.date)).size;
+
+    // สำหรับหน้าแก้ไข: สถานะจริงของวันที่เลือก (หลัง dedupe แล้ว) — ใช้เป็นค่าตั้งต้นในตัวแก้ไข
+    for (const a of att) {
+      if (a.date === date) editorInitialStatuses[a.student_code] = a.status as AttendanceStatus;
+    }
 
     const todayByCode = new Map<string, AttendanceStatus>();
     const totalsByCode = new Map<string, Record<AttendanceStatus, number>>();
@@ -134,6 +149,53 @@ export default async function TeacherAttendancePage({
           </div>
         ) : (
           <div className="space-y-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex gap-1 text-sm">
+                <Link
+                  href={`?subject_id=${subject_id}&section_id=${section_id}`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${!editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+                >
+                  ดูสรุป
+                </Link>
+                <Link
+                  href={`?subject_id=${subject_id}&section_id=${section_id}&mode=edit&date=${date}`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+                >
+                  เช็คชื่อ
+                </Link>
+              </div>
+              {editMode && (
+                <form method="GET" className="flex items-center gap-2">
+                  <input type="hidden" name="subject_id" value={subject_id} />
+                  <input type="hidden" name="section_id" value={section_id} />
+                  <input type="hidden" name="mode" value="edit" />
+                  <label className="text-sm text-ink-faint">วันที่</label>
+                  <input
+                    type="date"
+                    name="date"
+                    defaultValue={date}
+                    max={today}
+                    className="border-[0.5px] border-border rounded-control px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
+                  />
+                  <button
+                    type="submit"
+                    className="text-sm font-medium text-navy-600 hover:underline"
+                  >
+                    ไป
+                  </button>
+                </form>
+              )}
+            </div>
+
+            {editMode ? (
+              <AttendanceEditor
+                sectionId={section_id}
+                date={date}
+                students={editorStudents}
+                initialStatuses={editorInitialStatuses}
+              />
+            ) : (
+              <>
             {/* สรุปวันนี้ */}
             <div className="bg-white rounded-card border-[0.5px] border-border p-5">
               <h2 className="text-sm font-semibold text-ink-muted mb-3">
@@ -217,8 +279,10 @@ export default async function TeacherAttendancePage({
             </div>
 
             <p className="text-xs text-ink-faint">
-              การเช็คชื่อรายวัน (ม/ส/ข/ล/น) กรอกผ่าน Google Sheets — ลบตัวอักษรในชีทเพื่อลบบันทึกของวันนั้น
+              กรอกเช็คชื่อได้ทั้งที่หน้า "เช็คชื่อ" ด้านบน หรือผ่าน Google Sheets เหมือนเดิม — ลบตัวอักษรในชีทเพื่อลบบันทึกของวันนั้น
             </p>
+              </>
+            )}
           </div>
         )}
       </main>
