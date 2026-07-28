@@ -169,6 +169,23 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["resources"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["resources"]["Insert"]>;
       };
+      learning_media: {
+        Row: {
+          id: string;
+          subject_id: string;
+          section_id: string | null;
+          title: string;
+          description: string | null;
+          category: string | null;
+          media_type: "link" | "file";
+          url: string | null;
+          file_url: string | null;
+          file_name: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["learning_media"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["learning_media"]["Insert"]>;
+      };
       attendance: {
         Row: {
           id: string;
