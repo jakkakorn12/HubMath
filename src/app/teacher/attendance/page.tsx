@@ -223,6 +223,7 @@ export default async function TeacherAttendancePage({
                   </button>
                 </form>
               )}
+              {!editMode && !reportMode && <QrButton sectionId={section_id} teacherId={teacher.id} />}
             </div>
 
             {editMode ? (
@@ -255,12 +256,6 @@ export default async function TeacherAttendancePage({
                   ยังไม่เช็ค {notCheckedToday}
                 </span>
               </div>
-            </div>
-
-            {/* QR */}
-            <div className="bg-white rounded-card border-[0.5px] border-border p-5">
-              <h2 className="text-sm font-semibold text-ink-muted mb-3">QR เช็คชื่อ (นักเรียนสแกนเพื่อบันทึกว่ามาเรียน)</h2>
-              <QrButton sectionId={section_id} teacherId={teacher.id} />
             </div>
 
             {/* ตารางรายบุคคล */}
