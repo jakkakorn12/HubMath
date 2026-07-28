@@ -7,8 +7,11 @@ import Header from "@/components/Header";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
 import AttendanceEditor from "./AttendanceEditor";
+import AttendanceReport, { type AttendanceReportRow } from "./AttendanceReport";
 import { dedupeAttendance } from "@/lib/attendance";
 import type { AttendanceStatus } from "@/lib/supabase/types";
+
+const ATTENDANCE_PASS_THRESHOLD = 80;
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +34,7 @@ export default async function TeacherAttendancePage({
 }) {
   const { subject_id, section_id, mode, date: dateParam } = await searchParams;
   const editMode = mode === "edit";
+  const reportMode = mode === "report";
   const today = new Date().toISOString().slice(0, 10);
   const date = dateParam || today;
   const supabase = await createClient();
@@ -63,6 +67,8 @@ export default async function TeacherAttendancePage({
   let recordedDays = 0;
   let editorStudents: { code: string; number: number; name: string }[] = [];
   let editorInitialStatuses: Record<string, AttendanceStatus | null> = {};
+  let reportDates: string[] = [];
+  let reportRows: AttendanceReportRow[] = [];
 
   if (section_id) {
     const [{ data: rosterEnroll }, { data: attRaw }] = await Promise.all([
@@ -114,6 +120,32 @@ export default async function TeacherAttendancePage({
       if (r.today) todayCounts[r.today]++;
       else notCheckedToday++;
     }
+
+    // รายงานทั้งเทอม: หนึ่งคอลัมน์ต่อวันที่มีการเช็คชื่อจริง + ร้อยละ + สิทธิ์การเข้าสอบ
+    reportDates = [...new Set(att.map((a) => a.date))].sort();
+    const statusByCodeDate = new Map(att.map((a) => [`${a.student_code}__${a.date}`, a.status as AttendanceStatus]));
+
+    reportRows = editorStudents.map((s) => {
+      const byDate: Record<string, AttendanceStatus | null> = {};
+      let attended = 0; // มา + สาย
+      let countable = 0; // วันเรียนทั้งหมด - วันลา - วันที่ไม่มีข้อมูลของคนนี้
+      for (const d of reportDates) {
+        const status = statusByCodeDate.get(`${s.code}__${d}`) ?? null;
+        byDate[d] = status;
+        if (!status || status === "leave") continue;
+        countable++;
+        if (status === "present" || status === "late") attended++;
+      }
+      const percentage = countable > 0 ? Math.round((attended / countable) * 100) : null;
+      return {
+        code: s.code,
+        number: s.number,
+        name: s.name,
+        byDate,
+        percentage,
+        eligible: percentage == null ? null : percentage >= ATTENDANCE_PASS_THRESHOLD,
+      };
+    });
   }
 
   return (
@@ -153,7 +185,7 @@ export default async function TeacherAttendancePage({
               <div className="flex gap-1 text-sm">
                 <Link
                   href={`?subject_id=${subject_id}&section_id=${section_id}`}
-                  className={`px-3 py-1.5 rounded-control font-medium ${!editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${!editMode && !reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
                 >
                   ดูสรุป
                 </Link>
@@ -162,6 +194,12 @@ export default async function TeacherAttendancePage({
                   className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
                 >
                   เช็คชื่อ
+                </Link>
+                <Link
+                  href={`?subject_id=${subject_id}&section_id=${section_id}&mode=report`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+                >
+                  รายงานทั้งเทอม
                 </Link>
               </div>
               {editMode && (
@@ -193,6 +231,12 @@ export default async function TeacherAttendancePage({
                 date={date}
                 students={editorStudents}
                 initialStatuses={editorInitialStatuses}
+              />
+            ) : reportMode ? (
+              <AttendanceReport
+                dates={reportDates}
+                rows={reportRows}
+                fileName={`เช็คชื่อ-${subjectName ?? "วิชา"}-ห้อง${roomName ?? ""}`}
               />
             ) : (
               <>
