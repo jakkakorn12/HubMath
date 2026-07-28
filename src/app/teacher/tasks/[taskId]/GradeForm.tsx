@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type Entry = { grade: string; feedback: string };
 
-const AUTOSAVE_DELAY_MS = 600;
+const AUTOSAVE_DELAY_MS = 100;
 
 function entryKey(v: Entry) {
   return `${v.grade}__${v.feedback}`;
