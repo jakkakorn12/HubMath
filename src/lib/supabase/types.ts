@@ -186,6 +186,35 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["learning_media"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["learning_media"]["Insert"]>;
       };
+      lesson_chapters: {
+        Row: {
+          id: string;
+          subject_id: string;
+          section_id: string | null;
+          title: string;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["lesson_chapters"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["lesson_chapters"]["Insert"]>;
+      };
+      lessons: {
+        Row: {
+          id: string;
+          chapter_id: string;
+          subject_id: string;
+          title: string;
+          content: string | null;
+          media_type: "link" | "file" | null;
+          media_url: string | null;
+          file_url: string | null;
+          file_name: string | null;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["lessons"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["lessons"]["Insert"]>;
+      };
       attendance: {
         Row: {
           id: string;

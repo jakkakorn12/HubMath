@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type TabKey = "files" | "media" | "tasks" | "attendance" | "announcements";
+type TabKey = "files" | "media" | "lessons" | "tasks" | "attendance" | "announcements";
 
 function buildQuery(subjectId?: string, sectionId?: string) {
   const params = new URLSearchParams();
@@ -23,6 +23,7 @@ export default function TeacherContentNav({
   const tabs: { key: TabKey; label: string; href: string }[] = [
     { key: "files", label: "จัดการไฟล์", href: `/teacher/resources${q}` },
     { key: "media", label: "สื่อการเรียนรู้", href: `/teacher/media${q}` },
+    { key: "lessons", label: "บทเรียน", href: `/teacher/lessons${q}` },
     { key: "tasks", label: "มอบหมายงาน", href: `/teacher/tasks${q}` },
     { key: "attendance", label: "เช็คชื่อ", href: `/teacher/attendance${q}` },
     { key: "announcements", label: "ประกาศ", href: `/teacher/announcements${q}` },
