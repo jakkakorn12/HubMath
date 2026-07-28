@@ -4,8 +4,7 @@ import Link from "next/link";
 import { textSimilarity, SIMILARITY_THRESHOLD } from "@/lib/similarity";
 import { imageHammingDistance, IMAGE_HASH_THRESHOLD } from "@/lib/imageHash";
 import Header from "@/components/Header";
-import SubmissionCard from "./SubmissionCard";
-import TaskScoreLink from "./TaskScoreLink";
+import TaskGradingArea from "./TaskGradingArea";
 
 export const dynamic = "force-dynamic";
 
@@ -219,48 +218,30 @@ export default async function TaskSubmissionsPage({
         </div>
 
         {/* ส่งแล้ว */}
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-lg font-bold text-ink">
-            ส่งแล้ว <span className="text-ink-faint font-normal">({visibleSubs.length} คน)</span>
-          </h2>
-          <TaskScoreLink
-            taskId={task.id}
-            assignments={assignments ?? []}
-            initialAssignmentId={task.assignment_id}
-            initialReducedMaxScore={task.reduced_max_score}
-          />
-        </div>
-
-        {visibleSubs.length === 0 ? (
-          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center text-ink-faint">
-            ยังไม่มีนักเรียนส่งงาน{activeRoom !== "all" ? "ในห้องนี้" : ""}
-          </div>
-        ) : (
-          visibleSubs.map(({ sub, number, roomName }) => {
+        <TaskGradingArea
+          taskId={task.id}
+          assignments={assignments ?? []}
+          initialAssignmentId={task.assignment_id}
+          initialReducedMaxScore={task.reduced_max_score}
+          emptyLabel={`ยังไม่มีนักเรียนส่งงาน${activeRoom !== "all" ? "ในห้องนี้" : ""}`}
+          submissions={visibleSubs.map(({ sub, number, roomName }) => {
             const student = sub.students as { full_name: string; student_code: string } | null;
-            const matches = matchesById.get(sub.id) ?? [];
-            const fileLink = fileLinks.get(sub.id);
-            return (
-              <SubmissionCard
-                key={sub.id}
-                submissionId={sub.id}
-                roomName={roomName}
-                number={number}
-                studentName={student?.full_name}
-                studentCode={student?.student_code}
-                initialGrade={sub.grade}
-                initialFeedback={sub.feedback}
-                assignmentId={task.assignment_id}
-                reducedMaxScore={task.reduced_max_score}
-                matches={matches}
-                fileName={sub.file_name}
-                fileLink={fileLink}
-                content={sub.content}
-                submittedAt={sub.submitted_at}
-              />
-            );
-          })
-        )}
+            return {
+              submissionId: sub.id,
+              roomName,
+              number,
+              studentName: student?.full_name,
+              studentCode: student?.student_code,
+              initialGrade: sub.grade,
+              initialFeedback: sub.feedback,
+              matches: matchesById.get(sub.id) ?? [],
+              fileName: sub.file_name,
+              fileLink: fileLinks.get(sub.id),
+              content: sub.content,
+              submittedAt: sub.submitted_at,
+            };
+          })}
+        />
 
         {/* ยังไม่ส่ง */}
         <div className="bg-white rounded-card border-[0.5px] border-border p-5">
