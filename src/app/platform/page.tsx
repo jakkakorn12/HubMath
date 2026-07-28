@@ -38,7 +38,7 @@ export default async function PlatformPage() {
     .from("school_requests")
     .select("id, requester_name, requester_email, school_name, status, created_at")
     .order("created_at", { ascending: false });
-  const { data: schools } = await svc.from("schools").select("id, name, school_code, paid_until");
+  const { data: schools } = await svc.from("schools").select("id, name, school_code");
 
   const pending = requests?.filter((r) => r.status === "pending") ?? [];
   const reviewed = requests?.filter((r) => r.status !== "pending") ?? [];
@@ -51,6 +51,7 @@ export default async function PlatformPage() {
     slipLink: string | undefined;
     submittedAt: string;
   }[] = [];
+  let payingTeachers: { id: string; fullName: string; schoolName: string; paidUntil: string | null }[] = [];
   if (BILLING_ENABLED) {
     const { data: payments } = await svc
       .from("billing_payments")
@@ -59,11 +60,20 @@ export default async function PlatformPage() {
       .order("submitted_at", { ascending: false });
 
     const schoolNameById = new Map((schools ?? []).map((s) => [s.id, s.name]));
-    const submitterIds = [...new Set((payments ?? []).map((p) => p.submitted_by))];
-    const { data: submitters } = submitterIds.length
-      ? await svc.from("teachers").select("id, full_name").in("id", submitterIds)
-      : { data: [] as { id: string; full_name: string }[] };
-    const submitterNameById = new Map((submitters ?? []).map((t) => [t.id, t.full_name]));
+
+    const { data: teachers } = await svc
+      .from("teachers")
+      .select("id, full_name, school_id, paid_until, is_super_admin")
+      .order("full_name");
+    payingTeachers = (teachers ?? [])
+      .filter((t) => !t.is_super_admin)
+      .map((t) => ({
+        id: t.id,
+        fullName: t.full_name,
+        schoolName: t.school_id ? (schoolNameById.get(t.school_id) ?? "?") : "—",
+        paidUntil: t.paid_until,
+      }));
+    const submitterNameById = new Map(payingTeachers.map((t) => [t.id, t.fullName]));
 
     pendingPayments = await Promise.all(
       (payments ?? []).map(async (p) => {
@@ -137,14 +147,14 @@ export default async function PlatformPage() {
 
         {BILLING_ENABLED && (
           <div className="bg-white rounded-card border-[0.5px] border-border p-5">
-            <h2 className="text-sm font-semibold text-ink-muted mb-3">สถานะการชำระเงินตามโรงเรียน</h2>
+            <h2 className="text-sm font-semibold text-ink-muted mb-3">สถานะการชำระเงินตามครู (รายบุคคล)</h2>
             <div className="space-y-2">
-              {(schools ?? []).map((s) => {
-                const paidUntil = s.paid_until ? new Date(s.paid_until) : null;
+              {payingTeachers.map((t) => {
+                const paidUntil = t.paidUntil ? new Date(t.paidUntil) : null;
                 const isActive = paidUntil != null && paidUntil > new Date();
                 return (
-                  <div key={s.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
-                    <p className="text-sm text-ink">{s.name} <span className="text-ink-faint">({s.school_code})</span></p>
+                  <div key={t.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
+                    <p className="text-sm text-ink">{t.fullName} <span className="text-ink-faint">({t.schoolName})</span></p>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${isActive ? "bg-success-soft text-success-strong" : "bg-danger-soft text-danger-strong"}`}>
                       {isActive
                         ? `ถึง ${paidUntil!.toLocaleDateString("th-TH", { dateStyle: "medium" })}`

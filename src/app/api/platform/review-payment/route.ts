@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   const { data: payment } = await svc
     .from("billing_payments")
-    .select("id, school_id, status")
+    .select("id, submitted_by, status")
     .eq("id", paymentId)
     .single();
   if (!payment) return NextResponse.json({ error: "ไม่พบรายการชำระเงิน" }, { status: 404 });
@@ -70,18 +70,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // action === "approve": คำนวณวันหมดอายุใหม่จาก paid_until ปัจจุบันของโรงเรียน ณ ตอนอนุมัติ (ไม่ใช่ตอนส่ง)
+  // การชำระเงินเป็นรายบุคคล (ครูจ่ายเพื่อบัญชีตัวเอง ไม่ใช่ทั้งโรงเรียน)
+  // action === "approve": คำนวณวันหมดอายุใหม่จาก paid_until ปัจจุบันของครูคนนั้น ณ ตอนอนุมัติ (ไม่ใช่ตอนส่ง)
   // กันปัญหาอนุมัติไม่เรียงลำดับ — ถ้ายังไม่หมดอายุ ต่อจากวันเดิม ถ้าหมดแล้ว/ยังไม่เคยจ่าย เริ่มนับจากวันนี้
-  const { data: school } = await svc.from("schools").select("id, paid_until").eq("id", payment.school_id).single();
-  if (!school) return NextResponse.json({ error: "ไม่พบโรงเรียน" }, { status: 404 });
+  const { data: payerTeacher } = await svc.from("teachers").select("id, paid_until").eq("id", payment.submitted_by).single();
+  if (!payerTeacher) return NextResponse.json({ error: "ไม่พบครูที่ชำระเงิน" }, { status: 404 });
 
   const today = new Date();
-  const currentPaidUntil = school.paid_until ? new Date(school.paid_until) : null;
+  const currentPaidUntil = payerTeacher.paid_until ? new Date(payerTeacher.paid_until) : null;
   const base = currentPaidUntil && currentPaidUntil > today ? currentPaidUntil : today;
   const newPaidUntil = toDateOnly(addYears(base, 1));
 
-  const { error: schoolError } = await svc.from("schools").update({ paid_until: newPaidUntil }).eq("id", school.id);
-  if (schoolError) return NextResponse.json({ error: schoolError.message }, { status: 500 });
+  const { error: teacherError } = await svc.from("teachers").update({ paid_until: newPaidUntil }).eq("id", payerTeacher.id);
+  if (teacherError) return NextResponse.json({ error: teacherError.message }, { status: 500 });
 
   const { error: paymentError } = await svc
     .from("billing_payments")

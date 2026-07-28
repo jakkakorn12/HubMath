@@ -17,26 +17,23 @@ const STATUS_COLOR: Record<"pending" | "approved" | "rejected", string> = {
   rejected: "bg-danger-soft text-danger-strong",
 };
 
-export default async function SchoolBillingPage() {
+export default async function BillingPage() {
   if (!BILLING_ENABLED) redirect("/teacher/dashboard");
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/teacher/login");
 
-  const { data: teacher } = await supabase.from("teachers").select("id, full_name, school_id").eq("id", user.id).single();
+  const { data: teacher } = await supabase.from("teachers").select("id, full_name, paid_until").eq("id", user.id).single();
   if (!teacher) redirect("/teacher/login");
-  if (!teacher.school_id) redirect("/teacher/dashboard");
-
-  const { data: school } = await supabase.from("schools").select("name, paid_until").eq("id", teacher.school_id).single();
 
   const { data: payments } = await supabase
     .from("billing_payments")
     .select("id, payment_ref, slip_url, status, submitted_at, resulting_paid_until")
-    .eq("school_id", teacher.school_id)
+    .eq("submitted_by", teacher.id)
     .order("submitted_at", { ascending: false });
 
-  const paidUntil = school?.paid_until ? new Date(school.paid_until) : null;
+  const paidUntil = teacher.paid_until ? new Date(teacher.paid_until) : null;
   const isActive = paidUntil != null && paidUntil > new Date();
 
   return (
@@ -45,7 +42,7 @@ export default async function SchoolBillingPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <div>
-          <h1 className="text-xl font-semibold text-ink">ค่าบริการโรงเรียน — {school?.name}</h1>
+          <h1 className="text-xl font-semibold text-ink">ค่าบริการของคุณ</h1>
           <p
             className={`inline-block text-sm font-medium px-2.5 py-1 rounded-full mt-2 ${
               isActive ? "bg-success-soft text-success-strong" : "bg-danger-soft text-danger-strong"
@@ -61,7 +58,7 @@ export default async function SchoolBillingPage() {
 
         <div className="bg-white rounded-card border-[0.5px] border-border p-5 space-y-1">
           <p className="text-sm text-ink">
-            ค่าบริการ <span className="font-semibold">{SUBSCRIPTION_PRICE_PER_YEAR} บาท / ปีการศึกษา</span>
+            ค่าบริการ <span className="font-semibold">{SUBSCRIPTION_PRICE_PER_YEAR} บาท / คน / ปีการศึกษา</span>
           </p>
           <p className="text-sm text-ink-muted">
             โอนผ่านพร้อมเพย์เบอร์ <span className="font-medium text-ink">{PROMPTPAY_NUMBER}</span>

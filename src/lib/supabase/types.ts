@@ -21,7 +21,6 @@ export type Database = {
           id: string;
           name: string;
           school_code: string;
-          paid_until: string | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["schools"]["Row"], "id" | "created_at">;
@@ -128,14 +127,16 @@ export type Database = {
           is_super_admin: boolean;
           is_suspended: boolean;
           sync_secret: string | null;
+          paid_until: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "is_super_admin" | "is_suspended" | "sync_secret"> & {
+        Insert: Omit<Database["public"]["Tables"]["teachers"]["Row"], "created_at" | "school_id" | "is_admin" | "is_super_admin" | "is_suspended" | "sync_secret" | "paid_until"> & {
           school_id?: string | null;
           is_admin?: boolean;
           is_super_admin?: boolean;
           is_suspended?: boolean;
           sync_secret?: string | null;
+          paid_until?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["teachers"]["Insert"]>;
       };

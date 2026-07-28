@@ -56,7 +56,7 @@ export default async function Home() {
         <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center">
           <p className="text-sm text-ink-faint mb-1">ราคา</p>
           <p className="text-3xl font-bold text-ink">{SUBSCRIPTION_PRICE_PER_YEAR} บาท</p>
-          <p className="text-sm text-ink-faint">ต่อโรงเรียน ต่อปีการศึกษา</p>
+          <p className="text-sm text-ink-faint">ต่อครู 1 ท่าน ต่อปีการศึกษา</p>
         </div>
       </main>
     </div>
