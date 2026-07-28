@@ -4,6 +4,8 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 import ReviewRequestButtons from "./ReviewRequestButtons";
+import ReviewPaymentButtons from "./ReviewPaymentButtons";
+import { BILLING_ENABLED } from "@/lib/billingConfig";
 
 function normalizeSchoolName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
@@ -36,10 +38,51 @@ export default async function PlatformPage() {
     .from("school_requests")
     .select("id, requester_name, requester_email, school_name, status, created_at")
     .order("created_at", { ascending: false });
-  const { data: schools } = await svc.from("schools").select("name, school_code");
+  const { data: schools } = await svc.from("schools").select("id, name, school_code, paid_until");
 
   const pending = requests?.filter((r) => r.status === "pending") ?? [];
   const reviewed = requests?.filter((r) => r.status !== "pending") ?? [];
+
+  let pendingPayments: {
+    id: string;
+    schoolName: string;
+    submittedByName: string;
+    paymentRef: string | null;
+    slipLink: string | undefined;
+    submittedAt: string;
+  }[] = [];
+  if (BILLING_ENABLED) {
+    const { data: payments } = await svc
+      .from("billing_payments")
+      .select("id, school_id, submitted_by, payment_ref, slip_url, submitted_at")
+      .eq("status", "pending")
+      .order("submitted_at", { ascending: false });
+
+    const schoolNameById = new Map((schools ?? []).map((s) => [s.id, s.name]));
+    const submitterIds = [...new Set((payments ?? []).map((p) => p.submitted_by))];
+    const { data: submitters } = submitterIds.length
+      ? await svc.from("teachers").select("id, full_name").in("id", submitterIds)
+      : { data: [] as { id: string; full_name: string }[] };
+    const submitterNameById = new Map((submitters ?? []).map((t) => [t.id, t.full_name]));
+
+    pendingPayments = await Promise.all(
+      (payments ?? []).map(async (p) => {
+        let slipLink: string | undefined;
+        if (p.slip_url) {
+          const { data } = await svc.storage.from("submissions").createSignedUrl(p.slip_url, 3600);
+          slipLink = data?.signedUrl;
+        }
+        return {
+          id: p.id,
+          schoolName: schoolNameById.get(p.school_id) ?? "?",
+          submittedByName: submitterNameById.get(p.submitted_by) ?? "?",
+          paymentRef: p.payment_ref,
+          slipLink,
+          submittedAt: p.submitted_at,
+        };
+      })
+    );
+  }
 
   // เดารหัสโรงเรียนให้ ถ้าชื่อโรงเรียนในคำขอตรงกับที่มีอยู่แล้วเป๊ะๆ (แค่ช่วยพิมพ์ — ตอนอนุมัติระบบยึดรหัสที่กรอกจริงเป็นหลัก
   // ไม่ใช่ชื่อ เพื่อกันโรงเรียนชื่อเดียวกันแต่คนละที่ถูกรวมกันโดยไม่ตั้งใจ)
@@ -60,6 +103,61 @@ export default async function PlatformPage() {
             ไปหน้าจัดการครูทุกโรงเรียน →
           </Link>
         </div>
+
+        {BILLING_ENABLED && (
+          <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+            <h2 className="text-sm font-semibold text-ink-muted mb-3">รอตรวจสอบการชำระเงิน ({pendingPayments.length})</h2>
+            {pendingPayments.length === 0 ? (
+              <p className="text-sm text-ink-faint">ไม่มีรายการค้างอยู่</p>
+            ) : (
+              <div className="space-y-2">
+                {pendingPayments.map((p) => (
+                  <div key={p.id} className="bg-surface rounded-control px-4 py-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-ink font-medium">{p.schoolName}</p>
+                        <p className="text-xs text-ink-faint mt-0.5">
+                          แจ้งโดย {p.submittedByName} · {new Date(p.submittedAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+                        </p>
+                        {p.paymentRef && <p className="text-xs text-ink-muted mt-0.5">เลขอ้างอิง: {p.paymentRef}</p>}
+                        {p.slipLink && (
+                          <a href={p.slipLink} target="_blank" rel="noopener noreferrer" className="text-xs text-navy-600 hover:underline mt-0.5 inline-block">
+                            ดูสลิปโอนเงิน →
+                          </a>
+                        )}
+                      </div>
+                      <ReviewPaymentButtons paymentId={p.id} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {BILLING_ENABLED && (
+          <div className="bg-white rounded-card border-[0.5px] border-border p-5">
+            <h2 className="text-sm font-semibold text-ink-muted mb-3">สถานะการชำระเงินตามโรงเรียน</h2>
+            <div className="space-y-2">
+              {(schools ?? []).map((s) => {
+                const paidUntil = s.paid_until ? new Date(s.paid_until) : null;
+                const isActive = paidUntil != null && paidUntil > new Date();
+                return (
+                  <div key={s.id} className="flex items-center justify-between bg-surface rounded-control px-4 py-3">
+                    <p className="text-sm text-ink">{s.name} <span className="text-ink-faint">({s.school_code})</span></p>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${isActive ? "bg-success-soft text-success-strong" : "bg-danger-soft text-danger-strong"}`}>
+                      {isActive
+                        ? `ถึง ${paidUntil!.toLocaleDateString("th-TH", { dateStyle: "medium" })}`
+                        : paidUntil
+                          ? "หมดอายุแล้ว"
+                          : "ยังไม่เคยชำระ"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-card border-[0.5px] border-border p-5">
           <h2 className="text-sm font-semibold text-ink-muted mb-3">รอตรวจสอบ ({pending.length})</h2>

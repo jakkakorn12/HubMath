@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { BILLING_ENABLED } from "@/lib/billingConfig";
 
 // หน้าที่นักเรียนใช้ (ครูไม่ควรเข้า)
 const STUDENT_PATHS = ["/dashboard", "/grades", "/attendance", "/tasks", "/resources"];
@@ -49,6 +50,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/help") ||
     pathname.startsWith("/request-school") ||
+    (BILLING_ENABLED && pathname === "/") ||
     isTeacherForgotPassword;
 
   // ยังไม่ล็อกอิน → ส่งไปหน้าเข้าสู่ระบบที่ตรงกับพื้นที่

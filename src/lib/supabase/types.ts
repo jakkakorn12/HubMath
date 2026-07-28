@@ -21,10 +21,29 @@ export type Database = {
           id: string;
           name: string;
           school_code: string;
+          paid_until: string | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["schools"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["schools"]["Insert"]>;
+      };
+      billing_payments: {
+        Row: {
+          id: string;
+          school_id: string;
+          submitted_by: string;
+          payment_ref: string | null;
+          slip_url: string | null;
+          status: "pending" | "approved" | "rejected";
+          resulting_paid_until: string | null;
+          submitted_at: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+        };
+        Insert: Omit<Database["public"]["Tables"]["billing_payments"]["Row"], "id" | "submitted_at"> & {
+          status?: "pending" | "approved" | "rejected";
+        };
+        Update: Partial<Database["public"]["Tables"]["billing_payments"]["Insert"]>;
       };
       subjects: {
         Row: {
