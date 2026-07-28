@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { FolderOpen, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3, Plus } from "lucide-react";
+import { FolderOpen, Video, ClipboardList, CalendarCheck, Megaphone, Users, BarChart3, Plus } from "lucide-react";
 import { dedupeAttendance } from "@/lib/attendance";
 import Header from "@/components/Header";
 
@@ -134,6 +134,7 @@ export default async function TeacherDashboardPage() {
       <div className="max-w-5xl mx-auto flex items-center gap-6 overflow-x-auto px-4 pt-4">
         {[
           { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
+          { href: "/teacher/media", label: "สื่อการเรียนรู้", icon: Video },
           { href: "/teacher/tasks", label: "มอบหมายงาน", icon: ClipboardList },
           { href: "/teacher/attendance", label: "เช็คชื่อ", icon: CalendarCheck },
           { href: "/teacher/announcements", label: "ประกาศ", icon: Megaphone },
