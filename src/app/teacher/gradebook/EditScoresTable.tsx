@@ -143,6 +143,19 @@ export default function EditScoresTable({
     await runSave();
   }
 
+  function inputId(rowIndex: number, colIndex: number) {
+    return `score-cell-${rowIndex}-${colIndex}`;
+  }
+
+  // Enter เลื่อนโฟกัสลงแถวถัดไปในคอลัมน์เดียวกัน (แบบ Excel/Sheets) เพราะครูส่วนใหญ่กรอกคะแนนไล่ทีละคอลัมน์
+  // ไม่ใช่ทีละแถว — ตรงข้ามกับ Tab ที่เลื่อนขวาไปคอลัมน์ถัดไปในแถวเดิมตามปกติของเบราว์เซอร์
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>, rowIndex: number, colIndex: number) {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const next = document.getElementById(inputId(rowIndex + 1, colIndex));
+    if (next) (next as HTMLInputElement).focus();
+  }
+
   if (sortedAssignments.length === 0) {
     return <p className="text-sm text-ink-faint">ยังไม่มีช่องคะแนน เพิ่มช่องคะแนนด้านบนก่อน</p>;
   }
@@ -180,14 +193,16 @@ export default function EditScoresTable({
                   <span className="block">{s.name}</span>
                   <span className="block text-[10px] text-ink-faint font-normal">{s.code}</span>
                 </td>
-                {sortedAssignments.map((a) => (
+                {sortedAssignments.map((a, colIndex) => (
                   <td key={a.id} className="border border-border px-0.5 py-1">
                     <input
+                      id={inputId(i, colIndex)}
                       type="number"
                       min={0}
                       max={a.max_score}
                       value={getValue(s.code, a.id)}
                       onChange={(e) => setValue(s.code, a.id, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, i, colIndex)}
                       className="w-10 text-center border-[0.5px] border-border rounded-control px-0.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
                     />
                   </td>
