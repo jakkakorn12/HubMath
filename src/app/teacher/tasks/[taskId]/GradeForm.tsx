@@ -16,6 +16,7 @@ export default function GradeForm({
   initialGrade,
   initialFeedback,
   assignmentId,
+  maxScore,
   reducedMaxScore,
   onSaved,
 }: {
@@ -23,6 +24,7 @@ export default function GradeForm({
   initialGrade: number | null;
   initialFeedback: string | null;
   assignmentId: string | null;
+  maxScore: number | null;
   reducedMaxScore: number | null;
   onSaved?: (grade: number | null) => void;
 }) {
@@ -141,7 +143,10 @@ export default function GradeForm({
     <form onSubmit={handleSaveClick} className="mt-3 pt-3 border-t-[0.5px] border-border flex flex-wrap items-start gap-2">
       <div>
         <label className="block text-[11px] text-ink-faint mb-1">
-          คะแนน{reducedMaxScore != null && ` (เต็ม ${reducedMaxScore})`}
+          คะแนน
+          {maxScore != null
+            ? ` (เต็ม ${maxScore}${reducedMaxScore != null ? ` → ตัดทอนเหลือ ${reducedMaxScore}` : ""})`
+            : reducedMaxScore != null && ` (เต็ม ${reducedMaxScore})`}
         </label>
         <input
           type="text"

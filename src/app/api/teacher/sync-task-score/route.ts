@@ -46,7 +46,11 @@ export async function POST(req: NextRequest) {
 
   if (!taskId) return NextResponse.json({ error: "missing task_id or submission_id" }, { status: 400 });
 
-  const { data: task } = await svc.from("tasks").select("id, subject_id, assignment_id").eq("id", taskId).maybeSingle();
+  const { data: task } = await svc
+    .from("tasks")
+    .select("id, subject_id, assignment_id, max_score, reduced_max_score")
+    .eq("id", taskId)
+    .maybeSingle();
   if (!task) return NextResponse.json({ error: "ไม่พบงานนี้" }, { status: 404 });
 
   // เช็คว่าครูคนนี้สอนวิชานี้จริง
@@ -72,13 +76,21 @@ export async function POST(req: NextRequest) {
   const { data: students } = await svc.from("students").select("id, student_code").in("id", studentIds);
   const codeById = new Map((students ?? []).map((s) => [s.id, s.student_code]));
 
+  // มีทั้งคะแนนเต็ม(ก่อนตัดทอน)และตัดทอนเหลือ → สเกลตามสัดส่วน ไม่งั้นส่งคะแนนดิบเข้าตรงๆ (เผื่องานเก่าที่ตั้งแค่ตัดทอนเหลือแต่ยังไม่ได้ใส่คะแนนเต็ม)
+  const scaleScore = (grade: number) => {
+    if (task.max_score != null && task.max_score > 0 && task.reduced_max_score != null) {
+      return Math.round((grade / task.max_score) * task.reduced_max_score * 100) / 100;
+    }
+    return grade;
+  };
+
   const toUpsert: { student_code: string; assignment_id: string; score: number }[] = [];
   const toDeleteCodes: string[] = [];
   for (const s of subs) {
     const code = codeById.get(s.student_id);
     if (!code) continue;
     if (s.grade == null) toDeleteCodes.push(code);
-    else toUpsert.push({ student_code: code, assignment_id: task.assignment_id, score: s.grade });
+    else toUpsert.push({ student_code: code, assignment_id: task.assignment_id, score: scaleScore(s.grade) });
   }
 
   if (toUpsert.length > 0) {

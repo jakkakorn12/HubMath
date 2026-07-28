@@ -198,6 +198,7 @@ export type Database = {
           description: string | null;
           due_date: string | null;
           assignment_id: string | null;
+          max_score: number | null;
           reduced_max_score: number | null;
           created_at: string;
         };

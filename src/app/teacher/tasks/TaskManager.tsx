@@ -63,6 +63,7 @@ export default function TaskManager({
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [assignmentId, setAssignmentId] = useState("");
+  const [maxScore, setMaxScore] = useState("");
   const [reducedMaxScore, setReducedMaxScore] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export default function TaskManager({
   const [editDescription, setEditDescription] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
   const [editAssignmentId, setEditAssignmentId] = useState("");
+  const [editMaxScore, setEditMaxScore] = useState("");
   const [editReducedMaxScore, setEditReducedMaxScore] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
@@ -88,12 +90,18 @@ export default function TaskManager({
     setEditDescription(t.description ?? "");
     setEditDueDate(toLocalInput(t.due_date));
     setEditAssignmentId(t.assignment_id ?? "");
+    setEditMaxScore(t.max_score != null ? String(t.max_score) : "");
     setEditReducedMaxScore(t.reduced_max_score != null ? String(t.reduced_max_score) : "");
   }
 
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!editingId || !editTitle.trim()) return;
+    const editMaxNum = editMaxScore.trim() === "" ? null : Number(editMaxScore);
+    if (editMaxScore.trim() !== "" && Number.isNaN(editMaxNum)) {
+      setError("คะแนนเต็มต้องเป็นตัวเลข");
+      return;
+    }
     const reducedNum = editReducedMaxScore.trim() === "" ? null : Number(editReducedMaxScore);
     if (editReducedMaxScore.trim() !== "" && Number.isNaN(reducedNum)) {
       setError("ตัดทอนคะแนนต้องเป็นตัวเลข");
@@ -108,6 +116,7 @@ export default function TaskManager({
         description: editDescription.trim() || null,
         due_date: editDueDate ? new Date(editDueDate).toISOString() : null,
         assignment_id: editAssignmentId || null,
+        max_score: editMaxNum,
         reduced_max_score: reducedNum,
       })
       .eq("id", editingId);
@@ -128,6 +137,11 @@ export default function TaskManager({
       return;
     }
     if (!title.trim()) return;
+    const maxNum = maxScore.trim() === "" ? null : Number(maxScore);
+    if (maxScore.trim() !== "" && Number.isNaN(maxNum)) {
+      setError("คะแนนเต็มต้องเป็นตัวเลข");
+      return;
+    }
     const reducedNum = reducedMaxScore.trim() === "" ? null : Number(reducedMaxScore);
     if (reducedMaxScore.trim() !== "" && Number.isNaN(reducedNum)) {
       setError("ตัดทอนคะแนนต้องเป็นตัวเลข");
@@ -144,6 +158,7 @@ export default function TaskManager({
       description: description.trim() || null,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
       assignment_id: assignmentId || null,
+      max_score: maxNum,
       reduced_max_score: reducedNum,
     });
 
@@ -157,6 +172,7 @@ export default function TaskManager({
     setDescription("");
     setDueDate("");
     setAssignmentId("");
+    setMaxScore("");
     setReducedMaxScore("");
     setCreating(false);
     router.refresh();
@@ -220,6 +236,16 @@ export default function TaskManager({
                 </option>
               ))}
             </select>
+          </div>
+          <div className="w-32">
+            <label className="block text-sm font-medium text-ink mb-1">คะแนนเต็ม</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={maxScore}
+              onChange={(e) => setMaxScore(e.target.value)}
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
+            />
           </div>
           <div className="w-32">
             <label className="block text-sm font-medium text-ink mb-1">ตัดทอนเหลือ</label>
@@ -288,6 +314,14 @@ export default function TaskManager({
                     <input
                       type="text"
                       inputMode="decimal"
+                      value={editMaxScore}
+                      onChange={(e) => setEditMaxScore(e.target.value)}
+                      placeholder="คะแนนเต็ม"
+                      className="w-28 border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+                    />
+                    <input
+                      type="text"
+                      inputMode="decimal"
                       value={editReducedMaxScore}
                       onChange={(e) => setEditReducedMaxScore(e.target.value)}
                       placeholder="ตัดทอนเหลือ"
@@ -323,7 +357,8 @@ export default function TaskManager({
                     {t.assignment_id && (
                       <p className="text-xs text-navy-600 mt-0.5">
                         → {assignmentLabel(t.assignment_id) ?? "ช่องคะแนน"}
-                        {t.reduced_max_score != null && ` · ตัดทอนเหลือ ${t.reduced_max_score}`}
+                        {t.max_score != null && ` · เต็ม ${t.max_score}`}
+                        {t.reduced_max_score != null && ` → ตัดทอนเหลือ ${t.reduced_max_score}`}
                       </p>
                     )}
                   </div>

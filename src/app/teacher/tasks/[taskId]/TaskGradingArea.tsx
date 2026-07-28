@@ -38,16 +38,17 @@ export type SubmissionProps = {
 
 const AUTOSAVE_DELAY_MS = 300;
 
-type LinkValues = { assignmentId: string; reducedMaxScore: string };
+type LinkValues = { assignmentId: string; maxScore: string; reducedMaxScore: string };
 
 function entryKey(v: LinkValues) {
-  return `${v.assignmentId}__${v.reducedMaxScore}`;
+  return `${v.assignmentId}__${v.maxScore}__${v.reducedMaxScore}`;
 }
 
 export default function TaskGradingArea({
   taskId,
   assignments,
   initialAssignmentId,
+  initialMaxScore,
   initialReducedMaxScore,
   submissions,
   emptyLabel,
@@ -55,12 +56,14 @@ export default function TaskGradingArea({
   taskId: string;
   assignments: AssignmentOption[];
   initialAssignmentId: string | null;
+  initialMaxScore: number | null;
   initialReducedMaxScore: number | null;
   submissions: SubmissionProps[];
   emptyLabel: string;
 }) {
   const initial: LinkValues = {
     assignmentId: initialAssignmentId ?? "",
+    maxScore: initialMaxScore != null ? String(initialMaxScore) : "",
     reducedMaxScore: initialReducedMaxScore != null ? String(initialReducedMaxScore) : "",
   };
   const [values, setValues] = useState<LinkValues>(initial);
@@ -101,6 +104,12 @@ export default function TaskGradingArea({
     scheduleSave();
   }
 
+  function setMaxScore(maxScore: string) {
+    setValues((prev) => ({ ...prev, maxScore }));
+    setDone(false);
+    scheduleSave();
+  }
+
   function setReducedMaxScore(reducedMaxScore: string) {
     setValues((prev) => ({ ...prev, reducedMaxScore }));
     setDone(false);
@@ -123,6 +132,11 @@ export default function TaskGradingArea({
         return;
       }
 
+      const maxNum = cur.maxScore.trim() === "" ? null : Number(cur.maxScore);
+      if (cur.maxScore.trim() !== "" && Number.isNaN(maxNum)) {
+        setError("คะแนนเต็มต้องเป็นตัวเลข");
+        return;
+      }
       const reducedNum = cur.reducedMaxScore.trim() === "" ? null : Number(cur.reducedMaxScore);
       if (cur.reducedMaxScore.trim() !== "" && Number.isNaN(reducedNum)) {
         setError("ตัดทอนคะแนนต้องเป็นตัวเลข");
@@ -132,7 +146,7 @@ export default function TaskGradingArea({
       const supabase = createClient();
       const { error: updateError } = await supabase
         .from("tasks")
-        .update({ assignment_id: cur.assignmentId || null, reduced_max_score: reducedNum })
+        .update({ assignment_id: cur.assignmentId || null, max_score: maxNum, reduced_max_score: reducedNum })
         .eq("id", taskId);
 
       if (updateError) {
@@ -163,6 +177,7 @@ export default function TaskGradingArea({
   }
 
   const liveAssignmentId = values.assignmentId || null;
+  const liveMaxScore = values.maxScore.trim() === "" ? null : Number(values.maxScore);
   const liveReducedMaxScore = values.reducedMaxScore.trim() === "" ? null : Number(values.reducedMaxScore);
 
   return (
@@ -186,6 +201,16 @@ export default function TaskGradingArea({
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-[11px] text-ink-faint mb-1">คะแนนเต็ม (ก่อนตัดทอน)</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={values.maxScore}
+              onChange={(e) => setMaxScore(e.target.value)}
+              className="w-24 border-[0.5px] border-border rounded-control px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
+            />
           </div>
           <div>
             <label className="block text-[11px] text-ink-faint mb-1">ตัดทอนคะแนนเหลือ</label>
@@ -220,6 +245,7 @@ export default function TaskGradingArea({
             initialGrade={s.initialGrade}
             initialFeedback={s.initialFeedback}
             assignmentId={liveAssignmentId}
+            maxScore={liveMaxScore}
             reducedMaxScore={liveReducedMaxScore}
             matches={s.matches}
             fileName={s.fileName}
