@@ -12,6 +12,8 @@ export default function SubmissionCard({
   studentCode,
   initialGrade,
   initialFeedback,
+  assignmentId,
+  reducedMaxScore,
   matches,
   fileName,
   fileLink,
@@ -25,6 +27,8 @@ export default function SubmissionCard({
   studentCode: string | undefined;
   initialGrade: number | null;
   initialFeedback: string | null;
+  assignmentId: string | null;
+  reducedMaxScore: number | null;
   matches: { name: string; percent: number }[];
   fileName: string | null;
   fileLink: string | undefined;
@@ -83,6 +87,8 @@ export default function SubmissionCard({
         submissionId={submissionId}
         initialGrade={initialGrade}
         initialFeedback={initialFeedback}
+        assignmentId={assignmentId}
+        reducedMaxScore={reducedMaxScore}
         onSaved={setGrade}
       />
     </div>

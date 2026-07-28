@@ -4,10 +4,34 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import type { Database } from "@/lib/supabase/types";
+import type { Database, AssignmentCategory } from "@/lib/supabase/types";
 import ConfirmButton from "@/components/ConfirmButton";
 
 type Task = Database["public"]["Tables"]["tasks"]["Row"];
+
+type AssignmentOption = {
+  id: string;
+  title: string;
+  display_name: string | null;
+  category: AssignmentCategory;
+  term: 1 | 2;
+  max_score: number;
+};
+
+const CATEGORY_LABEL: Record<AssignmentCategory, string> = {
+  practice: "เก็บคะแนน",
+  midterm: "กลางภาค",
+  final: "ปลายภาค",
+  competency: "สมรรถนะ",
+};
+
+async function syncTaskScore(taskId: string) {
+  await fetch("/api/teacher/sync-task-score", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ task_id: taskId }),
+  }).catch(() => {});
+}
 
 // ISO string → ค่าสำหรับ input datetime-local
 function toLocalInput(iso: string | null): string {
@@ -24,6 +48,7 @@ export default function TaskManager({
   tasks,
   submissionCounts,
   roomNameById,
+  assignments,
 }: {
   subjectId: string | null;
   sectionId: string | null;
@@ -31,11 +56,14 @@ export default function TaskManager({
   tasks: Task[];
   submissionCounts: Record<string, number>;
   roomNameById: Record<string, string>;
+  assignments: AssignmentOption[];
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [assignmentId, setAssignmentId] = useState("");
+  const [reducedMaxScore, setReducedMaxScore] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,18 +72,33 @@ export default function TaskManager({
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
+  const [editAssignmentId, setEditAssignmentId] = useState("");
+  const [editReducedMaxScore, setEditReducedMaxScore] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+
+  function assignmentLabel(id: string) {
+    const a = assignments.find((x) => x.id === id);
+    if (!a) return null;
+    return `${a.display_name ?? a.title} (${CATEGORY_LABEL[a.category]} · เทอม ${a.term} · เต็ม ${a.max_score})`;
+  }
 
   function startEdit(t: Task) {
     setEditingId(t.id);
     setEditTitle(t.title);
     setEditDescription(t.description ?? "");
     setEditDueDate(toLocalInput(t.due_date));
+    setEditAssignmentId(t.assignment_id ?? "");
+    setEditReducedMaxScore(t.reduced_max_score != null ? String(t.reduced_max_score) : "");
   }
 
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!editingId || !editTitle.trim()) return;
+    const reducedNum = editReducedMaxScore.trim() === "" ? null : Number(editReducedMaxScore);
+    if (editReducedMaxScore.trim() !== "" && Number.isNaN(reducedNum)) {
+      setError("ตัดทอนคะแนนต้องเป็นตัวเลข");
+      return;
+    }
     setSavingEdit(true);
     const supabase = createClient();
     const { error: updateError } = await supabase
@@ -64,6 +107,8 @@ export default function TaskManager({
         title: editTitle.trim(),
         description: editDescription.trim() || null,
         due_date: editDueDate ? new Date(editDueDate).toISOString() : null,
+        assignment_id: editAssignmentId || null,
+        reduced_max_score: reducedNum,
       })
       .eq("id", editingId);
     setSavingEdit(false);
@@ -71,6 +116,7 @@ export default function TaskManager({
       setError("แก้ไขไม่สำเร็จ: " + updateError.message);
       return;
     }
+    if (editAssignmentId) await syncTaskScore(editingId);
     setEditingId(null);
     router.refresh();
   }
@@ -82,6 +128,11 @@ export default function TaskManager({
       return;
     }
     if (!title.trim()) return;
+    const reducedNum = reducedMaxScore.trim() === "" ? null : Number(reducedMaxScore);
+    if (reducedMaxScore.trim() !== "" && Number.isNaN(reducedNum)) {
+      setError("ตัดทอนคะแนนต้องเป็นตัวเลข");
+      return;
+    }
     setCreating(true);
     setError(null);
     const supabase = createClient();
@@ -92,6 +143,8 @@ export default function TaskManager({
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      assignment_id: assignmentId || null,
+      reduced_max_score: reducedNum,
     });
 
     if (insertError) {
@@ -103,6 +156,8 @@ export default function TaskManager({
     setTitle("");
     setDescription("");
     setDueDate("");
+    setAssignmentId("");
+    setReducedMaxScore("");
     setCreating(false);
     router.refresh();
   }
@@ -150,6 +205,33 @@ export default function TaskManager({
             className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
           />
         </div>
+        <div className="flex flex-wrap gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-ink mb-1">คะแนนปลายทาง (ไม่บังคับ)</label>
+            <select
+              value={assignmentId}
+              onChange={(e) => setAssignmentId(e.target.value)}
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+            >
+              <option value="">ไม่เชื่อมกับเกรดบุ๊ค</option>
+              {assignments.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.display_name ?? a.title} ({CATEGORY_LABEL[a.category]} · เทอม {a.term} · เต็ม {a.max_score})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="w-32">
+            <label className="block text-sm font-medium text-ink mb-1">ตัดทอนเหลือ</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={reducedMaxScore}
+              onChange={(e) => setReducedMaxScore(e.target.value)}
+              className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
+            />
+          </div>
+        </div>
         {error && <p className="text-danger-strong text-sm">{error}</p>}
         <button
           type="submit"
@@ -190,6 +272,29 @@ export default function TaskManager({
                     onChange={(e) => setEditDueDate(e.target.value)}
                     className="w-full border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
                   />
+                  <div className="flex flex-wrap gap-3">
+                    <select
+                      value={editAssignmentId}
+                      onChange={(e) => setEditAssignmentId(e.target.value)}
+                      className="flex-1 min-w-[200px] border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+                    >
+                      <option value="">ไม่เชื่อมกับเกรดบุ๊ค</option>
+                      {assignments.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.display_name ?? a.title} ({CATEGORY_LABEL[a.category]} · เทอม {a.term} · เต็ม {a.max_score})
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={editReducedMaxScore}
+                      onChange={(e) => setEditReducedMaxScore(e.target.value)}
+                      placeholder="ตัดทอนเหลือ"
+                      className="w-32 border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+                    />
+                  </div>
+                  {error && <p className="text-danger-strong text-sm">{error}</p>}
                   <div className="flex gap-2">
                     <button
                       type="submit"
@@ -215,6 +320,12 @@ export default function TaskManager({
                       {t.section_id ? `ห้อง ${roomNameById[t.section_id] ?? "?"}` : "ทุกห้อง"} · ส่งแล้ว {submissionCounts[t.id] ?? 0} คน
                       {t.due_date && ` · กำหนดส่ง ${new Date(t.due_date).toLocaleDateString("th-TH")}`}
                     </p>
+                    {t.assignment_id && (
+                      <p className="text-xs text-navy-600 mt-0.5">
+                        → {assignmentLabel(t.assignment_id) ?? "ช่องคะแนน"}
+                        {t.reduced_max_score != null && ` · ตัดทอนเหลือ ${t.reduced_max_score}`}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <Link

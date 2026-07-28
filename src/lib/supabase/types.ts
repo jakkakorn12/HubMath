@@ -197,6 +197,8 @@ export type Database = {
           title: string;
           description: string | null;
           due_date: string | null;
+          assignment_id: string | null;
+          reduced_max_score: number | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["tasks"]["Row"], "id" | "created_at">;

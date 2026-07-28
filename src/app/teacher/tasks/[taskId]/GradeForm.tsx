@@ -15,11 +15,15 @@ export default function GradeForm({
   submissionId,
   initialGrade,
   initialFeedback,
+  assignmentId,
+  reducedMaxScore,
   onSaved,
 }: {
   submissionId: string;
   initialGrade: number | null;
   initialFeedback: string | null;
+  assignmentId: string | null;
+  reducedMaxScore: number | null;
   onSaved?: (grade: number | null) => void;
 }) {
   const initial: Entry = { grade: initialGrade != null ? String(initialGrade) : "", feedback: initialFeedback ?? "" };
@@ -107,6 +111,14 @@ export default function GradeForm({
       baselineRef.current = cur;
       setDone(true);
       onSaved?.(gradeNum);
+
+      if (assignmentId) {
+        fetch("/api/teacher/sync-task-score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ submission_id: submissionId }),
+        }).catch((e) => console.error("sync-task-score failed", e));
+      }
     } catch {
       setError("บันทึกไม่สำเร็จ (เชื่อมต่อไม่ได้) กรุณาลองใหม่อีกครั้ง");
     } finally {
@@ -128,7 +140,9 @@ export default function GradeForm({
   return (
     <form onSubmit={handleSaveClick} className="mt-3 pt-3 border-t-[0.5px] border-border flex flex-wrap items-start gap-2">
       <div>
-        <label className="block text-[11px] text-ink-faint mb-1">คะแนน</label>
+        <label className="block text-[11px] text-ink-faint mb-1">
+          คะแนน{reducedMaxScore != null && ` (เต็ม ${reducedMaxScore})`}
+        </label>
         <input
           type="text"
           inputMode="decimal"

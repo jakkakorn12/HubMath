@@ -5,6 +5,7 @@ import TeacherNav from "@/components/TeacherNav";
 import Header from "@/components/Header";
 import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import TaskManager from "./TaskManager";
+import type { AssignmentCategory } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,15 @@ export default async function TeacherTasksPage({
     if (section_id) query = query.or(`section_id.is.null,section_id.eq.${section_id}`);
   }
   const { data: tasks } = await query;
+
+  const { data: assignments } = subject_id
+    ? await supabase
+        .from("assignments")
+        .select("id, title, display_name, category, term, max_score")
+        .eq("subject_id", subject_id)
+        .order("term")
+        .order("category")
+    : { data: [] as { id: string; title: string; display_name: string | null; category: AssignmentCategory; term: 1 | 2; max_score: number }[] };
 
   const { data: submissions } = await supabase.from("task_submissions").select("task_id");
   const submissionCounts: Record<string, number> = {};
@@ -78,6 +88,7 @@ export default async function TeacherTasksPage({
           tasks={tasks ?? []}
           submissionCounts={submissionCounts}
           roomNameById={roomNameById}
+          assignments={assignments ?? []}
         />
       </main>
     </div>

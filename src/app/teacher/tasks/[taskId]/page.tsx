@@ -5,6 +5,7 @@ import { textSimilarity, SIMILARITY_THRESHOLD } from "@/lib/similarity";
 import { imageHammingDistance, IMAGE_HASH_THRESHOLD } from "@/lib/imageHash";
 import Header from "@/components/Header";
 import SubmissionCard from "./SubmissionCard";
+import TaskScoreLink from "./TaskScoreLink";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,13 @@ export default async function TaskSubmissionsPage({
   if (!task) redirect("/teacher/dashboard");
 
   const subject = task.subjects as { name: string; id: string } | null;
+
+  const { data: assignments } = await supabase
+    .from("assignments")
+    .select("id, title, display_name, category, term, max_score")
+    .eq("subject_id", task.subject_id)
+    .order("term")
+    .order("category");
 
   const { data: submissions } = await supabase
     .from("task_submissions")
@@ -211,9 +219,17 @@ export default async function TaskSubmissionsPage({
         </div>
 
         {/* ส่งแล้ว */}
-        <h2 className="text-lg font-bold text-ink">
-          ส่งแล้ว <span className="text-ink-faint font-normal">({visibleSubs.length} คน)</span>
-        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="text-lg font-bold text-ink">
+            ส่งแล้ว <span className="text-ink-faint font-normal">({visibleSubs.length} คน)</span>
+          </h2>
+          <TaskScoreLink
+            taskId={task.id}
+            assignments={assignments ?? []}
+            initialAssignmentId={task.assignment_id}
+            initialReducedMaxScore={task.reduced_max_score}
+          />
+        </div>
 
         {visibleSubs.length === 0 ? (
           <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center text-ink-faint">
@@ -234,6 +250,8 @@ export default async function TaskSubmissionsPage({
                 studentCode={student?.student_code}
                 initialGrade={sub.grade}
                 initialFeedback={sub.feedback}
+                assignmentId={task.assignment_id}
+                reducedMaxScore={task.reduced_max_score}
                 matches={matches}
                 fileName={sub.file_name}
                 fileLink={fileLink}
