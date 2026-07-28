@@ -55,7 +55,7 @@ export default function QrButton({ sectionId, teacherId }: { sectionId: string; 
         <button
           onClick={generateQr}
           disabled={loading}
-          className="text-sm text-success-strong hover:underline disabled:opacity-50"
+          className="text-sm font-medium bg-navy-900 text-white px-3 py-1.5 rounded-control hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "กำลังสร้าง..." : "สร้าง QR เช็คชื่อ"}
         </button>

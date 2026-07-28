@@ -201,11 +201,7 @@ export default async function TeacherAttendancePage({
                 >
                   รายงานทั้งเทอม
                 </Link>
-                {!editMode && !reportMode && (
-                  <div className="px-3 py-1.5">
-                    <QrButton sectionId={section_id} teacherId={teacher.id} />
-                  </div>
-                )}
+                {!editMode && !reportMode && <QrButton sectionId={section_id} teacherId={teacher.id} />}
               </div>
               {editMode && (
                 <form method="GET" className="flex items-center gap-2">
