@@ -49,6 +49,172 @@ const BUCKET_OPTIONS: { value: string; label: string; category: AssignmentCatego
   { value: "final", label: "ปลายภาค", category: "final", term: 2 },
 ];
 
+function bucketValueFor(category: AssignmentCategory, term: 1 | 2) {
+  return BUCKET_OPTIONS.find((b) => b.category === category && b.term === term)?.value ?? BUCKET_OPTIONS[0].value;
+}
+
+function AssignmentRow({ assignment }: { assignment: AssignmentListItem }) {
+  const router = useRouter();
+  const [mode, setMode] = useState<"view" | "edit" | "confirmDelete">("view");
+  const [title, setTitle] = useState(assignment.title);
+  const [bucket, setBucket] = useState(bucketValueFor(assignment.category, assignment.term));
+  const [maxScore, setMaxScore] = useState(String(assignment.max_score));
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    const chosen = BUCKET_OPTIONS.find((b) => b.value === bucket)!;
+    setWorking(true);
+    setError(null);
+
+    const res = await fetch("/api/teacher/update-assignment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        assignment_id: assignment.id,
+        title,
+        category: chosen.category,
+        term: chosen.term,
+        max_score: Number(maxScore),
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error ?? "แก้ไขไม่สำเร็จ");
+      setWorking(false);
+      return;
+    }
+
+    setWorking(false);
+    setMode("view");
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    setWorking(true);
+    setError(null);
+
+    const res = await fetch("/api/teacher/delete-assignment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignment_id: assignment.id }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error ?? "ลบไม่สำเร็จ");
+      setWorking(false);
+      setMode("view");
+      return;
+    }
+
+    router.refresh();
+  }
+
+  if (mode === "edit") {
+    return (
+      <form onSubmit={handleSaveEdit} className="bg-surface rounded-control px-3 py-2 space-y-2">
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="flex-1 min-w-[120px]">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full border-[0.5px] border-border rounded-control px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+            />
+          </div>
+          <div className="min-w-[170px]">
+            <select
+              value={bucket}
+              onChange={(e) => setBucket(e.target.value)}
+              className="w-full border-[0.5px] border-border rounded-control px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+            >
+              {BUCKET_OPTIONS.map((b) => (
+                <option key={b.value} value={b.value}>{b.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-20">
+            <input
+              type="number"
+              min={1}
+              value={maxScore}
+              onChange={(e) => setMaxScore(e.target.value)}
+              required
+              className="w-full border-[0.5px] border-border rounded-control px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={working}
+            className="bg-navy-900 text-white px-3 py-1.5 rounded-control text-xs font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            {working ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("view")}
+            disabled={working}
+            className="border-[0.5px] border-border text-ink px-3 py-1.5 rounded-control text-xs font-medium bg-white hover:bg-surface disabled:opacity-50"
+          >
+            ยกเลิก
+          </button>
+        </div>
+        {error && <p className="text-danger-strong text-xs">{error}</p>}
+      </form>
+    );
+  }
+
+  if (mode === "confirmDelete") {
+    return (
+      <div className="bg-danger-soft rounded-control px-3 py-2 space-y-2">
+        <p className="text-sm text-danger-strong">
+          ลบ "{assignment.display_name ?? assignment.title}" ใช่ไหม? คะแนนที่กรอกไว้ในช่องนี้จะถูกลบไปด้วยทั้งหมด
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={working}
+            className="bg-danger-strong text-white px-3 py-1.5 rounded-control text-xs font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            {working ? "กำลังลบ..." : "ยืนยันลบ"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("view")}
+            disabled={working}
+            className="border-[0.5px] border-border text-ink px-3 py-1.5 rounded-control text-xs font-medium bg-white hover:bg-surface disabled:opacity-50"
+          >
+            ยกเลิก
+          </button>
+        </div>
+        {error && <p className="text-danger-strong text-xs">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between bg-surface rounded-control px-3 py-2 text-sm gap-3">
+      <span className="text-ink">{assignment.display_name ?? assignment.title}</span>
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="text-ink-faint text-xs whitespace-nowrap">
+          {CATEGORY_LABEL[assignment.category]} · เทอม {assignment.term} · เต็ม {assignment.max_score}
+        </span>
+        <button type="button" onClick={() => setMode("edit")} className="text-xs font-medium text-navy-600 hover:underline">
+          แก้ไข
+        </button>
+        <button type="button" onClick={() => setMode("confirmDelete")} className="text-xs font-medium text-danger-strong hover:underline">
+          ลบ
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AssignmentManager({
   subjectId,
   assignments,
@@ -109,12 +275,7 @@ export default function AssignmentManager({
           {showList && (
             <div className="space-y-1.5 mt-2">
               {sortAssignments(assignments).map((a) => (
-                <div key={a.id} className="flex items-center justify-between bg-surface rounded-control px-3 py-2 text-sm">
-                  <span className="text-ink">{a.display_name ?? a.title}</span>
-                  <span className="text-ink-faint text-xs">
-                    {CATEGORY_LABEL[a.category]} · เทอม {a.term} · เต็ม {a.max_score}
-                  </span>
-                </div>
+                <AssignmentRow key={a.id} assignment={a} />
               ))}
             </div>
           )}
