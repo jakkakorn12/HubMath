@@ -8,6 +8,7 @@ import SubjectRoomPicker from "@/components/SubjectRoomPicker";
 import QrButton from "@/components/QrButton";
 import AttendanceEditor from "./AttendanceEditor";
 import AttendanceReport, { type AttendanceReportRow } from "./AttendanceReport";
+import DateJumpForm from "./DateJumpForm";
 import { dedupeAttendance } from "@/lib/attendance";
 import type { AttendanceStatus } from "@/lib/supabase/types";
 
@@ -60,6 +61,8 @@ export default async function TeacherAttendancePage({
     name: string;
     today: AttendanceStatus | null;
     totals: Record<AttendanceStatus, number>;
+    percentage: number | null;
+    eligible: boolean | null;
   };
   let rows: Row[] = [];
   let todayCounts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0, truant: 0 };
@@ -99,12 +102,35 @@ export default async function TeacherAttendancePage({
     const totalsByCode = new Map<string, Record<AttendanceStatus, number>>();
     for (const a of att) {
       const status = a.status as AttendanceStatus;
-      if (a.date === today) todayByCode.set(a.student_code, status);
+      if (a.date === date) todayByCode.set(a.student_code, status);
       if (!totalsByCode.has(a.student_code)) {
         totalsByCode.set(a.student_code, { present: 0, late: 0, absent: 0, leave: 0, truant: 0 });
       }
       totalsByCode.get(a.student_code)![status]++;
     }
+
+    // รายงานทั้งเทอม: หนึ่งคอลัมน์ต่อวันที่มีการเช็คชื่อจริง + ร้อยละ + สิทธิ์การเข้าสอบ
+    // วันที่ไม่มีข้อมูลของนักเรียนคนนั้นเลย (ไม่ว่า QR หรือครูกรอก) นับเป็นวันขาดในการคำนวณ
+    reportDates = [...new Set(att.map((a) => a.date))].sort();
+    const statusByCodeDate = new Map(att.map((a) => [`${a.student_code}__${a.date}`, a.status as AttendanceStatus]));
+    const statsByCode = new Map<string, { percentage: number | null; eligible: boolean | null }>();
+
+    reportRows = editorStudents.map((s) => {
+      const byDate: Record<string, AttendanceStatus | null> = {};
+      let attended = 0; // มา + สาย
+      let countable = 0; // วันเรียนทั้งหมด - วันลา (ไม่มีข้อมูล = นับเป็นขาด)
+      for (const d of reportDates) {
+        const status = statusByCodeDate.get(`${s.code}__${d}`) ?? null;
+        byDate[d] = status;
+        if (status === "leave") continue;
+        countable++;
+        if (status === "present" || status === "late") attended++;
+      }
+      const percentage = countable > 0 ? Math.round((attended / countable) * 100) : null;
+      const eligible = percentage == null ? null : percentage >= ATTENDANCE_PASS_THRESHOLD;
+      statsByCode.set(s.code, { percentage, eligible });
+      return { code: s.code, number: s.number, name: s.name, byDate, percentage, eligible };
+    });
 
     rows = (rosterEnroll ?? [])
       .map((r) => ({
@@ -113,6 +139,8 @@ export default async function TeacherAttendancePage({
         name: nameByCode.get(r.student_code) ?? "—",
         today: todayByCode.get(r.student_code) ?? null,
         totals: totalsByCode.get(r.student_code) ?? { present: 0, late: 0, absent: 0, leave: 0, truant: 0 },
+        percentage: statsByCode.get(r.student_code)?.percentage ?? null,
+        eligible: statsByCode.get(r.student_code)?.eligible ?? null,
       }))
       .sort((a, b) => a.number - b.number);
 
@@ -120,32 +148,6 @@ export default async function TeacherAttendancePage({
       if (r.today) todayCounts[r.today]++;
       else notCheckedToday++;
     }
-
-    // รายงานทั้งเทอม: หนึ่งคอลัมน์ต่อวันที่มีการเช็คชื่อจริง + ร้อยละ + สิทธิ์การเข้าสอบ
-    reportDates = [...new Set(att.map((a) => a.date))].sort();
-    const statusByCodeDate = new Map(att.map((a) => [`${a.student_code}__${a.date}`, a.status as AttendanceStatus]));
-
-    reportRows = editorStudents.map((s) => {
-      const byDate: Record<string, AttendanceStatus | null> = {};
-      let attended = 0; // มา + สาย
-      let countable = 0; // วันเรียนทั้งหมด - วันลา - วันที่ไม่มีข้อมูลของคนนี้
-      for (const d of reportDates) {
-        const status = statusByCodeDate.get(`${s.code}__${d}`) ?? null;
-        byDate[d] = status;
-        if (!status || status === "leave") continue;
-        countable++;
-        if (status === "present" || status === "late") attended++;
-      }
-      const percentage = countable > 0 ? Math.round((attended / countable) * 100) : null;
-      return {
-        code: s.code,
-        number: s.number,
-        name: s.name,
-        byDate,
-        percentage,
-        eligible: percentage == null ? null : percentage >= ATTENDANCE_PASS_THRESHOLD,
-      };
-    });
   }
 
   return (
@@ -182,47 +184,35 @@ export default async function TeacherAttendancePage({
         ) : (
           <div className="space-y-5">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex gap-1 text-sm">
-                <Link
-                  href={`?subject_id=${subject_id}&section_id=${section_id}`}
-                  className={`px-3 py-1.5 rounded-control font-medium ${!editMode && !reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
-                >
-                  ดูสรุป
-                </Link>
+              <div className="inline-flex items-center gap-0.5 border-[0.5px] border-border rounded-control bg-surface p-1 text-sm">
                 <Link
                   href={`?subject_id=${subject_id}&section_id=${section_id}&mode=edit&date=${date}`}
-                  className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-white"}`}
                 >
                   เช็คชื่อ
                 </Link>
+                <QrButton sectionId={section_id} teacherId={teacher.id} />
+                <Link
+                  href={`?subject_id=${subject_id}&section_id=${section_id}&date=${date}`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${!editMode && !reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-white"}`}
+                >
+                  สรุปผล
+                </Link>
                 <Link
                   href={`?subject_id=${subject_id}&section_id=${section_id}&mode=report`}
-                  className={`px-3 py-1.5 rounded-control font-medium ${reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
+                  className={`px-3 py-1.5 rounded-control font-medium ${reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-white"}`}
                 >
                   รายงานทั้งเทอม
                 </Link>
               </div>
-              {!editMode && !reportMode && <QrButton sectionId={section_id} teacherId={teacher.id} />}
-              {editMode && (
-                <form method="GET" className="flex items-center gap-2">
-                  <input type="hidden" name="subject_id" value={subject_id} />
-                  <input type="hidden" name="section_id" value={section_id} />
-                  <input type="hidden" name="mode" value="edit" />
-                  <label className="text-sm text-ink-faint">วันที่</label>
-                  <input
-                    type="date"
-                    name="date"
-                    defaultValue={date}
-                    max={today}
-                    className="border-[0.5px] border-border rounded-control px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600"
-                  />
-                  <button
-                    type="submit"
-                    className="text-sm font-medium text-navy-600 hover:underline"
-                  >
-                    ไป
-                  </button>
-                </form>
+              {!reportMode && (
+                <DateJumpForm
+                  subjectId={subject_id!}
+                  sectionId={section_id}
+                  mode={editMode ? "edit" : undefined}
+                  date={date}
+                  maxDate={today}
+                />
               )}
             </div>
 
@@ -244,7 +234,7 @@ export default async function TeacherAttendancePage({
             {/* สรุปวันนี้ */}
             <div className="bg-white rounded-card border-[0.5px] border-border p-5">
               <h2 className="text-sm font-semibold text-ink-muted mb-3">
-                วันนี้ ({new Date().toLocaleDateString("th-TH", { day: "numeric", month: "long" })})
+                {date === today ? "วันนี้" : "วันที่"} ({new Date(`${date}T00:00:00`).toLocaleDateString("th-TH", { day: "numeric", month: "long" })})
               </h2>
               <div className="flex flex-wrap gap-2">
                 {STATUS_ORDER.map((s) => (
@@ -269,12 +259,20 @@ export default async function TeacherAttendancePage({
                     <tr className="text-ink-muted">
                       <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 w-12">เลขที่</th>
                       <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-3 py-2 text-left">ชื่อ</th>
-                      <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-semibold">วันนี้</th>
+                      <th className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-semibold">
+                        {date === today ? "วันนี้" : "วันที่เลือก"}
+                      </th>
                       {STATUS_ORDER.map((s) => (
                         <th key={s} className="sticky top-0 z-10 bg-surface border-b-[0.5px] border-border px-2 py-2 font-medium whitespace-nowrap">
                           {STATUS_LABEL[s]}
                         </th>
                       ))}
+                      <th className="sticky top-0 z-10 bg-navy-100 border-b-[0.5px] border-border px-2 py-2 font-semibold text-navy-900 whitespace-nowrap">
+                        มาเรียนร้อยละ
+                      </th>
+                      <th className="sticky top-0 z-10 bg-navy-100 border-b-[0.5px] border-border px-2 py-2 font-semibold text-navy-900 whitespace-nowrap">
+                        สิทธิ์การเข้าสอบ
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -305,11 +303,23 @@ export default async function TeacherAttendancePage({
                             {r.totals[s] > 0 ? r.totals[s] : "—"}
                           </td>
                         ))}
+                        <td className="border-b-[0.5px] border-border px-2 py-2 bg-navy-100 font-bold text-navy-900">
+                          {r.percentage != null ? `${r.percentage}%` : "—"}
+                        </td>
+                        <td className="border-b-[0.5px] border-border px-2 py-2 bg-navy-100 font-medium">
+                          {r.eligible == null ? (
+                            <span className="text-ink-faint">—</span>
+                          ) : r.eligible ? (
+                            <span className="text-navy-900">มีสิทธิ์</span>
+                          ) : (
+                            <span className="text-danger-strong">ไม่มีสิทธิ์</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                     {rows.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="px-3 py-6 text-ink-faint">ยังไม่มีนักเรียนในห้องนี้</td>
+                        <td colSpan={10} className="px-3 py-6 text-ink-faint">ยังไม่มีนักเรียนในห้องนี้</td>
                       </tr>
                     )}
                   </tbody>
@@ -319,6 +329,8 @@ export default async function TeacherAttendancePage({
 
             <p className="text-xs text-ink-faint">
               กรอกเช็คชื่อได้ทั้งที่หน้า "เช็คชื่อ" ด้านบน หรือผ่าน Google Sheets เหมือนเดิม — ลบตัวอักษรในชีทเพื่อลบบันทึกของวันนั้น
+              <br />
+              มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด
             </p>
               </>
             )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { QrCode } from "lucide-react";
+import { QrCode, X } from "lucide-react";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 
@@ -51,32 +51,35 @@ export default function QrButton({ sectionId, teacherId }: { sectionId: string; 
   }
 
   return (
-    <div>
-      {!qrDataUrl ? (
-        <button
-          onClick={generateQr}
-          disabled={loading}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-navy-600 hover:bg-surface px-3 py-1.5 rounded-control disabled:opacity-50"
-        >
-          <QrCode className="w-4 h-4" />
-          {loading ? "กำลังสร้าง..." : "สร้าง QR"}
-        </button>
-      ) : (
-        <div className="mt-3 p-4 bg-surface rounded-card text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrDataUrl} alt="QR เช็คชื่อ" className="mx-auto rounded-control" />
-          <p className="text-sm text-ink-muted mt-2 font-medium">
-            เหลือเวลา {secondsLeft} วินาที
-          </p>
-          <button
-            onClick={() => setQrDataUrl(null)}
-            className="text-xs text-ink-muted hover:underline mt-1"
-          >
-            ปิด
-          </button>
+    <>
+      <button
+        onClick={generateQr}
+        disabled={loading}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-navy-600 hover:bg-white px-3 py-1.5 rounded-control disabled:opacity-50"
+      >
+        <QrCode className="w-4 h-4" />
+        {loading ? "กำลังสร้าง..." : "สร้าง QR"}
+      </button>
+      {error && <p className="text-danger-strong text-xs mt-1">{error}</p>}
+
+      {qrDataUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+          <div className="bg-white rounded-card p-6 text-center relative max-w-xs w-full">
+            <button
+              onClick={() => setQrDataUrl(null)}
+              className="absolute top-3 right-3 text-ink-faint hover:text-ink"
+              aria-label="ปิด"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={qrDataUrl} alt="QR เช็คชื่อ" className="mx-auto rounded-control" />
+            <p className="text-sm text-ink-muted mt-3 font-medium">
+              เหลือเวลา {secondsLeft} วินาที
+            </p>
+          </div>
         </div>
       )}
-      {error && <p className="text-danger-strong text-xs mt-1">{error}</p>}
-    </div>
+    </>
   );
 }

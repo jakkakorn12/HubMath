@@ -99,8 +99,11 @@ export default function AttendanceReport({
                   {formatDateLabel(d)}
                 </th>
               ))}
-              <th className="sticky top-0 right-0 z-20 bg-navy-100 border border-border px-2 py-2 w-24 text-navy-900 font-semibold">
-                สรุป
+              <th className="sticky top-0 right-24 z-20 bg-navy-100 border border-border px-2 py-2 w-20 text-navy-900 font-semibold whitespace-nowrap">
+                มาเรียนร้อยละ
+              </th>
+              <th className="sticky top-0 right-0 z-20 bg-navy-100 border border-border px-2 py-2 w-24 text-navy-900 font-semibold whitespace-nowrap">
+                สิทธิ์การเข้าสอบ
               </th>
             </tr>
           </thead>
@@ -122,17 +125,23 @@ export default function AttendanceReport({
                     </td>
                   );
                 })}
-                <td className="sticky right-0 z-10 bg-navy-100 border border-border px-2 py-1.5">
-                  <span className="block font-bold text-navy-900">{r.percentage != null ? `${r.percentage}%` : "—"}</span>
-                  <span className={`block text-[11px] font-medium ${r.eligible === false ? "text-danger-strong" : "text-navy-900"}`}>
-                    {r.eligible == null ? "—" : r.eligible ? "มีสิทธิ์" : "ไม่มีสิทธิ์"}
-                  </span>
+                <td className="sticky right-24 z-10 bg-navy-100 border border-border px-2 py-1.5 font-bold text-navy-900">
+                  {r.percentage != null ? `${r.percentage}%` : "—"}
+                </td>
+                <td className="sticky right-0 z-10 bg-navy-100 border border-border px-2 py-1.5 font-medium">
+                  {r.eligible == null ? (
+                    <span className="text-ink-faint">—</span>
+                  ) : r.eligible ? (
+                    <span className="text-navy-900">มีสิทธิ์</span>
+                  ) : (
+                    <span className="text-danger-strong">ไม่มีสิทธิ์</span>
+                  )}
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={dates.length + 3} className="px-3 py-6 text-ink-faint">
+                <td colSpan={dates.length + 4} className="px-3 py-6 text-ink-faint">
                   {search ? "ไม่พบนักเรียนที่ค้นหา" : "ยังไม่มีข้อมูลการเช็คชื่อ"}
                 </td>
               </tr>
@@ -142,7 +151,7 @@ export default function AttendanceReport({
       </div>
 
       <p className="text-xs text-ink-faint">
-        ร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อของนักเรียนคนนั้นจะไม่ถูกนับทั้งเศษและส่วน
+        มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด
       </p>
     </div>
   );
