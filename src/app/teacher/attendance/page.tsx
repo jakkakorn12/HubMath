@@ -17,16 +17,29 @@ const ATTENDANCE_PASS_THRESHOLD = 80;
 export const dynamic = "force-dynamic";
 
 const STATUS_LABEL: Record<AttendanceStatus, string> = {
-  present: "มา", late: "สาย", absent: "ขาด", leave: "ลา", truant: "หนีเรียน",
+  present: "มา", late: "สาย", absent: "ขาด", truant: "หนีเรียน",
+  leave: "ลา", sick_leave: "ลาป่วย", personal_leave: "ลากิจ",
+  field_trip: "ทัศนศึกษา", school_holiday: "หยุดพิเศษ",
 };
 const STATUS_CHIP: Record<AttendanceStatus, string> = {
   present: "bg-success-soft text-success-strong",
   late: "bg-warning-soft text-warning-strong",
   absent: "bg-danger-soft text-danger-strong",
-  leave: "bg-navy-100 text-navy-900",
   truant: "bg-danger-soft text-danger-strong",
+  leave: "bg-navy-100 text-navy-900",
+  sick_leave: "bg-navy-100 text-navy-900",
+  personal_leave: "bg-navy-100 text-navy-900",
+  field_trip: "bg-navy-100 text-navy-900",
+  school_holiday: "bg-navy-100 text-navy-900",
 };
-const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "leave", "truant"];
+// ลา/ลาป่วย/ลากิจ/ทัศนศึกษา/หยุดพิเศษ — ไม่นับเป็นวันขาด (ไม่หักคะแนนร้อยละ) แต่ก็ไม่นับเป็นวันมาเรียน
+const LEAVE_LIKE = new Set<AttendanceStatus>(["leave", "sick_leave", "personal_leave", "field_trip", "school_holiday"]);
+// "leave" (เดิม) เก็บไว้แสดงให้เห็นข้อมูลเก่า/จาก Sheets sync แต่ตัวเลือกใหม่ในหน้าเว็บใช้ 4 ตัวหลังแทน
+const STATUS_ORDER: AttendanceStatus[] = ["present", "late", "absent", "truant", "leave", "sick_leave", "personal_leave", "field_trip", "school_holiday"];
+
+function emptyStatusCounts(): Record<AttendanceStatus, number> {
+  return { present: 0, late: 0, absent: 0, truant: 0, leave: 0, sick_leave: 0, personal_leave: 0, field_trip: 0, school_holiday: 0 };
+}
 
 export default async function TeacherAttendancePage({
   searchParams,
@@ -60,23 +73,25 @@ export default async function TeacherAttendancePage({
     number: number;
     name: string;
     today: AttendanceStatus | null;
+    todayNote: string | null;
     totals: Record<AttendanceStatus, number>;
     percentage: number | null;
     eligible: boolean | null;
   };
   let rows: Row[] = [];
-  let todayCounts: Record<AttendanceStatus, number> = { present: 0, late: 0, absent: 0, leave: 0, truant: 0 };
+  let todayCounts: Record<AttendanceStatus, number> = emptyStatusCounts();
   let notCheckedToday = 0;
   let recordedDays = 0;
   let editorStudents: { code: string; number: number; name: string }[] = [];
   let editorInitialStatuses: Record<string, AttendanceStatus | null> = {};
+  let editorInitialNotes: Record<string, string | null> = {};
   let reportDates: string[] = [];
   let reportRows: AttendanceReportRow[] = [];
 
   if (section_id) {
     const [{ data: rosterEnroll }, { data: attRaw }] = await Promise.all([
       supabase.from("roster_enrollments").select("student_code, student_number").eq("section_id", section_id),
-      supabase.from("attendance").select("student_code, date, status, method").eq("section_id", section_id),
+      supabase.from("attendance").select("student_code, date, status, method, note").eq("section_id", section_id),
     ]);
 
     const codes = (rosterEnroll ?? []).map((r) => r.student_code);
@@ -93,18 +108,25 @@ export default async function TeacherAttendancePage({
     const att = dedupeAttendance(attRaw ?? [], (a) => `${a.student_code}__${a.date}`);
     recordedDays = new Set(att.map((a) => a.date)).size;
 
-    // สำหรับหน้าแก้ไข: สถานะจริงของวันที่เลือก (หลัง dedupe แล้ว) — ใช้เป็นค่าตั้งต้นในตัวแก้ไข
+    // สำหรับหน้าแก้ไข: สถานะ+หมายเหตุจริงของวันที่เลือก (หลัง dedupe แล้ว) — ใช้เป็นค่าตั้งต้นในตัวแก้ไข
     for (const a of att) {
-      if (a.date === date) editorInitialStatuses[a.student_code] = a.status as AttendanceStatus;
+      if (a.date === date) {
+        editorInitialStatuses[a.student_code] = a.status as AttendanceStatus;
+        editorInitialNotes[a.student_code] = a.note ?? null;
+      }
     }
 
     const todayByCode = new Map<string, AttendanceStatus>();
+    const todayNoteByCode = new Map<string, string | null>();
     const totalsByCode = new Map<string, Record<AttendanceStatus, number>>();
     for (const a of att) {
       const status = a.status as AttendanceStatus;
-      if (a.date === date) todayByCode.set(a.student_code, status);
+      if (a.date === date) {
+        todayByCode.set(a.student_code, status);
+        todayNoteByCode.set(a.student_code, a.note ?? null);
+      }
       if (!totalsByCode.has(a.student_code)) {
-        totalsByCode.set(a.student_code, { present: 0, late: 0, absent: 0, leave: 0, truant: 0 });
+        totalsByCode.set(a.student_code, emptyStatusCounts());
       }
       totalsByCode.get(a.student_code)![status]++;
     }
@@ -113,23 +135,26 @@ export default async function TeacherAttendancePage({
     // วันที่ไม่มีข้อมูลของนักเรียนคนนั้นเลย (ไม่ว่า QR หรือครูกรอก) นับเป็นวันขาดในการคำนวณ
     reportDates = [...new Set(att.map((a) => a.date))].sort();
     const statusByCodeDate = new Map(att.map((a) => [`${a.student_code}__${a.date}`, a.status as AttendanceStatus]));
+    const noteByCodeDate = new Map(att.map((a) => [`${a.student_code}__${a.date}`, a.note ?? null]));
     const statsByCode = new Map<string, { percentage: number | null; eligible: boolean | null }>();
 
     reportRows = editorStudents.map((s) => {
       const byDate: Record<string, AttendanceStatus | null> = {};
+      const notesByDate: Record<string, string | null> = {};
       let attended = 0; // มา + สาย
       let countable = 0; // วันเรียนทั้งหมด - วันลา (ไม่มีข้อมูล = นับเป็นขาด)
       for (const d of reportDates) {
         const status = statusByCodeDate.get(`${s.code}__${d}`) ?? null;
         byDate[d] = status;
-        if (status === "leave") continue;
+        notesByDate[d] = noteByCodeDate.get(`${s.code}__${d}`) ?? null;
+        if (status && LEAVE_LIKE.has(status)) continue;
         countable++;
         if (status === "present" || status === "late") attended++;
       }
       const percentage = countable > 0 ? Math.round((attended / countable) * 100) : null;
       const eligible = percentage == null ? null : percentage >= ATTENDANCE_PASS_THRESHOLD;
       statsByCode.set(s.code, { percentage, eligible });
-      return { code: s.code, number: s.number, name: s.name, byDate, percentage, eligible };
+      return { code: s.code, number: s.number, name: s.name, byDate, notesByDate, percentage, eligible };
     });
 
     rows = (rosterEnroll ?? [])
@@ -138,7 +163,8 @@ export default async function TeacherAttendancePage({
         number: r.student_number ?? 0,
         name: nameByCode.get(r.student_code) ?? "—",
         today: todayByCode.get(r.student_code) ?? null,
-        totals: totalsByCode.get(r.student_code) ?? { present: 0, late: 0, absent: 0, leave: 0, truant: 0 },
+        todayNote: todayNoteByCode.get(r.student_code) ?? null,
+        totals: totalsByCode.get(r.student_code) ?? emptyStatusCounts(),
         percentage: statsByCode.get(r.student_code)?.percentage ?? null,
         eligible: statsByCode.get(r.student_code)?.eligible ?? null,
       }))
@@ -222,6 +248,7 @@ export default async function TeacherAttendancePage({
                 date={date}
                 students={editorStudents}
                 initialStatuses={editorInitialStatuses}
+                initialNotes={editorInitialNotes}
               />
             ) : reportMode ? (
               <AttendanceReport
@@ -282,7 +309,10 @@ export default async function TeacherAttendancePage({
                         <td className="border-b-[0.5px] border-border px-3 py-2 text-left text-ink">{r.name}</td>
                         <td className="border-b-[0.5px] border-border px-2 py-2 bg-surface/50">
                           {r.today ? (
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_CHIP[r.today]}`}>
+                            <span
+                              title={r.todayNote ?? undefined}
+                              className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_CHIP[r.today]} ${r.todayNote ? "underline decoration-dotted cursor-help" : ""}`}
+                            >
                               {STATUS_LABEL[r.today]}
                             </span>
                           ) : (
@@ -330,7 +360,7 @@ export default async function TeacherAttendancePage({
             <p className="text-xs text-ink-faint">
               กรอกเช็คชื่อได้ทั้งที่หน้า "เช็คชื่อ" ด้านบน หรือผ่าน Google Sheets เหมือนเดิม — ลบตัวอักษรในชีทเพื่อลบบันทึกของวันนั้น
               <br />
-              มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด
+              มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา/ทัศนศึกษา/หยุดพิเศษ) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด · วางเมาส์บนสถานะที่มีขีดเส้นใต้เพื่อดูหมายเหตุ
             </p>
               </>
             )}

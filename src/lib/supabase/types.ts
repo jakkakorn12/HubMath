@@ -1,6 +1,15 @@
 export type SubjectType = "basic" | "advanced" | "elective";
 export type AssignmentCategory = "practice" | "midterm" | "final" | "competency";
-export type AttendanceStatus = "present" | "late" | "absent" | "leave" | "truant";
+export type AttendanceStatus =
+  | "present"
+  | "late"
+  | "absent"
+  | "truant"
+  | "leave" // เดิม เก็บไว้เพื่อความเข้ากันได้กับ Sheets sync ที่ยังอาจส่งค่านี้ — ไม่เสนอในตัวเลือกหน้าเว็บใหม่แล้ว
+  | "sick_leave"
+  | "personal_leave"
+  | "field_trip"
+  | "school_holiday";
 export type AttendanceMethod = "teacher" | "qr";
 
 export type Database = {
@@ -147,9 +156,13 @@ export type Database = {
           date: string;
           status: AttendanceStatus;
           method: AttendanceMethod;
+          note: string | null;
           recorded_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["attendance"]["Row"], "id" | "recorded_at" | "method"> & { method?: AttendanceMethod };
+        Insert: Omit<Database["public"]["Tables"]["attendance"]["Row"], "id" | "recorded_at" | "method" | "note"> & {
+          method?: AttendanceMethod;
+          note?: string | null;
+        };
         Update: Partial<Database["public"]["Tables"]["attendance"]["Insert"]>;
       };
       qr_sessions: {

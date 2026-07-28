@@ -5,14 +5,19 @@ import { Download } from "lucide-react";
 import type { AttendanceStatus } from "@/lib/supabase/types";
 
 const STATUS_LETTER: Record<AttendanceStatus, string> = {
-  present: "ม", late: "ส", absent: "ข", leave: "ล", truant: "น",
+  present: "ม", late: "ส", absent: "ข", truant: "น",
+  leave: "ล", sick_leave: "ลป", personal_leave: "ลก", field_trip: "ทศ", school_holiday: "หพ",
 };
 const STATUS_CHIP: Record<AttendanceStatus, string> = {
   present: "text-success-strong",
   late: "text-warning-strong",
   absent: "text-danger-strong font-semibold",
-  leave: "text-ink-faint",
   truant: "text-danger-strong font-semibold",
+  leave: "text-ink-faint",
+  sick_leave: "text-ink-faint",
+  personal_leave: "text-ink-faint",
+  field_trip: "text-ink-faint",
+  school_holiday: "text-ink-faint",
 };
 
 export type AttendanceReportRow = {
@@ -20,6 +25,7 @@ export type AttendanceReportRow = {
   number: number;
   name: string;
   byDate: Record<string, AttendanceStatus | null>;
+  notesByDate: Record<string, string | null>;
   percentage: number | null;
   eligible: boolean | null;
 };
@@ -119,8 +125,13 @@ export default function AttendanceReport({
                 </td>
                 {dates.map((d) => {
                   const st = r.byDate[d];
+                  const note = r.notesByDate[d];
                   return (
-                    <td key={d} className={`border border-border px-1 py-1.5 ${st ? STATUS_CHIP[st] : "text-border"}`}>
+                    <td
+                      key={d}
+                      title={note ?? undefined}
+                      className={`border border-border px-1 py-1.5 ${st ? STATUS_CHIP[st] : "text-border"} ${note ? "underline decoration-dotted cursor-help" : ""}`}
+                    >
                       {st ? STATUS_LETTER[st] : "—"}
                     </td>
                   );
@@ -151,7 +162,7 @@ export default function AttendanceReport({
       </div>
 
       <p className="text-xs text-ink-faint">
-        มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด
+        มาเรียนร้อยละ = (จำนวนวันมา + สาย) ÷ (วันเรียนทั้งหมด − วันลา/ทัศนศึกษา/หยุดพิเศษ) × 100 · มีสิทธิ์สอบถ้าร้อยละ ≥ 80 · วันที่ไม่มีการเช็คชื่อนับเป็นวันขาด · วางเมาส์บนช่องที่มีขีดเส้นใต้เพื่อดูหมายเหตุ
       </p>
     </div>
   );

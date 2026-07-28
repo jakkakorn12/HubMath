@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const VALID_STATUSES = ["present", "late", "absent", "leave", "truant"];
+const VALID_STATUSES = [
+  "present", "late", "absent", "truant", "leave",
+  "sick_leave", "personal_leave", "field_trip", "school_holiday",
+];
 
 function serviceClient() {
   return createServiceClient(
@@ -13,7 +16,7 @@ function serviceClient() {
   );
 }
 
-type AttendanceRow = { student_code: string; status: string | null };
+type AttendanceRow = { student_code: string; status: string | null; note?: string | null };
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -63,6 +66,7 @@ export async function POST(req: NextRequest) {
       section_id: sectionId,
       date,
       status: r.status,
+      note: r.note ?? null,
       method: "teacher" as const,
     }));
   const toDelete = rows.filter((r) => r.status === null);
