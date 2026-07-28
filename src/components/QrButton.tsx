@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { QrCode } from "lucide-react";
 import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 
@@ -55,9 +56,10 @@ export default function QrButton({ sectionId, teacherId }: { sectionId: string; 
         <button
           onClick={generateQr}
           disabled={loading}
-          className="text-sm font-medium bg-navy-900 text-white px-3 py-1.5 rounded-control hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-navy-600 hover:bg-surface px-3 py-1.5 rounded-control disabled:opacity-50"
         >
-          {loading ? "กำลังสร้าง..." : "สร้าง QR เช็คชื่อ"}
+          <QrCode className="w-4 h-4" />
+          {loading ? "กำลังสร้าง..." : "สร้าง QR"}
         </button>
       ) : (
         <div className="mt-3 p-4 bg-surface rounded-card text-center">
