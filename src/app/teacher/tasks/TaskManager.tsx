@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Paperclip } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Database, AssignmentCategory } from "@/lib/supabase/types";
 import ConfirmButton from "@/components/ConfirmButton";
+import FileInput from "@/components/FileInput";
 
 type Task = Database["public"]["Tables"]["tasks"]["Row"];
 
@@ -33,6 +35,22 @@ async function syncTaskScore(taskId: string) {
   }).catch(() => {});
 }
 
+async function uploadTaskFile(taskId: string, file: File) {
+  const form = new FormData();
+  form.set("task_id", taskId);
+  form.set("file", file);
+  const res = await fetch("/api/teacher/upload-task-file", { method: "POST", body: form });
+  const data = await res.json().catch(() => ({ error: "อัปโหลดไฟล์ไม่สำเร็จ" }));
+  if (!res.ok) throw new Error(data.error ?? "อัปโหลดไฟล์ไม่สำเร็จ");
+}
+
+async function removeTaskFile(taskId: string) {
+  const form = new FormData();
+  form.set("task_id", taskId);
+  form.set("remove", "1");
+  await fetch("/api/teacher/upload-task-file", { method: "POST", body: form }).catch(() => {});
+}
+
 // ISO string → ค่าสำหรับ input datetime-local
 function toLocalInput(iso: string | null): string {
   if (!iso) return "";
@@ -49,6 +67,7 @@ export default function TaskManager({
   submissionCounts,
   roomNameById,
   assignments,
+  fileLinks,
 }: {
   subjectId: string | null;
   sectionId: string | null;
@@ -57,6 +76,7 @@ export default function TaskManager({
   submissionCounts: Record<string, number>;
   roomNameById: Record<string, string>;
   assignments: AssignmentOption[];
+  fileLinks: Record<string, string>;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -66,6 +86,7 @@ export default function TaskManager({
   const [assignmentId, setAssignmentId] = useState("");
   const [maxScore, setMaxScore] = useState("");
   const [reducedMaxScore, setReducedMaxScore] = useState("");
+  const [taskFile, setTaskFile] = useState<File | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,6 +99,7 @@ export default function TaskManager({
   const [editAssignmentId, setEditAssignmentId] = useState("");
   const [editMaxScore, setEditMaxScore] = useState("");
   const [editReducedMaxScore, setEditReducedMaxScore] = useState("");
+  const [editTaskFile, setEditTaskFile] = useState<File | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
 
   function assignmentLabel(id: string) {
@@ -95,6 +117,7 @@ export default function TaskManager({
     setEditAssignmentId(t.assignment_id ?? "");
     setEditMaxScore(t.max_score != null ? String(t.max_score) : "");
     setEditReducedMaxScore(t.reduced_max_score != null ? String(t.reduced_max_score) : "");
+    setEditTaskFile(null);
   }
 
   async function handleSaveEdit(e: React.FormEvent) {
@@ -124,12 +147,22 @@ export default function TaskManager({
         reduced_max_score: reducedNum,
       })
       .eq("id", editingId);
-    setSavingEdit(false);
     if (updateError) {
+      setSavingEdit(false);
       setError("แก้ไขไม่สำเร็จ: " + updateError.message);
       return;
     }
     if (editAssignmentId) await syncTaskScore(editingId);
+    if (editTaskFile) {
+      try {
+        await uploadTaskFile(editingId, editTaskFile);
+      } catch (err) {
+        setSavingEdit(false);
+        setError(err instanceof Error ? err.message : "อัปโหลดไฟล์ไม่สำเร็จ");
+        return;
+      }
+    }
+    setSavingEdit(false);
     setEditingId(null);
     router.refresh();
   }
@@ -155,22 +188,37 @@ export default function TaskManager({
     setError(null);
     const supabase = createClient();
 
-    const { error: insertError } = await supabase.from("tasks").insert({
-      subject_id: subjectId,
-      section_id: sectionId,
-      title: title.trim(),
-      description: description.trim() || null,
-      due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      allow_late_submission: allowLate,
-      assignment_id: assignmentId || null,
-      max_score: maxNum,
-      reduced_max_score: reducedNum,
-    });
+    const { data: newTask, error: insertError } = await supabase
+      .from("tasks")
+      .insert({
+        subject_id: subjectId,
+        section_id: sectionId,
+        title: title.trim(),
+        description: description.trim() || null,
+        due_date: dueDate ? new Date(dueDate).toISOString() : null,
+        allow_late_submission: allowLate,
+        assignment_id: assignmentId || null,
+        max_score: maxNum,
+        reduced_max_score: reducedNum,
+      })
+      .select("id")
+      .single();
 
-    if (insertError) {
-      setError("สร้างงานไม่สำเร็จ: " + insertError.message);
+    if (insertError || !newTask) {
+      setError("สร้างงานไม่สำเร็จ: " + (insertError?.message ?? ""));
       setCreating(false);
       return;
+    }
+
+    if (taskFile) {
+      try {
+        await uploadTaskFile(newTask.id, taskFile);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "อัปโหลดไฟล์ไม่สำเร็จ");
+        setCreating(false);
+        router.refresh();
+        return;
+      }
     }
 
     setTitle("");
@@ -180,6 +228,7 @@ export default function TaskManager({
     setAssignmentId("");
     setMaxScore("");
     setReducedMaxScore("");
+    setTaskFile(null);
     setCreating(false);
     router.refresh();
   }
@@ -187,6 +236,11 @@ export default function TaskManager({
   async function handleDelete(id: string) {
     const supabase = createClient();
     await supabase.from("tasks").delete().eq("id", id);
+    router.refresh();
+  }
+
+  async function handleRemoveFile(id: string) {
+    await removeTaskFile(id);
     router.refresh();
   }
 
@@ -273,6 +327,10 @@ export default function TaskManager({
             />
           </div>
         </div>
+        <div>
+          <label className="block text-sm font-medium text-ink mb-1">ไฟล์แนบ (ไม่บังคับ)</label>
+          <FileInput file={taskFile} onChange={setTaskFile} />
+        </div>
         {error && <p className="text-danger-strong text-sm">{error}</p>}
         <button
           type="submit"
@@ -352,6 +410,26 @@ export default function TaskManager({
                       className="w-32 border-[0.5px] border-border rounded-control px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-600"
                     />
                   </div>
+                  {t.file_name && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <a
+                        href={fileLinks[t.id]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-navy-600 hover:underline"
+                      >
+                        <Paperclip className="w-3.5 h-3.5" />
+                        {t.file_name}
+                      </a>
+                      <ConfirmButton
+                        message="ลบไฟล์แนบนี้ใช่ไหม?"
+                        onConfirm={() => handleRemoveFile(t.id)}
+                      >
+                        ลบไฟล์แนบ
+                      </ConfirmButton>
+                    </div>
+                  )}
+                  <FileInput file={editTaskFile} onChange={setEditTaskFile} />
                   {error && <p className="text-danger-strong text-sm">{error}</p>}
                   <div className="flex gap-2">
                     <button
@@ -385,6 +463,17 @@ export default function TaskManager({
                         {t.max_score != null && ` · เต็ม ${t.max_score}`}
                         {t.reduced_max_score != null && ` → ตัดทอนเหลือ ${t.reduced_max_score}`}
                       </p>
+                    )}
+                    {t.file_name && (
+                      <a
+                        href={fileLinks[t.id]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-navy-600 hover:underline mt-0.5"
+                      >
+                        <Paperclip className="w-3 h-3" />
+                        {t.file_name}
+                      </a>
                     )}
                   </div>
                   <div className="flex items-center gap-3">

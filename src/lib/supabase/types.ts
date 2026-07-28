@@ -201,6 +201,8 @@ export type Database = {
           max_score: number | null;
           reduced_max_score: number | null;
           allow_late_submission: boolean;
+          file_url: string | null;
+          file_name: string | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["tasks"]["Row"], "id" | "created_at">;
@@ -219,6 +221,7 @@ export type Database = {
           grade: number | null;
           feedback: string | null;
           graded_at: string | null;
+          submission_count: number;
           submitted_at: string;
           updated_at: string;
         };

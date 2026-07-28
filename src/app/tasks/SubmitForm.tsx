@@ -85,6 +85,13 @@ export default function SubmitForm({
       content_hash = await sha256Hex(new TextEncoder().encode(normalized));
     }
 
+    const { data: existing } = await supabase
+      .from("task_submissions")
+      .select("submission_count")
+      .eq("task_id", taskId)
+      .eq("student_id", studentId)
+      .maybeSingle();
+
     const { error: upsertError } = await supabase.from("task_submissions").upsert(
       {
         task_id: taskId,
@@ -94,6 +101,7 @@ export default function SubmitForm({
         file_name,
         content_hash,
         image_hash,
+        submission_count: (existing?.submission_count ?? 0) + 1,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "task_id,student_id" }

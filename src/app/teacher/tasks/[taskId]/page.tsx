@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { textSimilarity, SIMILARITY_THRESHOLD } from "@/lib/similarity";
 import { imageHammingDistance, IMAGE_HASH_THRESHOLD } from "@/lib/imageHash";
+import { Paperclip } from "lucide-react";
 import Header from "@/components/Header";
 import TaskGradingArea from "./TaskGradingArea";
 
@@ -158,6 +159,12 @@ export default async function TaskSubmissionsPage({
     }
   }
 
+  let taskFileLink: string | null = null;
+  if (task.file_url) {
+    const { data } = await supabase.storage.from("submissions").createSignedUrl(task.file_url, 3600);
+    taskFileLink = data?.signedUrl ?? null;
+  }
+
   // ── ยังไม่ส่ง: กรองตามห้อง + เรียงตามเลขที่ ──
   const missing = (rosterEnroll ?? [])
     .filter((r) => !submittedCodes.has(r.student_code))
@@ -184,6 +191,17 @@ export default async function TaskSubmissionsPage({
           </Link>
           <span className="text-border">|</span>
           <span className="font-medium text-ink truncate">{task.title}</span>
+          {taskFileLink && (
+            <a
+              href={taskFileLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-navy-600 hover:underline shrink-0"
+            >
+              <Paperclip className="w-3.5 h-3.5" />
+              {task.file_name}
+            </a>
+          )}
         </div>
       </nav>
 
@@ -241,6 +259,7 @@ export default async function TaskSubmissionsPage({
               fileLink: fileLinks.get(sub.id),
               content: sub.content,
               submittedAt: sub.submitted_at,
+              submissionCount: sub.submission_count,
             };
           })}
         />

@@ -34,6 +34,7 @@ export type SubmissionProps = {
   fileLink: string | undefined;
   content: string | null;
   submittedAt: string;
+  submissionCount: number;
 };
 
 const AUTOSAVE_DELAY_MS = 300;
@@ -261,6 +262,7 @@ export default function TaskGradingArea({
             content={s.content}
             submittedAt={s.submittedAt}
             dueDate={dueDate}
+            submissionCount={s.submissionCount}
           />
         ))
       )}

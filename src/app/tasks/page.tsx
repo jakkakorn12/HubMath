@@ -63,6 +63,14 @@ export default async function TasksPage({
     }
   }
 
+  const taskFileLinks = new Map<string, string>();
+  for (const t of tasks) {
+    if (t.file_url) {
+      const { data } = await supabase.storage.from("submissions").createSignedUrl(t.file_url, 3600);
+      if (data) taskFileLinks.set(t.id, data.signedUrl);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
@@ -117,6 +125,17 @@ export default async function TasksPage({
                     })()
                   ) : null}
                 </div>
+                {task.file_name && (
+                  <a
+                    href={taskFileLinks.get(task.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-navy-600 hover:underline mb-2"
+                  >
+                    <Paperclip className="w-3.5 h-3.5" />
+                    {task.file_name}
+                  </a>
+                )}
                 {task.description && <p className="text-sm text-ink-muted mb-2">{task.description}</p>}
                 {task.due_date && (
                   <p className={`text-xs mb-3 ${overdue ? "text-danger-strong" : "text-ink-faint"}`}>

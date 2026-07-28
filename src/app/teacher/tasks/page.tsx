@@ -50,6 +50,14 @@ export default async function TeacherTasksPage({
   const submissionCounts: Record<string, number> = {};
   for (const s of submissions ?? []) submissionCounts[s.task_id] = (submissionCounts[s.task_id] ?? 0) + 1;
 
+  const fileLinks: Record<string, string> = {};
+  for (const t of tasks ?? []) {
+    if (t.file_url) {
+      const { data } = await supabase.storage.from("submissions").createSignedUrl(t.file_url, 3600);
+      if (data) fileLinks[t.id] = data.signedUrl;
+    }
+  }
+
   const subjectName = (subjects ?? []).find((s) => s.id === subject_id)?.name;
   const roomName = section_id ? roomNameById[section_id] : undefined;
   const targetLabel = !subject_id ? "" : section_id ? `ห้อง ${roomName}` : `ทุกห้องในวิชา ${subjectName}`;
@@ -89,6 +97,7 @@ export default async function TeacherTasksPage({
           submissionCounts={submissionCounts}
           roomNameById={roomNameById}
           assignments={assignments ?? []}
+          fileLinks={fileLinks}
         />
       </main>
     </div>

@@ -21,6 +21,7 @@ export default function SubmissionCard({
   content,
   submittedAt,
   dueDate,
+  submissionCount,
 }: {
   submissionId: string;
   roomName: string;
@@ -38,6 +39,7 @@ export default function SubmissionCard({
   content: string | null;
   submittedAt: string;
   dueDate: string | null;
+  submissionCount: number;
 }) {
   const [grade, setGrade] = useState(initialGrade);
   const isLate = dueDate != null && new Date(submittedAt) > new Date(dueDate);
@@ -89,6 +91,7 @@ export default function SubmissionCard({
       <div className="flex items-center justify-between gap-2 mt-2">
         <p className="text-xs text-ink-faint">
           ส่งเมื่อ {new Date(submittedAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+          {submissionCount > 1 && ` · ส่งมาแล้ว ${submissionCount} ครั้ง`}
         </p>
         {isLate && (
           <p className="text-xs font-medium text-danger-strong shrink-0 whitespace-nowrap">
