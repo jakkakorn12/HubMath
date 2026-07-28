@@ -187,6 +187,12 @@ export default function TaskGradingArea({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-lg font-bold text-ink">
           ส่งแล้ว <span className="text-ink-faint font-normal">({submissions.length} คน)</span>
+          {dueDate && (
+            <span className="text-sm text-ink-faint font-normal">
+              {" "}
+              · กำหนดส่ง {new Date(dueDate).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+            </span>
+          )}
         </h2>
         <div className="flex flex-wrap items-end gap-2">
           <div>

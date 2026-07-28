@@ -89,7 +89,6 @@ export default function SubmissionCard({
       <div className="flex items-center justify-between gap-2 mt-2">
         <p className="text-xs text-ink-faint">
           ส่งเมื่อ {new Date(submittedAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
-          {dueDate && ` (กำหนดส่ง ${new Date(dueDate).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })})`}
         </p>
         {isLate && (
           <p className="text-xs font-medium text-danger-strong shrink-0 whitespace-nowrap">
