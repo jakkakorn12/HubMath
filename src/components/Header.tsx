@@ -33,7 +33,7 @@ export default function Header({
 
   return (
     <header className="bg-navy-900">
-      <div className={`${wide ? "max-w-5xl" : "max-w-3xl"} mx-auto px-4 h-14 flex items-center justify-between`}>
+      <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href={homeHref} className="flex items-center gap-2 shrink-0">
           <span className="w-7 h-7 rounded-[7px] bg-white shrink-0" />
           <span className="font-semibold text-[15px] text-white">

@@ -131,7 +131,7 @@ export default async function TeacherDashboardPage() {
     <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
 
-      <div className="max-w-5xl mx-auto flex items-center gap-6 overflow-x-auto px-4 pt-4">
+      <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-x-auto px-4 pt-4">
         {[
           { href: "/teacher/resources", label: "จัดการไฟล์", icon: FolderOpen },
           { href: "/teacher/media", label: "สื่อการเรียนรู้", icon: Video },
@@ -159,7 +159,7 @@ export default async function TeacherDashboardPage() {
         </Link>
       </div>
 
-      <main className="max-w-5xl mx-auto px-4 py-10 space-y-12">
+      <main className="max-w-7xl mx-auto px-4 py-10 space-y-12">
 
         {(subjects ?? []).length === 0 && (
           <div className="bg-white rounded-2xl shadow-[0_1px_2px_rgba(4,44,83,0.06),0_8px_24px_-8px_rgba(4,44,83,0.12)] p-8 text-center">

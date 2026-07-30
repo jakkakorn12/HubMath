@@ -85,7 +85,7 @@ export default async function AttendancePage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="attendance" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
         <h1 className="text-lg font-bold text-ink">การเข้าเรียน</h1>
 
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">

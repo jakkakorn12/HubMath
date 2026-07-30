@@ -64,7 +64,7 @@ export default async function ResourcesPage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="resources" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
         <h1 className="text-lg font-bold text-ink">คลังไฟล์เอกสาร</h1>
 
         {visibleResources.length === 0 ? (

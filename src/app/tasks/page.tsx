@@ -76,7 +76,7 @@ export default async function TasksPage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="tasks" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
         <h1 className="text-lg font-bold text-ink">งานที่มอบหมาย</h1>
 
         {!tasks || tasks.length === 0 ? (

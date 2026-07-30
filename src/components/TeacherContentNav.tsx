@@ -32,7 +32,7 @@ export default function TeacherContentNav({
 
   return (
     <nav className="bg-white border-b-[0.5px] border-border">
-      <div className="max-w-5xl mx-auto px-4 flex gap-5 overflow-x-auto pt-3">
+      <div className="max-w-7xl mx-auto px-4 flex gap-5 overflow-x-auto pt-3">
         {tabs.map((tab) => (
           <Link
             key={tab.key}

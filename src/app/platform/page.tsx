@@ -105,7 +105,7 @@ export default async function PlatformPage() {
     <div className="min-h-screen bg-white">
       <Header name={me.full_name} role="teacher" homeHref="/platform" />
 
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         <div>
           <h1 className="text-xl font-semibold text-ink">คำขอเปิดใช้งานโรงเรียนใหม่</h1>
           <p className="text-sm text-ink-faint mt-0.5">Platform super-admin</p>

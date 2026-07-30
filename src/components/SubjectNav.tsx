@@ -29,7 +29,7 @@ export default function SubjectNav({
 
   return (
     <nav className="bg-white border-b-[0.5px] border-border">
-      <div className="max-w-3xl mx-auto px-4 pt-3 flex items-baseline gap-2.5">
+      <div className="max-w-6xl mx-auto px-4 pt-3 flex items-baseline gap-2.5">
         <Link href="/dashboard" className="text-navy-600 hover:underline text-sm shrink-0">← กลับ</Link>
         <span className="text-border">|</span>
         <span className="font-medium text-ink truncate">
@@ -41,7 +41,7 @@ export default function SubjectNav({
           )}
         </span>
       </div>
-      <div className="max-w-3xl mx-auto px-4 flex gap-6 overflow-x-auto mt-3">
+      <div className="max-w-6xl mx-auto px-4 flex gap-6 overflow-x-auto mt-3">
         {tabs.map((tab) => (
           <Link
             key={tab.key}

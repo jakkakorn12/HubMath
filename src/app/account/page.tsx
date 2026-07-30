@@ -52,7 +52,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-surface">
       <nav className="bg-white border-b">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
           <button onClick={() => router.back()} className="text-navy-600 hover:underline text-sm">
             ← กลับ
           </button>

@@ -67,7 +67,7 @@ export default async function TeacherStudentsPage({
         active="students"
       />
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-6">
         <h1 className="text-lg font-bold text-ink mb-1">รายชื่อนักเรียน ({rows.length} คน)</h1>
         <p className="text-sm text-ink-faint mb-4">สมัครแล้ว {registeredCount} · ยังไม่สมัคร {rows.length - registeredCount}</p>
 

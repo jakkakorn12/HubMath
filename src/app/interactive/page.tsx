@@ -47,7 +47,7 @@ export default async function InteractivePage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="interactive" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
         <h1 className="text-lg font-bold text-ink">ฝึกโต้ตอบ</h1>
 
         {visibleTopics.length === 0 ? (

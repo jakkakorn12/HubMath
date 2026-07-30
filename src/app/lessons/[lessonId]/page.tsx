@@ -74,7 +74,7 @@ export default async function LessonDetailPage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subjectId} subjectName={subject?.name} subjectType={subject?.type} active="lessons" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
         <Link href={`/lessons?subject_id=${subjectId}`} className="text-navy-600 hover:underline text-sm">
           ← กลับไปหน้าบทเรียน
         </Link>

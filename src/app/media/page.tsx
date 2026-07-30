@@ -61,7 +61,7 @@ export default async function MediaPage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="media" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
         <h1 className="text-lg font-bold text-ink">สื่อการเรียนรู้</h1>
 
         {visibleMedia.length === 0 ? (

@@ -107,7 +107,7 @@ export default async function AssignmentsPage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="scores" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
 
         {/* ข้อมูลนักเรียน */}
         <div className="bg-white rounded-card border-[0.5px] border-border p-5">

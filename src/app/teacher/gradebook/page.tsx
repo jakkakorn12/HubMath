@@ -118,7 +118,7 @@ export default async function GradebookPage({
         active="scores"
       />
 
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h1 className="text-lg font-bold text-ink">คะแนนทั้งห้อง ({rows.length} คน)</h1>
           <div className="flex gap-1 text-sm">

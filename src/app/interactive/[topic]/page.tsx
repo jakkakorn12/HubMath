@@ -62,7 +62,7 @@ export default async function InteractiveTopicPage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="interactive" />
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
         <Link href={`/interactive?subject_id=${subject_id}`} className="text-navy-600 hover:underline text-sm">
           ← กลับไปหน้าฝึกโต้ตอบ
         </Link>

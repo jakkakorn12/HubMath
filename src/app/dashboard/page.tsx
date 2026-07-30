@@ -56,7 +56,7 @@ export default async function DashboardPage() {
     return (
       <div className="min-h-screen bg-white">
         <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
-        <main className="max-w-5xl mx-auto px-4 py-8">
+        <main className="max-w-7xl mx-auto px-4 py-8">
           <h2 className="text-xl font-semibold text-ink mb-6">วิชาที่เรียน</h2>
           <div className="bg-white border-[0.5px] border-border rounded-card p-8 text-center text-ink-muted">
             ยังไม่มีวิชาที่เรียน กรุณาติดต่อครูผู้สอน
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-white">
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-xl font-semibold text-ink mb-6">วิชาที่เรียน</h2>
 
         <div className="divide-y-[0.5px] divide-border">

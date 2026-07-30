@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b-[0.5px] border-border">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <span className="font-bold text-lg text-ink">HubMath</span>
           <Link
             href="/teacher/login"
@@ -24,7 +24,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-16 space-y-12">
+      <main className="max-w-6xl mx-auto px-4 py-16 space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-ink">ระบบจัดการห้องเรียนคณิตศาสตร์ ครบในที่เดียว</h1>
           <p className="text-ink-muted max-w-xl mx-auto">

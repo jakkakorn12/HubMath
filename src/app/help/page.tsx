@@ -7,14 +7,14 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen bg-surface">
       <nav className="bg-white border-b">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/login" className="text-navy-600 hover:underline text-sm">← กลับหน้าเข้าสู่ระบบ</Link>
           <span className="text-border">|</span>
           <span className="font-semibold text-ink">วิธีใช้งาน HubMath</span>
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-5">
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-5">
         <div className="bg-white rounded-card border-[0.5px] border-border p-5">
           <div className="flex items-center gap-2.5 mb-3">
             <UserPlus className="w-5 h-5 text-ink-faint" />
