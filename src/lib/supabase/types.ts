@@ -215,6 +215,33 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["lessons"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["lessons"]["Insert"]>;
       };
+      interactive_topics: {
+        Row: {
+          id: string;
+          subject_id: string;
+          section_id: string | null;
+          topic_slug: string;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["interactive_topics"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["interactive_topics"]["Insert"]>;
+      };
+      interactive_progress: {
+        Row: {
+          id: string;
+          student_id: string;
+          topic_slug: string;
+          seen: number;
+          asked: number;
+          correct: number;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["interactive_progress"]["Row"], "id" | "updated_at"> & {
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["interactive_progress"]["Insert"]>;
+      };
       attendance: {
         Row: {
           id: string;
