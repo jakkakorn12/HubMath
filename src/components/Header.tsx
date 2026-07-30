@@ -32,35 +32,33 @@ export default function Header({
   const displayName = stripTitle(name);
 
   return (
-    <header className="pt-4 px-4">
-      <div className={`${wide ? "max-w-5xl" : "max-w-3xl"} mx-auto`}>
-        <div className="flex items-center justify-between bg-white rounded-full border-[0.8px] border-navy-900/10 shadow-[0_2px_4px_rgba(4,44,83,0.10),0_8px_16px_-4px_rgba(4,44,83,0.12)] px-4 h-14">
-          <Link href={homeHref} className="flex items-center gap-2 shrink-0">
-            <span className="w-7 h-7 rounded-full bg-navy-900 shrink-0" />
-            <span className="font-bold text-[15px] text-navy-900">
-              HubMath
-              {role === "teacher" && <span className="font-normal text-ink-faint ml-1">— ครู</span>}
+    <header className="bg-navy-900">
+      <div className={`${wide ? "max-w-5xl" : "max-w-3xl"} mx-auto px-4 h-14 flex items-center justify-between`}>
+        <Link href={homeHref} className="flex items-center gap-2 shrink-0">
+          <span className="w-7 h-7 rounded-[7px] bg-white shrink-0" />
+          <span className="font-semibold text-[15px] text-white">
+            HubMath
+            {role === "teacher" && <span className="font-normal text-white/60 ml-1">— ครู</span>}
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-3">
+          <Link href="/account" className="flex items-center gap-2 group min-w-0">
+            <span className="w-7 h-7 rounded-full bg-navy-100 text-navy-900 text-xs font-semibold flex items-center justify-center shrink-0">
+              {initials(name)}
+            </span>
+            <span className="text-sm text-white/90 group-hover:text-white transition-colors hidden sm:inline truncate max-w-[140px]">
+              {displayName}
             </span>
           </Link>
-
-          <div className="flex items-center gap-3">
-            <Link href="/account" className="flex items-center gap-2 group min-w-0">
-              <span className="w-7 h-7 rounded-full bg-navy-100 text-navy-900 text-xs font-semibold flex items-center justify-center shrink-0">
-                {initials(name)}
-              </span>
-              <span className="text-sm text-ink group-hover:text-navy-900 transition-colors hidden sm:inline truncate max-w-[140px]">
-                {displayName}
-              </span>
-            </Link>
-            <form action="/auth/signout" method="POST">
-              <button
-                aria-label="ออกจากระบบ"
-                className="text-ink-faint hover:text-navy-900 hover:bg-surface transition-colors p-1.5 rounded-full"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
+          <form action="/auth/signout" method="POST">
+            <button
+              aria-label="ออกจากระบบ"
+              className="text-white/70 hover:text-white hover:bg-white/10 transition-colors p-1.5 rounded-control"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </form>
         </div>
       </div>
     </header>

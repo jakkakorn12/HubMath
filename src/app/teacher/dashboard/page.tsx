@@ -128,18 +128,7 @@ export default async function TeacherDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
-        style={{
-          backgroundImage: "radial-gradient(var(--color-navy-600) 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
-          maskImage: "linear-gradient(to bottom, black, transparent 480px)",
-          WebkitMaskImage: "linear-gradient(to bottom, black, transparent 480px)",
-        }}
-      />
-      <div className="relative">
+    <div className="min-h-screen bg-white">
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
 
       <div className="max-w-5xl mx-auto flex items-center gap-6 overflow-x-auto px-4 pt-4">
@@ -293,7 +282,6 @@ export default async function TeacherDashboardPage() {
           </div>
         ))}
       </main>
-      </div>
     </div>
   );
 }
