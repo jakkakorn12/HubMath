@@ -158,10 +158,10 @@ export default async function TeacherDashboardPage() {
         </Link>
       </div>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-10">
+      <main className="max-w-5xl mx-auto px-4 py-10 space-y-12">
 
         {(subjects ?? []).length === 0 && (
-          <div className="bg-white rounded-card border-[0.5px] border-border p-8 text-center">
+          <div className="bg-white rounded-2xl shadow-[0_1px_2px_rgba(4,44,83,0.06),0_8px_24px_-8px_rgba(4,44,83,0.12)] p-8 text-center">
             <p className="text-sm text-ink-muted mb-4">ยังไม่มีวิชาเป็นของคุณ เริ่มสร้างวิชาแรกได้เลย</p>
             <Link
               href="/teacher/subjects/new"
@@ -175,14 +175,14 @@ export default async function TeacherDashboardPage() {
 
         {(subjects ?? []).map((subject) => (
           <div key={subject.id}>
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-5">
               <span className="w-[3px] h-6 bg-navy-900 rounded-full shrink-0" />
-              <h2 className="text-lg font-semibold text-ink">{subject.name}</h2>
+              <h2 className="text-lg font-bold text-ink">{subject.name}</h2>
               <span className="text-xs text-ink-faint">
                 {subject.code} · {typeLabel[subject.type] ?? subject.type}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {groupSections(subject.code, sectionsBySubject[subject.id] ?? []).map((group) => {
                 if (!group.combined) {
                   const section = group.items[0];
@@ -191,10 +191,10 @@ export default async function TeacherDashboardPage() {
                     <Link
                       key={section.id}
                       href={`/teacher/gradebook?section_id=${section.id}`}
-                      className="bg-white rounded-card p-5 border-[0.5px] border-border hover:shadow-sm hover:-translate-y-px transition-all block"
+                      className="bg-white rounded-2xl p-5 shadow-[0_1px_2px_rgba(4,44,83,0.06),0_8px_24px_-8px_rgba(4,44,83,0.12)] hover:shadow-[0_2px_4px_rgba(4,44,83,0.08),0_16px_32px_-12px_rgba(4,44,83,0.18)] hover:-translate-y-0.5 transition-all block"
                     >
                       <div className="flex items-start justify-between gap-2 mb-3">
-                        <h3 className="font-semibold text-ink">ห้อง {section.name}</h3>
+                        <h3 className="font-bold text-ink">ห้อง {section.name}</h3>
                         <span
                           className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
                             !stats.checkedToday
@@ -209,7 +209,7 @@ export default async function TeacherDashboardPage() {
                       </div>
                       <div className="space-y-1.5 text-sm">
                         <p className="flex items-center gap-1.5 text-ink-faint">
-                          <Users className="w-3.5 h-3.5" />
+                          <Users className="w-3.5 h-3.5 text-navy-600/70" />
                           สมัครแล้ว
                           <span className="font-medium text-ink">
                             {countBySection[section.id] ?? 0}/{stats.rosterCount}
@@ -217,7 +217,7 @@ export default async function TeacherDashboardPage() {
                           คน
                         </p>
                         <p className="flex items-center gap-1.5 text-ink-faint">
-                          <BarChart3 className="w-3.5 h-3.5" />
+                          <BarChart3 className="w-3.5 h-3.5 text-navy-600/70" />
                           คะแนนเฉลี่ย
                           <span className="font-medium text-ink">
                             {stats.avg != null ? stats.avg.toFixed(1) : "—"}
@@ -233,11 +233,11 @@ export default async function TeacherDashboardPage() {
                 return (
                   <div
                     key={ids.join("-")}
-                    className="bg-white rounded-card p-5 border-[0.5px] border-border"
+                    className="bg-white rounded-2xl p-5 shadow-[0_1px_2px_rgba(4,44,83,0.06),0_8px_24px_-8px_rgba(4,44,83,0.12)]"
                   >
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <div>
-                        <h3 className="font-semibold text-ink">
+                        <h3 className="font-bold text-ink">
                           ห้อง {group.items.map((s) => s.name).join("-")}
                         </h3>
                         <p className="text-xs text-ink-faint mt-0.5">เรียนพร้อมกัน</p>
@@ -247,7 +247,7 @@ export default async function TeacherDashboardPage() {
                           <Link
                             key={s.id}
                             href={`/teacher/gradebook?section_id=${s.id}`}
-                            className="text-xs font-medium text-navy-600 border-[0.5px] border-navy-600/40 rounded-full px-3 py-1 hover:bg-navy-100 transition-colors"
+                            className="text-xs font-medium text-navy-600 bg-navy-100 rounded-full px-3 py-1 hover:bg-navy-100/70 transition-colors"
                           >
                             ห้อง {s.name}
                           </Link>
@@ -256,7 +256,7 @@ export default async function TeacherDashboardPage() {
                     </div>
                     <div className="space-y-1.5 text-sm">
                       <p className="flex items-center gap-1.5 text-ink-faint">
-                        <Users className="w-3.5 h-3.5" />
+                        <Users className="w-3.5 h-3.5 text-navy-600/70" />
                         สมัครแล้ว
                         <span className="font-medium text-ink">
                           {combined.registered}/{combined.rosterCount}
@@ -264,7 +264,7 @@ export default async function TeacherDashboardPage() {
                         คน
                       </p>
                       <p className="flex items-center gap-1.5 text-ink-faint">
-                        <BarChart3 className="w-3.5 h-3.5" />
+                        <BarChart3 className="w-3.5 h-3.5 text-navy-600/70" />
                         คะแนนเฉลี่ย
                         <span className="font-medium text-ink">
                           {combined.avg != null ? combined.avg.toFixed(1) : "—"}
