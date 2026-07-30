@@ -78,7 +78,13 @@ export default function TopicManager({
 
   return (
     <div className="bg-white rounded-card border-[0.5px] border-border p-5 space-y-4">
-      <h2 className="text-sm font-semibold text-ink-muted">หน่วยฝึกโต้ตอบ — {targetLabel}</h2>
+      <div>
+        <h2 className="text-sm font-semibold text-ink-muted">หน่วยฝึกโต้ตอบ — {targetLabel}</h2>
+        <p className="text-xs text-ink-faint mt-1">
+          ติ๊กเพื่อเปิดให้นักเรียนในวิชา/ห้องนี้เห็นหัวข้อนั้น (ไม่ติ๊ก = ซ่อนจากนักเรียน) · ลำดับใช้จัดเรียงเมื่อเปิดหลายหัวข้อพร้อมกัน ·
+          เนื้อหาบทเรียน เครื่องมือ และแบบทดสอบของแต่ละหัวข้อเป็นชุดสำเร็จรูป แก้ไขไม่ได้ในหน้านี้ — มีหัวข้อใหม่เพิ่มเข้ามาเรื่อยๆ
+        </p>
+      </div>
       {error && <p className="text-danger-strong text-sm">{error}</p>}
       <div className="space-y-2">
         {registry.map((t) => {
