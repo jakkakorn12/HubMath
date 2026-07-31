@@ -247,6 +247,7 @@ export type Database = {
           id: string;
           subject_id: string;
           section_id: string | null;
+          topic_slug: string | null;
           title: string;
           difficulty: "medium" | "hard" | "very_hard";
           order_index: number;

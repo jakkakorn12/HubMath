@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import SubjectNav from "@/components/SubjectNav";
 import Header from "@/components/Header";
 import Link from "next/link";
+import { QUIZ_TOPIC_LABEL, groupByTopic } from "@/lib/quizTopics";
 
 export const dynamic = "force-dynamic";
 
@@ -44,15 +45,14 @@ export default async function QuizListPage({
   const attemptBySet: Record<string, { score: number; max_score: number }> = {};
   for (const a of attempts ?? []) attemptBySet[a.quiz_set_id] = a;
 
-  const byDifficulty: Record<string, typeof visibleSets> = {};
-  for (const s of visibleSets) (byDifficulty[s.difficulty] ??= []).push(s);
+  const byTopic = groupByTopic(visibleSets);
 
   return (
     <div className="min-h-screen bg-white">
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="quiz" />
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-8">
         <h1 className="text-lg font-bold text-ink">แบบทดสอบ</h1>
 
         {visibleSets.length === 0 ? (
@@ -60,28 +60,40 @@ export default async function QuizListPage({
             ยังไม่มีแบบทดสอบในวิชานี้
           </div>
         ) : (
-          DIFFICULTY_ORDER.filter((d) => byDifficulty[d]?.length).map((d) => (
-            <div key={d} className="space-y-3">
-              <h2 className="text-sm font-semibold text-ink-muted">ระดับ{DIFFICULTY_LABEL[d]}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {byDifficulty[d].map((set) => {
-                  const attempt = attemptBySet[set.id];
-                  return (
-                    <Link
-                      key={set.id}
-                      href={`/quiz/${set.id}?subject_id=${subject_id}`}
-                      className="bg-white shadow-sm hover:shadow-md rounded-card border-[0.5px] border-border p-5 transition-shadow block"
-                    >
-                      <h3 className="font-bold text-ink mb-2">{set.title}</h3>
-                      <p className="text-xs text-navy-600 font-medium">
-                        {attempt ? `ทำแล้ว ${attempt.score}/${attempt.max_score} · ดูผล →` : "ยังไม่ได้ทำ · เริ่มทำ →"}
-                      </p>
-                    </Link>
-                  );
-                })}
+          byTopic.map(([topicSlug, topicSets]) => {
+            const byDifficulty: Record<string, typeof visibleSets> = {};
+            for (const s of topicSets) (byDifficulty[s.difficulty] ??= []).push(s);
+
+            return (
+              <div key={topicSlug} className="space-y-4">
+                <h2 className="text-base font-bold text-ink border-b border-border pb-2">
+                  {QUIZ_TOPIC_LABEL[topicSlug] ?? "อื่นๆ"}
+                </h2>
+                {DIFFICULTY_ORDER.filter((d) => byDifficulty[d]?.length).map((d) => (
+                  <div key={d} className="space-y-3">
+                    <h3 className="text-sm font-semibold text-ink-muted">ระดับ{DIFFICULTY_LABEL[d]}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {byDifficulty[d].map((set) => {
+                        const attempt = attemptBySet[set.id];
+                        return (
+                          <Link
+                            key={set.id}
+                            href={`/quiz/${set.id}?subject_id=${subject_id}`}
+                            className="bg-white shadow-sm hover:shadow-md rounded-card border-[0.5px] border-border p-5 transition-shadow block"
+                          >
+                            <h4 className="font-bold text-ink mb-2">{set.title}</h4>
+                            <p className="text-xs text-navy-600 font-medium">
+                              {attempt ? `ทำแล้ว ${attempt.score}/${attempt.max_score} · ดูผล →` : "ยังไม่ได้ทำ · เริ่มทำ →"}
+                            </p>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </main>
     </div>
