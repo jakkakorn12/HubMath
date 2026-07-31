@@ -38,7 +38,10 @@ export default async function InteractivePage({
     supabase.from("interactive_progress").select("*").eq("student_id", user.id),
   ]);
 
-  const visibleTopics = (topics ?? []).filter((t) => t.section_id == null || t.section_id === mySectionId);
+  const seenSlugs = new Set<string>();
+  const visibleTopics = (topics ?? [])
+    .filter((t) => t.section_id == null || t.section_id === mySectionId)
+    .filter((t) => (seenSlugs.has(t.topic_slug) ? false : (seenSlugs.add(t.topic_slug), true)));
   const progressBySlug: Record<string, { seen: number; asked: number; correct: number }> = {};
   for (const p of progress ?? []) progressBySlug[p.topic_slug] = p;
 
