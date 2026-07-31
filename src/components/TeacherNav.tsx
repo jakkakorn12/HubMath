@@ -28,7 +28,7 @@ export default function TeacherNav({
   ];
 
   return (
-    <nav className="bg-white border-b-[0.5px] border-border">
+    <nav className="bg-white border-b-[0.5px] border-border sticky top-14 z-40">
       <div className="max-w-7xl mx-auto px-4 pt-3 flex items-baseline gap-2.5">
         <Link href="/teacher/dashboard" className="text-navy-600 hover:underline text-sm shrink-0">← หน้าหลัก</Link>
         <span className="text-border">|</span>

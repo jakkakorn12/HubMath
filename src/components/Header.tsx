@@ -32,7 +32,7 @@ export default function Header({
   const displayName = stripTitle(name);
 
   return (
-    <header className="bg-navy-900">
+    <header className="bg-navy-900 sticky top-0 z-50">
       <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href={homeHref} className="flex items-center gap-2 shrink-0">
           <span className="w-7 h-7 rounded-[7px] bg-white shrink-0" />
