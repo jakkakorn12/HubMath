@@ -19,6 +19,18 @@ import { steps as vectorSteps } from "./vector/steps";
 import { sheet as vectorSheet } from "./vector/sheet";
 import { generateVectorQuestion } from "./vector/quiz";
 import VectorTool from "./vector/VectorTool";
+import { steps as complexSteps } from "./complex/steps";
+import { sheet as complexSheet } from "./complex/sheet";
+import { generateComplexQuestion } from "./complex/quiz";
+import ComplexTool from "./complex/ComplexTool";
+import { steps as statSteps } from "./stat/steps";
+import { sheet as statSheet } from "./stat/sheet";
+import { generateStatQuestion } from "./stat/quiz";
+import StatTool from "./stat/StatTool";
+import { steps as probSteps } from "./prob/steps";
+import { sheet as probSheet } from "./prob/sheet";
+import { generateProbQuestion } from "./prob/quiz";
+import ProbTool from "./prob/ProbTool";
 
 export const TOPIC_REGISTRY: Record<string, TopicDef> = {
   trig: {
@@ -70,6 +82,36 @@ export const TOPIC_REGISTRY: Record<string, TopicDef> = {
     sheet: vectorSheet,
     ToolComponent: VectorTool,
     generateQuestion: generateVectorQuestion,
+  },
+  complex: {
+    slug: "complex",
+    name: "จำนวนเชิงซ้อน",
+    subtitle: "การดำเนินการ สังยุค ระนาบเชิงซ้อน",
+    toolName: "ระนาบเชิงซ้อน หมุน-ขยาย",
+    steps: complexSteps,
+    sheet: complexSheet,
+    ToolComponent: ComplexTool,
+    generateQuestion: generateComplexQuestion,
+  },
+  stat: {
+    slug: "stat",
+    name: "สถิติ",
+    subtitle: "ค่ากลาง การกระจาย แผนภาพกล่อง",
+    toolName: "คิดสถิติและวาดแผนภาพกล่อง",
+    steps: statSteps,
+    sheet: statSheet,
+    ToolComponent: StatTool,
+    generateQuestion: generateStatQuestion,
+  },
+  prob: {
+    slug: "prob",
+    name: "ความน่าจะเป็น",
+    subtitle: "กฎการนับ การเรียงสับเปลี่ยน ความน่าจะเป็น",
+    toolName: "ทดลองสุ่มลูกเต๋า-เหรียญ",
+    steps: probSteps,
+    sheet: probSheet,
+    ToolComponent: ProbTool,
+    generateQuestion: generateProbQuestion,
   },
 };
 
