@@ -242,6 +242,53 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["interactive_progress"]["Insert"]>;
       };
+      quiz_sets: {
+        Row: {
+          id: string;
+          subject_id: string;
+          section_id: string | null;
+          title: string;
+          difficulty: "medium" | "hard" | "very_hard";
+          order_index: number;
+          is_published: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["quiz_sets"]["Row"], "id" | "created_at" | "is_published"> & {
+          is_published?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["quiz_sets"]["Insert"]>;
+      };
+      quiz_questions: {
+        Row: {
+          id: string;
+          quiz_set_id: string;
+          question_type: "multiple_choice" | "fill_blank";
+          prompt: string;
+          choices: string[] | null;
+          correct_answer: string;
+          accepted_answers: string[] | null;
+          solution: string | null;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["quiz_questions"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["quiz_questions"]["Insert"]>;
+      };
+      quiz_attempts: {
+        Row: {
+          id: string;
+          quiz_set_id: string;
+          student_id: string;
+          answers: Record<string, string>;
+          score: number;
+          max_score: number;
+          submitted_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["quiz_attempts"]["Row"], "id" | "submitted_at"> & {
+          submitted_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["quiz_attempts"]["Insert"]>;
+      };
       attendance: {
         Row: {
           id: string;

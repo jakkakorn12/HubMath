@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type TabKey = "students" | "scores" | "files" | "media" | "lessons" | "interactive" | "tasks" | "attendance" | "announcements";
+type TabKey = "students" | "scores" | "files" | "media" | "lessons" | "interactive" | "quiz" | "tasks" | "attendance" | "announcements";
 
 export default function TeacherNav({
   sectionId,
@@ -23,6 +23,7 @@ export default function TeacherNav({
     { key: "lessons", label: "บทเรียน", href: `/teacher/lessons?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "media", label: "สื่อการเรียนรู้", href: `/teacher/media?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "interactive", label: "ฝึกโต้ตอบ", href: `/teacher/interactive?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "quiz", label: "แบบทดสอบ", href: `/teacher/quizzes?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "students", label: "รายชื่อนักเรียน", href: `/teacher/students?section_id=${sectionId}` },
     { key: "announcements", label: "ประกาศ", href: `/teacher/announcements?subject_id=${subjectId}&section_id=${sectionId}` },
   ];

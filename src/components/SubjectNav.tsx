@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type TabKey = "scores" | "attendance" | "tasks" | "resources" | "media" | "lessons" | "interactive";
+type TabKey = "scores" | "attendance" | "tasks" | "resources" | "media" | "lessons" | "interactive" | "quiz";
 
 const subjectTypeLabel: Record<string, string> = {
   basic: "พื้นฐาน", advanced: "เพิ่มเติม", elective: "เลือก",
@@ -22,6 +22,7 @@ export default function SubjectNav({
     { key: "tasks", label: "ส่งงาน", href: `/tasks?subject_id=${subjectId}` },
     { key: "resources", label: "เอกสาร", href: `/resources?subject_id=${subjectId}` },
     { key: "interactive", label: "ฝึกโต้ตอบ", href: `/interactive?subject_id=${subjectId}` },
+    { key: "quiz", label: "แบบทดสอบ", href: `/quiz?subject_id=${subjectId}` },
     { key: "lessons", label: "บทเรียน", href: `/lessons?subject_id=${subjectId}` },
     { key: "media", label: "สื่อการเรียนรู้", href: `/media?subject_id=${subjectId}` },
     { key: "attendance", label: "เวลาเรียน", href: `/attendance?subject_id=${subjectId}` },
