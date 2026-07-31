@@ -17,13 +17,13 @@ export default function TeacherNav({
 }) {
   const tabs: { key: TabKey; label: string; href: string }[] = [
     { key: "scores", label: "คะแนน", href: `/teacher/gradebook?section_id=${sectionId}` },
-    { key: "students", label: "รายชื่อนักเรียน", href: `/teacher/students?section_id=${sectionId}` },
-    { key: "files", label: "จัดการไฟล์", href: `/teacher/resources?subject_id=${subjectId}&section_id=${sectionId}` },
-    { key: "media", label: "สื่อการเรียนรู้", href: `/teacher/media?subject_id=${subjectId}&section_id=${sectionId}` },
-    { key: "lessons", label: "บทเรียน", href: `/teacher/lessons?subject_id=${subjectId}&section_id=${sectionId}` },
-    { key: "interactive", label: "ฝึกโต้ตอบ", href: `/teacher/interactive?subject_id=${subjectId}&section_id=${sectionId}` },
-    { key: "tasks", label: "มอบหมายงาน", href: `/teacher/tasks?subject_id=${subjectId}&section_id=${sectionId}` },
     { key: "attendance", label: "เช็คชื่อ", href: `/teacher/attendance?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "tasks", label: "มอบหมายงาน", href: `/teacher/tasks?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "files", label: "จัดการไฟล์", href: `/teacher/resources?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "lessons", label: "บทเรียน", href: `/teacher/lessons?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "media", label: "สื่อการเรียนรู้", href: `/teacher/media?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "interactive", label: "ฝึกโต้ตอบ", href: `/teacher/interactive?subject_id=${subjectId}&section_id=${sectionId}` },
+    { key: "students", label: "รายชื่อนักเรียน", href: `/teacher/students?section_id=${sectionId}` },
     { key: "announcements", label: "ประกาศ", href: `/teacher/announcements?subject_id=${subjectId}&section_id=${sectionId}` },
   ];
 
