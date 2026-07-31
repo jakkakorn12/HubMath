@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 
-const TOKEN = /(\^\{[^{}]+\}|_\{[^{}]+\}|\[[^[\]|]+\|[^[\]]+\]|-?\d+\/\d+)/g;
-const SLASH_FRACTION = /^(-?\d+)\/(\d+)$/;
+const VAR = "[a-zA-Zθαβπ0-9]+";
+const TOKEN = new RegExp(`(\\^\\{[^{}]+\\}|_\\{[^{}]+\\}|\\[[^[\\]|]+\\|[^[\\]]+\\]|-?${VAR}\\/${VAR})`, "g");
+const SLASH_FRACTION = new RegExp(`^(-?${VAR})\\/(${VAR})$`);
 
 function renderFraction(key: number, num: string, den: string) {
   return (
