@@ -17,10 +17,6 @@ function normalizeAnswer(s: string) {
   return s.trim().toLowerCase().replace(/\s+/g, "");
 }
 
-function toFractionMarkup(text: string): string {
-  return text.replace(/(-?)(\d+)\/(\d+)/g, (_m, sign, num, den) => `${sign}[${num}|${den}]`);
-}
-
 const CHOICE_LABELS = ["ก", "ข", "ค", "ง"];
 
 export default async function QuizTakePage({
@@ -126,12 +122,11 @@ export default async function QuizTakePage({
                     ) : (
                       <div className="text-sm space-y-1">
                         <p className={isCorrect ? "text-success-strong" : "text-danger-strong"}>
-                          คำตอบของคุณ:{" "}
-                          {given ? <MathText text={toFractionMarkup(given)} /> : "(ไม่ได้ตอบ)"}
+                          คำตอบของคุณ: {given ? <MathText text={given} /> : "(ไม่ได้ตอบ)"}
                         </p>
                         {!isCorrect && (
                           <p className="text-ink-muted">
-                            เฉลย: <MathText text={toFractionMarkup(q.correct_answer)} />
+                            เฉลย: <MathText text={q.correct_answer} />
                           </p>
                         )}
                       </div>
