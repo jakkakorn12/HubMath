@@ -62,7 +62,7 @@ export default async function QuizTopicPage({
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="quiz" />
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        <Link href={`/quiz?subject_id=${subject_id}`} className="text-navy-600 hover:underline text-sm">
+        <Link href={`/quiz?subject_id=${subject_id}`} prefetch={false} className="text-navy-600 hover:underline text-sm">
           ← กลับไปหน้าแบบทดสอบ
         </Link>
         <h1 className="text-lg font-bold text-ink">{QUIZ_TOPIC_LABEL[topicSlug] ?? "แบบทดสอบ"}</h1>
@@ -82,6 +82,7 @@ export default async function QuizTopicPage({
                     <Link
                       key={set.id}
                       href={`/quiz/${set.id}?subject_id=${subject_id}`}
+                      prefetch={false}
                       className="bg-white shadow-sm hover:shadow-md rounded-card border-[0.5px] border-border p-5 transition-shadow block"
                     >
                       <h3 className="font-bold text-ink mb-2">{set.title}</h3>

@@ -38,6 +38,7 @@ export default function TeacherContentNav({
           <Link
             key={tab.key}
             href={tab.href}
+            prefetch={false}
             className={`pb-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
               tab.key === active
                 ? "border-navy-900 text-navy-900 font-medium"

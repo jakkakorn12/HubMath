@@ -67,6 +67,7 @@ export default async function InteractivePage({
                 <Link
                   key={t.id}
                   href={`/interactive/${t.topic_slug}?subject_id=${subject_id}`}
+                  prefetch={false}
                   className="bg-white shadow-sm hover:shadow-md rounded-card border-[0.5px] border-border p-5 transition-shadow block"
                 >
                   <h2 className="font-bold text-ink mb-1">{def.name}</h2>

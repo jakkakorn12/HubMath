@@ -34,7 +34,7 @@ export default function Header({
   return (
     <header className="bg-navy-900 sticky top-0 z-50">
       <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
-        <Link href={homeHref} className="flex items-center gap-2 shrink-0">
+        <Link href={homeHref} prefetch={false} className="flex items-center gap-2 shrink-0">
           <span className="w-7 h-7 rounded-[7px] bg-white shrink-0" />
           <span className="font-semibold text-[15px] text-white">
             HubMath
@@ -43,7 +43,7 @@ export default function Header({
         </Link>
 
         <div className="flex items-center gap-3">
-          <Link href="/account" className="flex items-center gap-2 group min-w-0">
+          <Link href="/account" prefetch={false} className="flex items-center gap-2 group min-w-0">
             <span className="w-7 h-7 rounded-full bg-navy-100 text-navy-900 text-xs font-semibold flex items-center justify-center shrink-0">
               {initials(name)}
             </span>

@@ -63,6 +63,7 @@ export default async function QuizListPage({
                 <Link
                   key={topicSlug}
                   href={`/quiz/topic/${topicSlug}?subject_id=${subject_id}`}
+                  prefetch={false}
                   className="bg-white shadow-sm hover:shadow-md rounded-card border-[0.5px] border-border p-5 transition-shadow block"
                 >
                   <h2 className="font-bold text-ink mb-1">{QUIZ_TOPIC_LABEL[topicSlug] ?? "อื่นๆ"}</h2>

@@ -31,7 +31,7 @@ export default function SubjectNav({
   return (
     <nav className="bg-white border-b-[0.5px] border-border sticky top-14 z-40">
       <div className="max-w-6xl mx-auto px-4 pt-3 flex items-baseline gap-2.5">
-        <Link href="/dashboard" className="text-navy-600 hover:underline text-sm shrink-0">← กลับ</Link>
+        <Link href="/dashboard" prefetch={false} className="text-navy-600 hover:underline text-sm shrink-0">← กลับ</Link>
         <span className="text-border">|</span>
         <span className="font-medium text-ink truncate">
           {subjectName}
@@ -47,6 +47,7 @@ export default function SubjectNav({
           <Link
             key={tab.key}
             href={tab.href}
+            prefetch={false}
             className={`pb-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
               tab.key === active
                 ? "border-navy-900 text-navy-900 font-medium"

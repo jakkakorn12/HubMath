@@ -75,6 +75,7 @@ export default async function LessonsPage({
                       <Link
                         key={l.id}
                         href={`/lessons/${l.id}?subject_id=${subject_id}`}
+                        prefetch={false}
                         className="flex items-center justify-between bg-white shadow-sm hover:shadow-md rounded-control px-4 py-3 transition-shadow"
                       >
                         <span className="text-sm text-ink">{l.title}</span>

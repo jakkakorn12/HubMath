@@ -73,7 +73,7 @@ export default async function QuizTakePage({
         <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
         <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="quiz" />
         <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-          <Link href={`/quiz?subject_id=${subject_id}`} className="text-navy-600 hover:underline text-sm">
+          <Link href={`/quiz?subject_id=${subject_id}`} prefetch={false} className="text-navy-600 hover:underline text-sm">
             ← กลับไปหน้าแบบทดสอบ
           </Link>
           <div className="bg-white rounded-card border-[0.5px] border-border p-6">
@@ -157,7 +157,7 @@ export default async function QuizTakePage({
       <Header name={student?.full_name ?? user.email ?? ""} role="student" homeHref="/dashboard" />
       <SubjectNav subjectId={subject_id} subjectName={subject?.name} subjectType={subject?.type} active="quiz" />
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-        <Link href={`/quiz?subject_id=${subject_id}`} className="text-navy-600 hover:underline text-sm">
+        <Link href={`/quiz?subject_id=${subject_id}`} prefetch={false} className="text-navy-600 hover:underline text-sm">
           ← กลับไปหน้าแบบทดสอบ
         </Link>
         <TakeQuiz setId={setId} title={set.title} questions={questions ?? []} />

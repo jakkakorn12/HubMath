@@ -225,6 +225,7 @@ export default async function DashboardPage() {
 
                 <Link
                   href={`/grades?subject_id=${subject.id}`}
+                  prefetch={false}
                   className="block -mx-3 px-3 py-2 rounded-card hover:bg-white transition-colors mb-3"
                 >
                   <p className="text-xs text-ink-faint mb-1">คะแนนสะสม</p>
@@ -247,6 +248,7 @@ export default async function DashboardPage() {
                       <Link
                         key={stat.label}
                         href={stat.href}
+                        prefetch={false}
                         className="px-3 first:pl-0 last:pr-0 hover:bg-white transition-colors rounded-control"
                       >
                         <div className="flex items-center gap-1.5 text-ink-faint text-xs mb-1">
