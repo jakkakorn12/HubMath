@@ -190,6 +190,7 @@ export default function ChapterManager({
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/teacher/lessons/${c.id}${sectionId ? `?section_id=${sectionId}` : ""}`}
+                      prefetch={false}
                       className="text-xs font-medium text-ink border-[0.5px] border-border rounded-control px-2.5 py-1.5 hover:bg-surface transition-colors"
                     >
                       จัดการบทเรียนย่อย

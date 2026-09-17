@@ -109,7 +109,7 @@ export default async function PlatformPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink">คำขอเปิดใช้งานโรงเรียนใหม่</h1>
           <p className="text-sm text-ink-faint mt-0.5">Platform super-admin</p>
-          <Link href="/admin" className="text-sm text-navy-600 hover:underline mt-2 inline-block">
+          <Link href="/admin" prefetch={false} className="text-sm text-navy-600 hover:underline mt-2 inline-block">
             ไปหน้าจัดการครูทุกโรงเรียน →
           </Link>
         </div>

@@ -124,12 +124,14 @@ export default async function GradebookPage({
           <div className="flex gap-1 text-sm">
             <Link
               href={`/teacher/gradebook${baseQuery}`}
+              prefetch={false}
               className={`px-3 py-1.5 rounded-control font-medium ${!editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
             >
               ดูสรุป
             </Link>
             <Link
               href={`/teacher/gradebook${baseQuery}&mode=edit`}
+              prefetch={false}
               className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-surface"}`}
             >
               แก้ไขคะแนน

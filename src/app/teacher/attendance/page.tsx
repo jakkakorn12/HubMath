@@ -222,6 +222,7 @@ export default async function TeacherAttendancePage({
               <div className="inline-flex items-center gap-0.5 border-[0.5px] border-border rounded-control bg-surface p-1 text-sm">
                 <Link
                   href={`?subject_id=${subject_id}&section_id=${section_id}&mode=edit&date=${date}`}
+                  prefetch={false}
                   className={`px-3 py-1.5 rounded-control font-medium ${editMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-white"}`}
                 >
                   เช็คชื่อ
@@ -229,12 +230,14 @@ export default async function TeacherAttendancePage({
                 <QrButton sectionId={section_id} teacherId={teacher.id} />
                 <Link
                   href={`?subject_id=${subject_id}&section_id=${section_id}&date=${date}`}
+                  prefetch={false}
                   className={`px-3 py-1.5 rounded-control font-medium ${!editMode && !reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-white"}`}
                 >
                   สรุปผล
                 </Link>
                 <Link
                   href={`?subject_id=${subject_id}&section_id=${section_id}&mode=report`}
+                  prefetch={false}
                   className={`px-3 py-1.5 rounded-control font-medium ${reportMode ? "bg-navy-900 text-white" : "text-navy-600 hover:bg-white"}`}
                 >
                   รายงานทั้งเทอม

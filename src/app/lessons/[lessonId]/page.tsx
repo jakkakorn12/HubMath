@@ -75,7 +75,7 @@ export default async function LessonDetailPage({
       <SubjectNav subjectId={subjectId} subjectName={subject?.name} subjectType={subject?.type} active="lessons" />
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-        <Link href={`/lessons?subject_id=${subjectId}`} className="text-navy-600 hover:underline text-sm">
+        <Link href={`/lessons?subject_id=${subjectId}`} prefetch={false} className="text-navy-600 hover:underline text-sm">
           ← กลับไปหน้าบทเรียน
         </Link>
 
@@ -118,12 +118,12 @@ export default async function LessonDetailPage({
         {(prevLesson || nextLesson) && (
           <div className="flex items-center justify-between">
             {prevLesson ? (
-              <Link href={`/lessons/${prevLesson.id}?subject_id=${subjectId}`} className="text-sm text-navy-600 hover:underline">
+              <Link href={`/lessons/${prevLesson.id}?subject_id=${subjectId}`} prefetch={false} className="text-sm text-navy-600 hover:underline">
                 ← {prevLesson.title}
               </Link>
             ) : <span />}
             {nextLesson ? (
-              <Link href={`/lessons/${nextLesson.id}?subject_id=${subjectId}`} className="text-sm text-navy-600 hover:underline">
+              <Link href={`/lessons/${nextLesson.id}?subject_id=${subjectId}`} prefetch={false} className="text-sm text-navy-600 hover:underline">
                 {nextLesson.title} →
               </Link>
             ) : <span />}

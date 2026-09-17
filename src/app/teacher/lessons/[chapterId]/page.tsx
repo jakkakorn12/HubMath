@@ -51,7 +51,7 @@ export default async function ChapterLessonsPage({
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       <nav className="bg-white border-b-[0.5px] border-border">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2.5">
-          <Link href={`/teacher/lessons${backQuery}`} className="text-navy-600 hover:underline text-sm shrink-0">
+          <Link href={`/teacher/lessons${backQuery}`} prefetch={false} className="text-navy-600 hover:underline text-sm shrink-0">
             ← กลับ
           </Link>
           <span className="text-border">|</span>

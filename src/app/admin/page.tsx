@@ -52,7 +52,7 @@ export default async function AdminPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink">จัดการครูทุกโรงเรียน</h1>
           <p className="text-sm text-ink-faint mt-0.5">{schools?.length ?? 0} โรงเรียน</p>
-          <Link href="/platform" className="text-sm text-navy-600 hover:underline mt-2 inline-block">
+          <Link href="/platform" prefetch={false} className="text-sm text-navy-600 hover:underline mt-2 inline-block">
             ไปหน้าคำขอเปิดใช้งานโรงเรียนใหม่ →
           </Link>
         </div>

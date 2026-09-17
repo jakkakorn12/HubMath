@@ -186,7 +186,7 @@ export default async function TaskSubmissionsPage({
       <Header name={teacher.full_name} role="teacher" homeHref="/teacher/dashboard" wide />
       <nav className="bg-white border-b-[0.5px] border-border">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2.5">
-          <Link href={`/teacher/tasks${backQuery}`} className="text-navy-600 hover:underline text-sm shrink-0">
+          <Link href={`/teacher/tasks${backQuery}`} prefetch={false} className="text-navy-600 hover:underline text-sm shrink-0">
             ← กลับ
           </Link>
           <span className="text-border">|</span>
@@ -211,6 +211,7 @@ export default async function TaskSubmissionsPage({
           {targetSections.length > 1 && (
             <Link
               href={pillQuery("all")}
+              prefetch={false}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 activeRoom === "all"
                   ? "bg-navy-900 text-white border-navy-900"
@@ -224,6 +225,7 @@ export default async function TaskSubmissionsPage({
             <Link
               key={s.id}
               href={pillQuery(s.id)}
+              prefetch={false}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 activeRoom === s.id
                   ? "bg-navy-900 text-white border-navy-900"
